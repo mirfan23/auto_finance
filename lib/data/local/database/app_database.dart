@@ -1,3 +1,4 @@
+import 'package:auto_finance/data/local/tables/notification_log_table.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
@@ -16,12 +17,21 @@ class TransactionsTable extends Table {
   DateTimeColumn get time => dateTime()();
 }
 
-@DriftDatabase(tables: [TransactionsTable])
+@DriftDatabase(tables: [TransactionsTable, NotificationLogsTable])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
+  @override
+  int get schemaVersion => 6;
 
   @override
-  int get schemaVersion => 1;
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) async {
+      await m.createAll();
+    },
+    onUpgrade: (m, from, to) async {
+      await m.createAll();
+    },
+  );
 
   static AppDatabase? _instance;
 

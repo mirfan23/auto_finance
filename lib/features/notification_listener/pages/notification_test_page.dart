@@ -1,81 +1,79 @@
-import 'dart:async';
-
+import 'package:auto_finance/features/notification_listener/providers/notification_stream_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../services/notification_service.dart';
+// class NotificationDebugPage extends ConsumerWidget {
+//   const NotificationDebugPage({super.key});
 
-class NotificationDebugPage extends StatefulWidget {
+//   @override
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     final logs = ref.watch(rawNotificationBufferProvider);
+
+//     return Scaffold(
+//       appBar: AppBar(title: const Text("Debug Notifications")),
+//       body: logs.isEmpty
+//           ? const Center(child: Text("Belum ada notifikasi"))
+//           : ListView.builder(
+//               itemCount: logs.length,
+//               itemBuilder: (_, i) {
+//                 final item = logs[i];
+
+//                 return Card(
+//                   margin: const EdgeInsets.all(8),
+//                   child: Padding(
+//                     padding: const EdgeInsets.all(12),
+//                     child: Column(
+//                       crossAxisAlignment: CrossAxisAlignment.start,
+//                       children: [
+//                         Text(item["packageName"] ?? "-", style: const TextStyle(fontWeight: FontWeight.bold)),
+//                         Text("Title: ${item["title"] ?? "-"}"),
+//                         Text("Text: ${item["text"] ?? "-"}"),
+//                         Text("Time: ${item["timestamp"] ?? "-"}"),
+//                       ],
+//                     ),
+//                   ),
+//                 );
+//               },
+//             ),
+//     );
+//   }
+// }
+
+class NotificationDebugPage extends ConsumerWidget {
   const NotificationDebugPage({super.key});
 
   @override
-  State<NotificationDebugPage> createState() => _NotificationDebugPageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final logs = ref.watch(notificationLogStreamProvider);
 
-class _NotificationDebugPageState extends State<NotificationDebugPage> {
-  final List<Map<dynamic, dynamic>> notifications = [];
-
-  StreamSubscription? subscription;
-
-  @override
-  void initState() {
-    super.initState();
-
-    subscription = NotificationService.stream.listen((event) {
-      debugPrint("NOTIFICATION RECEIVED => $event");
-
-      setState(() {
-        notifications.insert(0, event);
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    subscription?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Notification Debug")),
+      appBar: AppBar(title: const Text("Debug Notifications")),
+      body: logs.when(
+        data: (data) => ListView.builder(
+          itemCount: data.length,
+          itemBuilder: (_, i) {
+            final item = data[i];
 
-      body: notifications.isEmpty
-          ? const Center(child: Text("Belum ada notifikasi"))
-          : ListView.builder(
-              itemCount: notifications.length,
-              itemBuilder: (_, index) {
-                final item = notifications[index];
-
-                return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(item["packageName"] ?? "", style: const TextStyle(fontWeight: FontWeight.bold)),
-
-                        const SizedBox(height: 8),
-
-                        Text("Title : ${item["title"]}"),
-
-                        const SizedBox(height: 4),
-
-                        Text("Text : ${item["text"]}"),
-
-                        const SizedBox(height: 4),
-
-                        Text(
-                          "Timestamp : ${item["timestamp"]}",
-                          style: const TextStyle(color: Colors.grey, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
+            return Card(
+              margin: const EdgeInsets.all(8),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(item.packageName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text("Title: ${item.title}"),
+                    Text("Text: ${item.rawText}"),
+                    Text("Time: ${item.timestamp}"),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+        loading: () => const CircularProgressIndicator(),
+        error: (e, _) => Text("Error: $e"),
+      ),
     );
   }
 }
