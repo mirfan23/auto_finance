@@ -80,6 +80,18 @@ class $TransactionsTableTable extends TransactionsTable
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _fingerprintMeta = const VerificationMeta(
+    'fingerprint',
+  );
+  @override
+  late final GeneratedColumn<String> fingerprint = GeneratedColumn<String>(
+    'fingerprint',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -89,6 +101,7 @@ class $TransactionsTableTable extends TransactionsTable
     category,
     rawText,
     time,
+    fingerprint,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -153,6 +166,17 @@ class $TransactionsTableTable extends TransactionsTable
     } else if (isInserting) {
       context.missing(_timeMeta);
     }
+    if (data.containsKey('fingerprint')) {
+      context.handle(
+        _fingerprintMeta,
+        fingerprint.isAcceptableOrUnknown(
+          data['fingerprint']!,
+          _fingerprintMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_fingerprintMeta);
+    }
     return context;
   }
 
@@ -190,6 +214,10 @@ class $TransactionsTableTable extends TransactionsTable
         DriftSqlType.dateTime,
         data['${effectivePrefix}time'],
       )!,
+      fingerprint: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}fingerprint'],
+      )!,
     );
   }
 
@@ -208,6 +236,7 @@ class TransactionsTableData extends DataClass
   final String category;
   final String rawText;
   final DateTime time;
+  final String fingerprint;
   const TransactionsTableData({
     required this.id,
     required this.bank,
@@ -216,6 +245,7 @@ class TransactionsTableData extends DataClass
     required this.category,
     required this.rawText,
     required this.time,
+    required this.fingerprint,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -227,6 +257,7 @@ class TransactionsTableData extends DataClass
     map['category'] = Variable<String>(category);
     map['raw_text'] = Variable<String>(rawText);
     map['time'] = Variable<DateTime>(time);
+    map['fingerprint'] = Variable<String>(fingerprint);
     return map;
   }
 
@@ -239,6 +270,7 @@ class TransactionsTableData extends DataClass
       category: Value(category),
       rawText: Value(rawText),
       time: Value(time),
+      fingerprint: Value(fingerprint),
     );
   }
 
@@ -255,6 +287,7 @@ class TransactionsTableData extends DataClass
       category: serializer.fromJson<String>(json['category']),
       rawText: serializer.fromJson<String>(json['rawText']),
       time: serializer.fromJson<DateTime>(json['time']),
+      fingerprint: serializer.fromJson<String>(json['fingerprint']),
     );
   }
   @override
@@ -268,6 +301,7 @@ class TransactionsTableData extends DataClass
       'category': serializer.toJson<String>(category),
       'rawText': serializer.toJson<String>(rawText),
       'time': serializer.toJson<DateTime>(time),
+      'fingerprint': serializer.toJson<String>(fingerprint),
     };
   }
 
@@ -279,6 +313,7 @@ class TransactionsTableData extends DataClass
     String? category,
     String? rawText,
     DateTime? time,
+    String? fingerprint,
   }) => TransactionsTableData(
     id: id ?? this.id,
     bank: bank ?? this.bank,
@@ -287,6 +322,7 @@ class TransactionsTableData extends DataClass
     category: category ?? this.category,
     rawText: rawText ?? this.rawText,
     time: time ?? this.time,
+    fingerprint: fingerprint ?? this.fingerprint,
   );
   TransactionsTableData copyWithCompanion(TransactionsTableCompanion data) {
     return TransactionsTableData(
@@ -297,6 +333,9 @@ class TransactionsTableData extends DataClass
       category: data.category.present ? data.category.value : this.category,
       rawText: data.rawText.present ? data.rawText.value : this.rawText,
       time: data.time.present ? data.time.value : this.time,
+      fingerprint: data.fingerprint.present
+          ? data.fingerprint.value
+          : this.fingerprint,
     );
   }
 
@@ -309,14 +348,15 @@ class TransactionsTableData extends DataClass
           ..write('type: $type, ')
           ..write('category: $category, ')
           ..write('rawText: $rawText, ')
-          ..write('time: $time')
+          ..write('time: $time, ')
+          ..write('fingerprint: $fingerprint')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode =>
-      Object.hash(id, bank, amount, type, category, rawText, time);
+      Object.hash(id, bank, amount, type, category, rawText, time, fingerprint);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -327,7 +367,8 @@ class TransactionsTableData extends DataClass
           other.type == this.type &&
           other.category == this.category &&
           other.rawText == this.rawText &&
-          other.time == this.time);
+          other.time == this.time &&
+          other.fingerprint == this.fingerprint);
 }
 
 class TransactionsTableCompanion
@@ -339,6 +380,7 @@ class TransactionsTableCompanion
   final Value<String> category;
   final Value<String> rawText;
   final Value<DateTime> time;
+  final Value<String> fingerprint;
   const TransactionsTableCompanion({
     this.id = const Value.absent(),
     this.bank = const Value.absent(),
@@ -347,6 +389,7 @@ class TransactionsTableCompanion
     this.category = const Value.absent(),
     this.rawText = const Value.absent(),
     this.time = const Value.absent(),
+    this.fingerprint = const Value.absent(),
   });
   TransactionsTableCompanion.insert({
     this.id = const Value.absent(),
@@ -356,12 +399,14 @@ class TransactionsTableCompanion
     required String category,
     required String rawText,
     required DateTime time,
+    required String fingerprint,
   }) : bank = Value(bank),
        amount = Value(amount),
        type = Value(type),
        category = Value(category),
        rawText = Value(rawText),
-       time = Value(time);
+       time = Value(time),
+       fingerprint = Value(fingerprint);
   static Insertable<TransactionsTableData> custom({
     Expression<int>? id,
     Expression<String>? bank,
@@ -370,6 +415,7 @@ class TransactionsTableCompanion
     Expression<String>? category,
     Expression<String>? rawText,
     Expression<DateTime>? time,
+    Expression<String>? fingerprint,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -379,6 +425,7 @@ class TransactionsTableCompanion
       if (category != null) 'category': category,
       if (rawText != null) 'raw_text': rawText,
       if (time != null) 'time': time,
+      if (fingerprint != null) 'fingerprint': fingerprint,
     });
   }
 
@@ -390,6 +437,7 @@ class TransactionsTableCompanion
     Value<String>? category,
     Value<String>? rawText,
     Value<DateTime>? time,
+    Value<String>? fingerprint,
   }) {
     return TransactionsTableCompanion(
       id: id ?? this.id,
@@ -399,6 +447,7 @@ class TransactionsTableCompanion
       category: category ?? this.category,
       rawText: rawText ?? this.rawText,
       time: time ?? this.time,
+      fingerprint: fingerprint ?? this.fingerprint,
     );
   }
 
@@ -426,6 +475,9 @@ class TransactionsTableCompanion
     if (time.present) {
       map['time'] = Variable<DateTime>(time.value);
     }
+    if (fingerprint.present) {
+      map['fingerprint'] = Variable<String>(fingerprint.value);
+    }
     return map;
   }
 
@@ -438,7 +490,8 @@ class TransactionsTableCompanion
           ..write('type: $type, ')
           ..write('category: $category, ')
           ..write('rawText: $rawText, ')
-          ..write('time: $time')
+          ..write('time: $time, ')
+          ..write('fingerprint: $fingerprint')
           ..write(')'))
         .toString();
   }
@@ -1350,6 +1403,7 @@ typedef $$TransactionsTableTableCreateCompanionBuilder =
       required String category,
       required String rawText,
       required DateTime time,
+      required String fingerprint,
     });
 typedef $$TransactionsTableTableUpdateCompanionBuilder =
     TransactionsTableCompanion Function({
@@ -1360,6 +1414,7 @@ typedef $$TransactionsTableTableUpdateCompanionBuilder =
       Value<String> category,
       Value<String> rawText,
       Value<DateTime> time,
+      Value<String> fingerprint,
     });
 
 class $$TransactionsTableTableFilterComposer
@@ -1403,6 +1458,11 @@ class $$TransactionsTableTableFilterComposer
 
   ColumnFilters<DateTime> get time => $composableBuilder(
     column: $table.time,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fingerprint => $composableBuilder(
+    column: $table.fingerprint,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -1450,6 +1510,11 @@ class $$TransactionsTableTableOrderingComposer
     column: $table.time,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get fingerprint => $composableBuilder(
+    column: $table.fingerprint,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$TransactionsTableTableAnnotationComposer
@@ -1481,6 +1546,11 @@ class $$TransactionsTableTableAnnotationComposer
 
   GeneratedColumn<DateTime> get time =>
       $composableBuilder(column: $table.time, builder: (column) => column);
+
+  GeneratedColumn<String> get fingerprint => $composableBuilder(
+    column: $table.fingerprint,
+    builder: (column) => column,
+  );
 }
 
 class $$TransactionsTableTableTableManager
@@ -1530,6 +1600,7 @@ class $$TransactionsTableTableTableManager
                 Value<String> category = const Value.absent(),
                 Value<String> rawText = const Value.absent(),
                 Value<DateTime> time = const Value.absent(),
+                Value<String> fingerprint = const Value.absent(),
               }) => TransactionsTableCompanion(
                 id: id,
                 bank: bank,
@@ -1538,6 +1609,7 @@ class $$TransactionsTableTableTableManager
                 category: category,
                 rawText: rawText,
                 time: time,
+                fingerprint: fingerprint,
               ),
           createCompanionCallback:
               ({
@@ -1548,6 +1620,7 @@ class $$TransactionsTableTableTableManager
                 required String category,
                 required String rawText,
                 required DateTime time,
+                required String fingerprint,
               }) => TransactionsTableCompanion.insert(
                 id: id,
                 bank: bank,
@@ -1556,6 +1629,7 @@ class $$TransactionsTableTableTableManager
                 category: category,
                 rawText: rawText,
                 time: time,
+                fingerprint: fingerprint,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

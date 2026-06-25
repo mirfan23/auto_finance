@@ -1,4 +1,4 @@
-import 'package:auto_finance/data/repositories/pending_transaction_dao.dart';
+import 'package:auto_finance/data/dao/pending_transaction_dao.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:auto_finance/data/local/database/app_database.dart';
 import 'package:auto_finance/domain/entities/transaction.dart';

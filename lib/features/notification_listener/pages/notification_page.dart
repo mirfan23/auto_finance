@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:android_intent_plus/android_intent.dart';
+import 'package:auto_finance/features/notification_listener/providers/notification_stream_provider.dart';
+import 'package:auto_finance/features/notification_listener/providers/transaction_action_provider.dart';
 import 'package:auto_finance/features/notification_listener/providers/transaction_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -83,11 +85,58 @@ class NotificationPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text("Transactions")),
-      floatingActionButton: ElevatedButton(onPressed: openNotifAccess, child: Text("Aktifkan Akses Notifikasi")),
+      floatingActionButton: SizedBox(
+        height: 150,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            ElevatedButton(
+              onPressed: () async {
+                final action = ref.read(transactionActionProvider);
+
+                await action.handle({
+                  "packageName": "com.bca.mybca.omni.android",
+                  "title": "Financial Diary",
+                  "text": "You received IDR 50,000.00 from MUHA**AD **FAN *AD at Account Transfer category.",
+                  "timestamp": DateTime.now().millisecondsSinceEpoch,
+                });
+
+                await action.handle({
+                  "packageName": "com.jago.digitalBanking",
+                  "title": "Jago",
+                  "text":
+                      "Kamu telah melakukan transfer Rp50.000 ke M IRFAN FADHILA. Butuh bantuan? Silakan Tanya Jago di 1500 746.",
+                  "timestamp": DateTime.now().millisecondsSinceEpoch + 1,
+                });
+              },
+              child: const Text("Simulate Transfer"),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final dao = ref.read(transactionDaoProvider);
+
+                final data = await dao.getAll();
+
+                debugPrint("TOTAL TRANSACTIONS = ${data.length}");
+
+                for (final e in data) {
+                  debugPrint(
+                    "${e.bank} | "
+                    "${e.amount} | "
+                    "${e.category}",
+                  );
+                }
+              },
+              child: const Text("Print Transactions"),
+            ),
+            ElevatedButton(onPressed: openNotifAccess, child: Text("Aktifkan Akses Notifikasi")),
+          ],
+        ),
+      ),
       body: data.when(
         data: (list) {
           final total = list.fold<int>(0, (sum, e) => sum + e.amount);
-
+          debugPrint("UI TRANSACTION COUNT = ${list.length}");
           return CustomScrollView(
             slivers: [
               SliverToBoxAdapter(

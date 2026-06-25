@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../../entities/transaction.dart';
 import 'parser_bca.dart';
 import 'parser_gopay.dart';
@@ -13,21 +15,29 @@ class ParserDispatcher {
   Transaction? parse(Map data) {
     final packageName = (data["packageName"] ?? "").toString().toLowerCase();
 
+    debugPrint("PARSER => $packageName");
+
     if (packageName.contains("bca")) {
+      debugPrint("MATCH BCA");
       return _bcaParser.parse(data);
     }
 
     if (packageName.contains("jago")) {
+      debugPrint("MATCH JAGO");
       return _jagoParser.parse(data);
     }
 
     if (packageName.contains("gojek")) {
+      debugPrint("MATCH GOPAY");
       return _gopayParser.parse(data);
     }
 
     if (packageName.contains("shopee")) {
+      debugPrint("MATCH SHOPEEPAY");
       return _shopeepayParser.parse(data);
     }
+
+    debugPrint("NO PARSER FOUND");
 
     return null;
   }

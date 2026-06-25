@@ -12,10 +12,12 @@ class JagoParser extends BaseParser {
 
     final amount = int.parse(match.group(1)!.replaceAll(".", ""));
 
+    final type = classifier(text);
+
     return Transaction(
       bank: "Jago",
       amount: amount,
-      type: "expense",
+      type: type.name,
       category: categorizer(text),
       rawText: text,
       time: DateTime.now(),

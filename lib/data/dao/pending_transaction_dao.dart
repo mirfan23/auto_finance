@@ -40,14 +40,6 @@ class PendingTransactionDao {
     await (db.delete(db.pendingTransactionsTable)..where((t) => t.id.isIn(ids))).go();
   }
 
-  // Future<bool> exists(String bank, int amount, String type) async {
-  //   final rows = await (db.select(
-  //     db.pendingTransactionsTable,
-  //   )..where((t) => t.bank.equals(bank) & t.amount.equals(amount) & t.type.equals(type))).get();
-
-  //   return rows.isNotEmpty;
-  // }
-
   Future<bool> exists(String bank, int amount, String type, String rawText) async {
     final limit = DateTime.now().subtract(const Duration(seconds: 5));
 

@@ -12,7 +12,9 @@ class TransferPairingUseCase {
 
       final timeDiff = item.time.difference(incoming.time).inSeconds.abs();
 
-      if (sameAmount && differentBank && timeDiff <= 60) {
+      final oppositeType = item.type != incoming.type;
+
+      if (sameAmount && differentBank && oppositeType && timeDiff <= 60) {
         match = item;
         break;
       }
@@ -20,9 +22,10 @@ class TransferPairingUseCase {
 
     if (match == null) return null;
 
-    return TransferPair(
-      debit: match.type == "debit" ? match : incoming,
-      credit: match.type == "credit" ? match : incoming,
-    );
+    final debit = incoming.type == "expense" ? incoming : match;
+
+    final credit = incoming.type == "income" ? incoming : match;
+
+    return TransferPair(debit: debit, credit: credit);
   }
 }

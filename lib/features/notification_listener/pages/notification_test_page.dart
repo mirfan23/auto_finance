@@ -15,7 +15,7 @@ class NotificationDebugPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text("Debug Notifications")),
       floatingActionButtonLocation: FloatingActionButtonLocation.endContained,
-      floatingActionButton: Container(
+      floatingActionButton: SizedBox(
         height: 200,
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -34,6 +34,11 @@ class NotificationDebugPage extends ConsumerWidget {
                 final db = ref.read(dbProvider);
                 final data = await db.select(db.transactionsTable).get();
                 final data2 = await db.select(db.notificationLogsTable).get();
+                final result = await db.customSelect("PRAGMA table_info(transactions_table)").get();
+
+                for (final row in result) {
+                  debugPrint(row.data.toString());
+                }
                 for (final e in data) {
                   debugPrint("DB Transaction => ${e.bank} | ${e.amount}");
                 }

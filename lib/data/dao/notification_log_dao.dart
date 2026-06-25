@@ -17,63 +17,6 @@ class NotificationLogDao {
     return result.isNotEmpty;
   }
 
-  // Future<void> insert(Map<String, dynamic> data) async {
-  //   final fingerprint = md5
-  //       .convert(
-  //         utf8.encode(
-  //           '${data["packageName"]}'
-  //           '${data["title"]}'
-  //           '${data["text"]}'
-  //           '${data["timestamp"]}',
-  //         ),
-  //       )
-  //       .toString();
-
-  //   if (await exists(fingerprint)) {
-  //     return;
-  //   }
-  //   return db
-  //       .into(db.notificationLogsTable)
-  //       .insert(
-  //         NotificationLogsTableCompanion.insert(
-  //           packageName: data["packageName"] ?? "",
-  //           title: data["title"] ?? "",
-  //           rawText: data["text"] ?? "",
-  //           timestamp: data["timestamp"]?.toString() ?? "",
-  //           fingerprint: fingerprint,
-  //         ),
-  //       );
-  // }
-
-  // Future<void> insert(Map<String, dynamic> data) async {
-  //   final fingerprint = md5
-  //       .convert(
-  //         utf8.encode(
-  //           '${data["packageName"]}'
-  //           '${data["title"]}'
-  //           '${data["text"]}'
-  //           '${data["timestamp"]}',
-  //         ),
-  //       )
-  //       .toString();
-
-  //   if (await exists(fingerprint)) {
-  //     return;
-  //   }
-
-  //   await db
-  //       .into(db.notificationLogsTable)
-  //       .insert(
-  //         NotificationLogsTableCompanion.insert(
-  //           packageName: data["packageName"] ?? "",
-  //           title: data["title"] ?? "",
-  //           rawText: data["text"] ?? "",
-  //           timestamp: data["timestamp"]?.toString() ?? "",
-  //           fingerprint: fingerprint,
-  //         ),
-  //       );
-  // }
-
   Future<void> insert(Map<String, dynamic> data) async {
     debugPrint(
       "DRIFT INSERT => "

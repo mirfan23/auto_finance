@@ -1,7 +1,11 @@
-import 'package:auto_finance/data/repositories/pending_transaction_dao.dart';
+import 'dart:convert';
+
+import 'package:auto_finance/core/utils/transaction_fingerprint_helper.dart';
+import 'package:auto_finance/data/dao/pending_transaction_dao.dart';
 import 'package:auto_finance/domain/entities/pending_transaction.dart';
 import 'package:auto_finance/domain/usecases/transfer_pairing_usecase.dart';
 import 'package:auto_finance/features/notification_listener/providers/pairing_provider.dart';
+import 'package:crypto/crypto.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:auto_finance/data/local/database/app_database.dart';
 import 'package:auto_finance/domain/usecases/transaction_pipeline_usecase.dart';
@@ -78,7 +82,12 @@ class TransactionAction {
 
     final debit = pair.debit!;
     final credit = pair.credit!;
-
+    final fingerprint = TransactionFingerprint.generate(
+      bank: "${debit.bank}→${credit.bank}",
+      amount: debit.amount,
+      type: "transfer",
+      rawText: "${debit.rawText}${credit.rawText}",
+    );
     // hapus dari pending table
     await pendingDao.deleteMany([debit.id, credit.id]);
 
@@ -93,6 +102,7 @@ class TransactionAction {
             category: "transfer",
             rawText: "${debit.rawText}\n${credit.rawText}",
             time: credit.time,
+            fingerprint: fingerprint,
           ),
         );
 

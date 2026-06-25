@@ -1,80 +1,8 @@
-// package com.example.auto_finance
-
-// import android.util.Log
-// import io.flutter.embedding.android.FlutterActivity
-// import io.flutter.embedding.engine.FlutterEngine
-// import io.flutter.plugin.common.EventChannel
-// import io.flutter.plugin.common.MethodChannel
-
-// class MainActivity : FlutterActivity() {
-
-//     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
-//         super.configureFlutterEngine(flutterEngine)
-
-//         EventChannel(flutterEngine.dartExecutor.binaryMessenger, "notif_stream")
-//                 .setStreamHandler(
-//                         object : EventChannel.StreamHandler {
-
-//                             override fun onListen(
-//                                     arguments: Any?,
-//                                     events: EventChannel.EventSink?
-//                             ) {
-
-//                                 Log.d("NOTIF_TEST", "FLUTTER LISTEN")
-
-//                                 NotificationListener.eventSink = events
-//                             }
-
-//                             override fun onCancel(arguments: Any?) {
-
-//                                 Log.d("NOTIF_TEST", "FLUTTER CANCEL")
-
-//                                 NotificationListener.eventSink = null
-//                             }
-//                         }
-//                 )
-//         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "notification_db")
-//                 .setMethodCallHandler { call, result ->
-//                     when (call.method) {
-//                         "getPendingNotifications" -> {
-
-//                             Thread {
-//                                         val db = DbProvider.get(applicationContext)
-
-//                                         val list = db.notificationDao().getPending()
-
-//                                         val ids = list.map { it.id }
-
-//                                         if (ids.isNotEmpty()) {
-//                                             db.notificationDao().markProcessed(ids)
-//                                         }
-
-//                                         val output =
-//                                                 list.map {
-//                                                     hashMapOf(
-//                                                             "id" to it.id,
-//                                                             "packageName" to it.packageName,
-//                                                             "title" to it.title,
-//                                                             "text" to it.text,
-//                                                             "timestamp" to it.timestamp,
-//                                                             "processed" to it.processed,
-//                                                     )
-//                                                 }
-
-//                                         runOnUiThread { result.success(output) }
-//                                     }
-//                                     .start()
-//                         }
-//                         else -> result.notImplemented()
-//                     }
-//                 }
-//     }
-// }
-
-
 package com.example.auto_finance
 
 import android.util.Log
+import android.provider.Settings
+import android.content.ComponentName
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
@@ -82,8 +10,32 @@ import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
 
+    private val CHANNEL = "auto_finance/notification"
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            CHANNEL
+        ).setMethodCallHandler { call, result ->
+
+            if (call.method == "isNotificationListenerEnabled") {
+
+                val packageName = applicationContext.packageName
+
+                val flat = Settings.Secure.getString(
+                    contentResolver,
+                    "enabled_notification_listeners"
+                )
+
+                val enabled = flat?.contains(packageName) == true
+
+                result.success(enabled)
+            } else {
+                result.notImplemented()
+            }
+        }
 
         EventChannel(
             flutterEngine.dartExecutor.binaryMessenger,
