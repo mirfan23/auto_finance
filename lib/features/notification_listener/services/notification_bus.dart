@@ -11,14 +11,6 @@ class NotificationBus {
 
   static StreamSubscription? _sub;
 
-  // static void start() {
-  //   _sub?.cancel();
-
-  //   _sub = NotificationService.stream.listen((event) {
-  //     _controller.add(event);
-  //   });
-  // }
-
   static void start(WidgetRef ref) {
     _sub?.cancel();
 

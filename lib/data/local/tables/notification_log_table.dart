@@ -7,4 +7,6 @@ class NotificationLogsTable extends Table {
   TextColumn get title => text()();
   TextColumn get rawText => text()();
   TextColumn get timestamp => text()();
+
+  TextColumn get fingerprint => text().unique()();
 }

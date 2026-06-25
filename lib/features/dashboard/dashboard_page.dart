@@ -1,6 +1,7 @@
 import 'package:auto_finance/features/dashboard/providers/dashboard_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fx_helper/formatter_helper.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -16,11 +17,17 @@ class DashboardPage extends ConsumerWidget {
         child: Column(
           children: [
             Card(
-              child: ListTile(title: const Text("Total Pengeluaran"), subtitle: Text("Rp ${summary.totalExpense}")),
+              child: ListTile(
+                title: const Text("Total Pengeluaran"),
+                subtitle: Text(FormatterHelper.formatRupiah(summary.totalExpense)),
+              ),
             ),
 
             Card(
-              child: ListTile(title: const Text("Total Pemasukan"), subtitle: Text("Rp ${summary.totalIncome}")),
+              child: ListTile(
+                title: const Text("Total Pemasukan"),
+                subtitle: Text(FormatterHelper.formatRupiah(summary.totalIncome)),
+              ),
             ),
 
             const SizedBox(height: 10),
@@ -32,7 +39,7 @@ class DashboardPage extends ConsumerWidget {
             Expanded(
               child: ListView(
                 children: summary.byCategory.entries.map((e) {
-                  return ListTile(title: Text(e.key), trailing: Text("Rp ${e.value}"));
+                  return ListTile(title: Text(e.key), trailing: Text(FormatterHelper.formatRupiah(e.value)));
                 }).toList(),
               ),
             ),

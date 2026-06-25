@@ -1,4 +1,5 @@
 import 'package:auto_finance/data/local/tables/notification_log_table.dart';
+import 'package:auto_finance/data/local/tables/pending_transaction_table.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
@@ -17,11 +18,11 @@ class TransactionsTable extends Table {
   DateTimeColumn get time => dateTime()();
 }
 
-@DriftDatabase(tables: [TransactionsTable, NotificationLogsTable])
+@DriftDatabase(tables: [TransactionsTable, NotificationLogsTable, PendingTransactionsTable])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(

@@ -505,6 +505,18 @@ class $NotificationLogsTableTable extends NotificationLogsTable
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _fingerprintMeta = const VerificationMeta(
+    'fingerprint',
+  );
+  @override
+  late final GeneratedColumn<String> fingerprint = GeneratedColumn<String>(
+    'fingerprint',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -512,6 +524,7 @@ class $NotificationLogsTableTable extends NotificationLogsTable
     title,
     rawText,
     timestamp,
+    fingerprint,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -563,6 +576,17 @@ class $NotificationLogsTableTable extends NotificationLogsTable
     } else if (isInserting) {
       context.missing(_timestampMeta);
     }
+    if (data.containsKey('fingerprint')) {
+      context.handle(
+        _fingerprintMeta,
+        fingerprint.isAcceptableOrUnknown(
+          data['fingerprint']!,
+          _fingerprintMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_fingerprintMeta);
+    }
     return context;
   }
 
@@ -595,6 +619,10 @@ class $NotificationLogsTableTable extends NotificationLogsTable
         DriftSqlType.string,
         data['${effectivePrefix}timestamp'],
       )!,
+      fingerprint: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}fingerprint'],
+      )!,
     );
   }
 
@@ -611,12 +639,14 @@ class NotificationLogsTableData extends DataClass
   final String title;
   final String rawText;
   final String timestamp;
+  final String fingerprint;
   const NotificationLogsTableData({
     required this.id,
     required this.packageName,
     required this.title,
     required this.rawText,
     required this.timestamp,
+    required this.fingerprint,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -626,6 +656,7 @@ class NotificationLogsTableData extends DataClass
     map['title'] = Variable<String>(title);
     map['raw_text'] = Variable<String>(rawText);
     map['timestamp'] = Variable<String>(timestamp);
+    map['fingerprint'] = Variable<String>(fingerprint);
     return map;
   }
 
@@ -636,6 +667,7 @@ class NotificationLogsTableData extends DataClass
       title: Value(title),
       rawText: Value(rawText),
       timestamp: Value(timestamp),
+      fingerprint: Value(fingerprint),
     );
   }
 
@@ -650,6 +682,7 @@ class NotificationLogsTableData extends DataClass
       title: serializer.fromJson<String>(json['title']),
       rawText: serializer.fromJson<String>(json['rawText']),
       timestamp: serializer.fromJson<String>(json['timestamp']),
+      fingerprint: serializer.fromJson<String>(json['fingerprint']),
     );
   }
   @override
@@ -661,6 +694,7 @@ class NotificationLogsTableData extends DataClass
       'title': serializer.toJson<String>(title),
       'rawText': serializer.toJson<String>(rawText),
       'timestamp': serializer.toJson<String>(timestamp),
+      'fingerprint': serializer.toJson<String>(fingerprint),
     };
   }
 
@@ -670,12 +704,14 @@ class NotificationLogsTableData extends DataClass
     String? title,
     String? rawText,
     String? timestamp,
+    String? fingerprint,
   }) => NotificationLogsTableData(
     id: id ?? this.id,
     packageName: packageName ?? this.packageName,
     title: title ?? this.title,
     rawText: rawText ?? this.rawText,
     timestamp: timestamp ?? this.timestamp,
+    fingerprint: fingerprint ?? this.fingerprint,
   );
   NotificationLogsTableData copyWithCompanion(
     NotificationLogsTableCompanion data,
@@ -688,6 +724,9 @@ class NotificationLogsTableData extends DataClass
       title: data.title.present ? data.title.value : this.title,
       rawText: data.rawText.present ? data.rawText.value : this.rawText,
       timestamp: data.timestamp.present ? data.timestamp.value : this.timestamp,
+      fingerprint: data.fingerprint.present
+          ? data.fingerprint.value
+          : this.fingerprint,
     );
   }
 
@@ -698,13 +737,15 @@ class NotificationLogsTableData extends DataClass
           ..write('packageName: $packageName, ')
           ..write('title: $title, ')
           ..write('rawText: $rawText, ')
-          ..write('timestamp: $timestamp')
+          ..write('timestamp: $timestamp, ')
+          ..write('fingerprint: $fingerprint')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, packageName, title, rawText, timestamp);
+  int get hashCode =>
+      Object.hash(id, packageName, title, rawText, timestamp, fingerprint);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -713,7 +754,8 @@ class NotificationLogsTableData extends DataClass
           other.packageName == this.packageName &&
           other.title == this.title &&
           other.rawText == this.rawText &&
-          other.timestamp == this.timestamp);
+          other.timestamp == this.timestamp &&
+          other.fingerprint == this.fingerprint);
 }
 
 class NotificationLogsTableCompanion
@@ -723,12 +765,14 @@ class NotificationLogsTableCompanion
   final Value<String> title;
   final Value<String> rawText;
   final Value<String> timestamp;
+  final Value<String> fingerprint;
   const NotificationLogsTableCompanion({
     this.id = const Value.absent(),
     this.packageName = const Value.absent(),
     this.title = const Value.absent(),
     this.rawText = const Value.absent(),
     this.timestamp = const Value.absent(),
+    this.fingerprint = const Value.absent(),
   });
   NotificationLogsTableCompanion.insert({
     this.id = const Value.absent(),
@@ -736,16 +780,19 @@ class NotificationLogsTableCompanion
     required String title,
     required String rawText,
     required String timestamp,
+    required String fingerprint,
   }) : packageName = Value(packageName),
        title = Value(title),
        rawText = Value(rawText),
-       timestamp = Value(timestamp);
+       timestamp = Value(timestamp),
+       fingerprint = Value(fingerprint);
   static Insertable<NotificationLogsTableData> custom({
     Expression<int>? id,
     Expression<String>? packageName,
     Expression<String>? title,
     Expression<String>? rawText,
     Expression<String>? timestamp,
+    Expression<String>? fingerprint,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -753,6 +800,7 @@ class NotificationLogsTableCompanion
       if (title != null) 'title': title,
       if (rawText != null) 'raw_text': rawText,
       if (timestamp != null) 'timestamp': timestamp,
+      if (fingerprint != null) 'fingerprint': fingerprint,
     });
   }
 
@@ -762,6 +810,7 @@ class NotificationLogsTableCompanion
     Value<String>? title,
     Value<String>? rawText,
     Value<String>? timestamp,
+    Value<String>? fingerprint,
   }) {
     return NotificationLogsTableCompanion(
       id: id ?? this.id,
@@ -769,6 +818,7 @@ class NotificationLogsTableCompanion
       title: title ?? this.title,
       rawText: rawText ?? this.rawText,
       timestamp: timestamp ?? this.timestamp,
+      fingerprint: fingerprint ?? this.fingerprint,
     );
   }
 
@@ -790,6 +840,9 @@ class NotificationLogsTableCompanion
     if (timestamp.present) {
       map['timestamp'] = Variable<String>(timestamp.value);
     }
+    if (fingerprint.present) {
+      map['fingerprint'] = Variable<String>(fingerprint.value);
+    }
     return map;
   }
 
@@ -800,7 +853,469 @@ class NotificationLogsTableCompanion
           ..write('packageName: $packageName, ')
           ..write('title: $title, ')
           ..write('rawText: $rawText, ')
-          ..write('timestamp: $timestamp')
+          ..write('timestamp: $timestamp, ')
+          ..write('fingerprint: $fingerprint')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PendingTransactionsTableTable extends PendingTransactionsTable
+    with
+        TableInfo<
+          $PendingTransactionsTableTable,
+          PendingTransactionsTableData
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PendingTransactionsTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bankMeta = const VerificationMeta('bank');
+  @override
+  late final GeneratedColumn<String> bank = GeneratedColumn<String>(
+    'bank',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _amountMeta = const VerificationMeta('amount');
+  @override
+  late final GeneratedColumn<int> amount = GeneratedColumn<int>(
+    'amount',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _rawTextMeta = const VerificationMeta(
+    'rawText',
+  );
+  @override
+  late final GeneratedColumn<String> rawText = GeneratedColumn<String>(
+    'raw_text',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _timeMeta = const VerificationMeta('time');
+  @override
+  late final GeneratedColumn<DateTime> time = GeneratedColumn<DateTime>(
+    'time',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pendingMeta = const VerificationMeta(
+    'pending',
+  );
+  @override
+  late final GeneratedColumn<bool> pending = GeneratedColumn<bool>(
+    'pending',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("pending" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    bank,
+    amount,
+    type,
+    rawText,
+    time,
+    pending,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'pending_transactions_table';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PendingTransactionsTableData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('bank')) {
+      context.handle(
+        _bankMeta,
+        bank.isAcceptableOrUnknown(data['bank']!, _bankMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bankMeta);
+    }
+    if (data.containsKey('amount')) {
+      context.handle(
+        _amountMeta,
+        amount.isAcceptableOrUnknown(data['amount']!, _amountMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_amountMeta);
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_typeMeta);
+    }
+    if (data.containsKey('raw_text')) {
+      context.handle(
+        _rawTextMeta,
+        rawText.isAcceptableOrUnknown(data['raw_text']!, _rawTextMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_rawTextMeta);
+    }
+    if (data.containsKey('time')) {
+      context.handle(
+        _timeMeta,
+        time.isAcceptableOrUnknown(data['time']!, _timeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_timeMeta);
+    }
+    if (data.containsKey('pending')) {
+      context.handle(
+        _pendingMeta,
+        pending.isAcceptableOrUnknown(data['pending']!, _pendingMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PendingTransactionsTableData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PendingTransactionsTableData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      bank: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}bank'],
+      )!,
+      amount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}amount'],
+      )!,
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type'],
+      )!,
+      rawText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}raw_text'],
+      )!,
+      time: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}time'],
+      )!,
+      pending: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}pending'],
+      )!,
+    );
+  }
+
+  @override
+  $PendingTransactionsTableTable createAlias(String alias) {
+    return $PendingTransactionsTableTable(attachedDatabase, alias);
+  }
+}
+
+class PendingTransactionsTableData extends DataClass
+    implements Insertable<PendingTransactionsTableData> {
+  final String id;
+  final String bank;
+  final int amount;
+  final String type;
+  final String rawText;
+  final DateTime time;
+  final bool pending;
+  const PendingTransactionsTableData({
+    required this.id,
+    required this.bank,
+    required this.amount,
+    required this.type,
+    required this.rawText,
+    required this.time,
+    required this.pending,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['bank'] = Variable<String>(bank);
+    map['amount'] = Variable<int>(amount);
+    map['type'] = Variable<String>(type);
+    map['raw_text'] = Variable<String>(rawText);
+    map['time'] = Variable<DateTime>(time);
+    map['pending'] = Variable<bool>(pending);
+    return map;
+  }
+
+  PendingTransactionsTableCompanion toCompanion(bool nullToAbsent) {
+    return PendingTransactionsTableCompanion(
+      id: Value(id),
+      bank: Value(bank),
+      amount: Value(amount),
+      type: Value(type),
+      rawText: Value(rawText),
+      time: Value(time),
+      pending: Value(pending),
+    );
+  }
+
+  factory PendingTransactionsTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PendingTransactionsTableData(
+      id: serializer.fromJson<String>(json['id']),
+      bank: serializer.fromJson<String>(json['bank']),
+      amount: serializer.fromJson<int>(json['amount']),
+      type: serializer.fromJson<String>(json['type']),
+      rawText: serializer.fromJson<String>(json['rawText']),
+      time: serializer.fromJson<DateTime>(json['time']),
+      pending: serializer.fromJson<bool>(json['pending']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'bank': serializer.toJson<String>(bank),
+      'amount': serializer.toJson<int>(amount),
+      'type': serializer.toJson<String>(type),
+      'rawText': serializer.toJson<String>(rawText),
+      'time': serializer.toJson<DateTime>(time),
+      'pending': serializer.toJson<bool>(pending),
+    };
+  }
+
+  PendingTransactionsTableData copyWith({
+    String? id,
+    String? bank,
+    int? amount,
+    String? type,
+    String? rawText,
+    DateTime? time,
+    bool? pending,
+  }) => PendingTransactionsTableData(
+    id: id ?? this.id,
+    bank: bank ?? this.bank,
+    amount: amount ?? this.amount,
+    type: type ?? this.type,
+    rawText: rawText ?? this.rawText,
+    time: time ?? this.time,
+    pending: pending ?? this.pending,
+  );
+  PendingTransactionsTableData copyWithCompanion(
+    PendingTransactionsTableCompanion data,
+  ) {
+    return PendingTransactionsTableData(
+      id: data.id.present ? data.id.value : this.id,
+      bank: data.bank.present ? data.bank.value : this.bank,
+      amount: data.amount.present ? data.amount.value : this.amount,
+      type: data.type.present ? data.type.value : this.type,
+      rawText: data.rawText.present ? data.rawText.value : this.rawText,
+      time: data.time.present ? data.time.value : this.time,
+      pending: data.pending.present ? data.pending.value : this.pending,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PendingTransactionsTableData(')
+          ..write('id: $id, ')
+          ..write('bank: $bank, ')
+          ..write('amount: $amount, ')
+          ..write('type: $type, ')
+          ..write('rawText: $rawText, ')
+          ..write('time: $time, ')
+          ..write('pending: $pending')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, bank, amount, type, rawText, time, pending);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PendingTransactionsTableData &&
+          other.id == this.id &&
+          other.bank == this.bank &&
+          other.amount == this.amount &&
+          other.type == this.type &&
+          other.rawText == this.rawText &&
+          other.time == this.time &&
+          other.pending == this.pending);
+}
+
+class PendingTransactionsTableCompanion
+    extends UpdateCompanion<PendingTransactionsTableData> {
+  final Value<String> id;
+  final Value<String> bank;
+  final Value<int> amount;
+  final Value<String> type;
+  final Value<String> rawText;
+  final Value<DateTime> time;
+  final Value<bool> pending;
+  final Value<int> rowid;
+  const PendingTransactionsTableCompanion({
+    this.id = const Value.absent(),
+    this.bank = const Value.absent(),
+    this.amount = const Value.absent(),
+    this.type = const Value.absent(),
+    this.rawText = const Value.absent(),
+    this.time = const Value.absent(),
+    this.pending = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PendingTransactionsTableCompanion.insert({
+    required String id,
+    required String bank,
+    required int amount,
+    required String type,
+    required String rawText,
+    required DateTime time,
+    this.pending = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       bank = Value(bank),
+       amount = Value(amount),
+       type = Value(type),
+       rawText = Value(rawText),
+       time = Value(time);
+  static Insertable<PendingTransactionsTableData> custom({
+    Expression<String>? id,
+    Expression<String>? bank,
+    Expression<int>? amount,
+    Expression<String>? type,
+    Expression<String>? rawText,
+    Expression<DateTime>? time,
+    Expression<bool>? pending,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (bank != null) 'bank': bank,
+      if (amount != null) 'amount': amount,
+      if (type != null) 'type': type,
+      if (rawText != null) 'raw_text': rawText,
+      if (time != null) 'time': time,
+      if (pending != null) 'pending': pending,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PendingTransactionsTableCompanion copyWith({
+    Value<String>? id,
+    Value<String>? bank,
+    Value<int>? amount,
+    Value<String>? type,
+    Value<String>? rawText,
+    Value<DateTime>? time,
+    Value<bool>? pending,
+    Value<int>? rowid,
+  }) {
+    return PendingTransactionsTableCompanion(
+      id: id ?? this.id,
+      bank: bank ?? this.bank,
+      amount: amount ?? this.amount,
+      type: type ?? this.type,
+      rawText: rawText ?? this.rawText,
+      time: time ?? this.time,
+      pending: pending ?? this.pending,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (bank.present) {
+      map['bank'] = Variable<String>(bank.value);
+    }
+    if (amount.present) {
+      map['amount'] = Variable<int>(amount.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (rawText.present) {
+      map['raw_text'] = Variable<String>(rawText.value);
+    }
+    if (time.present) {
+      map['time'] = Variable<DateTime>(time.value);
+    }
+    if (pending.present) {
+      map['pending'] = Variable<bool>(pending.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PendingTransactionsTableCompanion(')
+          ..write('id: $id, ')
+          ..write('bank: $bank, ')
+          ..write('amount: $amount, ')
+          ..write('type: $type, ')
+          ..write('rawText: $rawText, ')
+          ..write('time: $time, ')
+          ..write('pending: $pending, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -813,6 +1328,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $TransactionsTableTable(this);
   late final $NotificationLogsTableTable notificationLogsTable =
       $NotificationLogsTableTable(this);
+  late final $PendingTransactionsTableTable pendingTransactionsTable =
+      $PendingTransactionsTableTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -820,6 +1337,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     transactionsTable,
     notificationLogsTable,
+    pendingTransactionsTable,
   ];
 }
 
@@ -1075,6 +1593,7 @@ typedef $$NotificationLogsTableTableCreateCompanionBuilder =
       required String title,
       required String rawText,
       required String timestamp,
+      required String fingerprint,
     });
 typedef $$NotificationLogsTableTableUpdateCompanionBuilder =
     NotificationLogsTableCompanion Function({
@@ -1083,6 +1602,7 @@ typedef $$NotificationLogsTableTableUpdateCompanionBuilder =
       Value<String> title,
       Value<String> rawText,
       Value<String> timestamp,
+      Value<String> fingerprint,
     });
 
 class $$NotificationLogsTableTableFilterComposer
@@ -1116,6 +1636,11 @@ class $$NotificationLogsTableTableFilterComposer
 
   ColumnFilters<String> get timestamp => $composableBuilder(
     column: $table.timestamp,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fingerprint => $composableBuilder(
+    column: $table.fingerprint,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -1153,6 +1678,11 @@ class $$NotificationLogsTableTableOrderingComposer
     column: $table.timestamp,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get fingerprint => $composableBuilder(
+    column: $table.fingerprint,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$NotificationLogsTableTableAnnotationComposer
@@ -1180,6 +1710,11 @@ class $$NotificationLogsTableTableAnnotationComposer
 
   GeneratedColumn<String> get timestamp =>
       $composableBuilder(column: $table.timestamp, builder: (column) => column);
+
+  GeneratedColumn<String> get fingerprint => $composableBuilder(
+    column: $table.fingerprint,
+    builder: (column) => column,
+  );
 }
 
 class $$NotificationLogsTableTableTableManager
@@ -1233,12 +1768,14 @@ class $$NotificationLogsTableTableTableManager
                 Value<String> title = const Value.absent(),
                 Value<String> rawText = const Value.absent(),
                 Value<String> timestamp = const Value.absent(),
+                Value<String> fingerprint = const Value.absent(),
               }) => NotificationLogsTableCompanion(
                 id: id,
                 packageName: packageName,
                 title: title,
                 rawText: rawText,
                 timestamp: timestamp,
+                fingerprint: fingerprint,
               ),
           createCompanionCallback:
               ({
@@ -1247,12 +1784,14 @@ class $$NotificationLogsTableTableTableManager
                 required String title,
                 required String rawText,
                 required String timestamp,
+                required String fingerprint,
               }) => NotificationLogsTableCompanion.insert(
                 id: id,
                 packageName: packageName,
                 title: title,
                 rawText: rawText,
                 timestamp: timestamp,
+                fingerprint: fingerprint,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -1283,6 +1822,263 @@ typedef $$NotificationLogsTableTableProcessedTableManager =
       NotificationLogsTableData,
       PrefetchHooks Function()
     >;
+typedef $$PendingTransactionsTableTableCreateCompanionBuilder =
+    PendingTransactionsTableCompanion Function({
+      required String id,
+      required String bank,
+      required int amount,
+      required String type,
+      required String rawText,
+      required DateTime time,
+      Value<bool> pending,
+      Value<int> rowid,
+    });
+typedef $$PendingTransactionsTableTableUpdateCompanionBuilder =
+    PendingTransactionsTableCompanion Function({
+      Value<String> id,
+      Value<String> bank,
+      Value<int> amount,
+      Value<String> type,
+      Value<String> rawText,
+      Value<DateTime> time,
+      Value<bool> pending,
+      Value<int> rowid,
+    });
+
+class $$PendingTransactionsTableTableFilterComposer
+    extends Composer<_$AppDatabase, $PendingTransactionsTableTable> {
+  $$PendingTransactionsTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bank => $composableBuilder(
+    column: $table.bank,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get amount => $composableBuilder(
+    column: $table.amount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get rawText => $composableBuilder(
+    column: $table.rawText,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get time => $composableBuilder(
+    column: $table.time,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get pending => $composableBuilder(
+    column: $table.pending,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PendingTransactionsTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $PendingTransactionsTableTable> {
+  $$PendingTransactionsTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bank => $composableBuilder(
+    column: $table.bank,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get amount => $composableBuilder(
+    column: $table.amount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get rawText => $composableBuilder(
+    column: $table.rawText,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get time => $composableBuilder(
+    column: $table.time,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get pending => $composableBuilder(
+    column: $table.pending,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PendingTransactionsTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PendingTransactionsTableTable> {
+  $$PendingTransactionsTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get bank =>
+      $composableBuilder(column: $table.bank, builder: (column) => column);
+
+  GeneratedColumn<int> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get rawText =>
+      $composableBuilder(column: $table.rawText, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get time =>
+      $composableBuilder(column: $table.time, builder: (column) => column);
+
+  GeneratedColumn<bool> get pending =>
+      $composableBuilder(column: $table.pending, builder: (column) => column);
+}
+
+class $$PendingTransactionsTableTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PendingTransactionsTableTable,
+          PendingTransactionsTableData,
+          $$PendingTransactionsTableTableFilterComposer,
+          $$PendingTransactionsTableTableOrderingComposer,
+          $$PendingTransactionsTableTableAnnotationComposer,
+          $$PendingTransactionsTableTableCreateCompanionBuilder,
+          $$PendingTransactionsTableTableUpdateCompanionBuilder,
+          (
+            PendingTransactionsTableData,
+            BaseReferences<
+              _$AppDatabase,
+              $PendingTransactionsTableTable,
+              PendingTransactionsTableData
+            >,
+          ),
+          PendingTransactionsTableData,
+          PrefetchHooks Function()
+        > {
+  $$PendingTransactionsTableTableTableManager(
+    _$AppDatabase db,
+    $PendingTransactionsTableTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PendingTransactionsTableTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$PendingTransactionsTableTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$PendingTransactionsTableTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> bank = const Value.absent(),
+                Value<int> amount = const Value.absent(),
+                Value<String> type = const Value.absent(),
+                Value<String> rawText = const Value.absent(),
+                Value<DateTime> time = const Value.absent(),
+                Value<bool> pending = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PendingTransactionsTableCompanion(
+                id: id,
+                bank: bank,
+                amount: amount,
+                type: type,
+                rawText: rawText,
+                time: time,
+                pending: pending,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String bank,
+                required int amount,
+                required String type,
+                required String rawText,
+                required DateTime time,
+                Value<bool> pending = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PendingTransactionsTableCompanion.insert(
+                id: id,
+                bank: bank,
+                amount: amount,
+                type: type,
+                rawText: rawText,
+                time: time,
+                pending: pending,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PendingTransactionsTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PendingTransactionsTableTable,
+      PendingTransactionsTableData,
+      $$PendingTransactionsTableTableFilterComposer,
+      $$PendingTransactionsTableTableOrderingComposer,
+      $$PendingTransactionsTableTableAnnotationComposer,
+      $$PendingTransactionsTableTableCreateCompanionBuilder,
+      $$PendingTransactionsTableTableUpdateCompanionBuilder,
+      (
+        PendingTransactionsTableData,
+        BaseReferences<
+          _$AppDatabase,
+          $PendingTransactionsTableTable,
+          PendingTransactionsTableData
+        >,
+      ),
+      PendingTransactionsTableData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -1291,4 +2087,9 @@ class $AppDatabaseManager {
       $$TransactionsTableTableTableManager(_db, _db.transactionsTable);
   $$NotificationLogsTableTableTableManager get notificationLogsTable =>
       $$NotificationLogsTableTableTableManager(_db, _db.notificationLogsTable);
+  $$PendingTransactionsTableTableTableManager get pendingTransactionsTable =>
+      $$PendingTransactionsTableTableTableManager(
+        _db,
+        _db.pendingTransactionsTable,
+      );
 }

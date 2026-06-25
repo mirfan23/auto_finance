@@ -1,0 +1,11 @@
+import 'package:auto_finance/features/notification_listener/providers/transaction_action_provider.dart';
+import 'package:auto_finance/features/notification_listener/services/notification_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+void startNotificationListener(WidgetRef ref) {
+  final action = ref.read(transactionActionProvider);
+
+  NotificationService.stream.listen((event) async {
+    await action.handle(event);
+  });
+}
