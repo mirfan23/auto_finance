@@ -1,11 +1,11 @@
 import 'package:auto_finance/app/navigation/bottomnav_provider.dart';
-import 'package:auto_finance/features/notification_listener/pages/debug_transaction_page.dart';
+import 'package:auto_finance/features/debug/debug_transaction_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/dashboard/dashboard_page.dart';
-import '../../features/notification_listener/pages/notification_page.dart';
-import '../../features/notification_listener/pages/notification_test_page.dart';
+import '../../features/debug/notification_page.dart';
+import '../../features/debug/notification_test_page.dart';
 
 class AppShell extends ConsumerWidget {
   const AppShell({super.key});

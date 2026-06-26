@@ -1,4 +1,4 @@
-import '../entities/transaction.dart';
+import '../../entities/transaction.dart';
 
 class DuplicateTransactionUseCase {
   bool call(Transaction transaction, List<Transaction> existingTransactions) {

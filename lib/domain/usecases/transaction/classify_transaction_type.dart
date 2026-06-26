@@ -1,4 +1,4 @@
-import '../entities/transaction_type.dart';
+import '../../entities/transaction_type.dart';
 
 class ClassifyTransactionTypeUseCase {
   TransactionType call(String text) {

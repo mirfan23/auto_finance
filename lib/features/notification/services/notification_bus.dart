@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:auto_finance/features/notification_listener/providers/notification_stream_provider.dart';
+import 'package:auto_finance/features/notification/providers/notification_stream_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'notification_service.dart';

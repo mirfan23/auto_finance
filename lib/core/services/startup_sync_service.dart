@@ -1,4 +1,4 @@
-import 'package:auto_finance/features/notification_listener/providers/notification_sync_provider.dart';
+import 'package:auto_finance/features/notification/providers/notification_sync_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class StartupSyncService {

@@ -1,5 +1,5 @@
 import 'package:auto_finance/core/services/notification_permission_service.dart';
-import 'package:auto_finance/features/notification_listener/pages/notification_page.dart' as NotificationAccessHelper;
+import 'package:auto_finance/features/debug/notification_page.dart' as NotificationAccessHelper;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 

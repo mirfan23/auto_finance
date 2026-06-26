@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../notification_listener/providers/transaction_provider.dart';
+import '../../transaction/providers/transaction_provider.dart';
 
 class DashboardSummary {
   final int totalIncome;

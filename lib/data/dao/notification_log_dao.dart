@@ -48,7 +48,7 @@ class NotificationLogDao {
             packageName: data["packageName"] ?? "",
             title: data["title"] ?? "",
             rawText: data["text"] ?? "",
-            timestamp: data["timestamp"]?.toString() ?? "",
+            timestamp: data["timestamp"],
             fingerprint: fingerprint,
           ),
         );

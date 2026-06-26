@@ -1,15 +1,12 @@
-import 'dart:convert';
-
-import 'package:auto_finance/core/utils/transaction_fingerprint_helper.dart';
+import 'package:auto_finance/core/helpers/transaction_fingerprint_helper.dart';
 import 'package:auto_finance/data/dao/pending_transaction_dao.dart';
 import 'package:auto_finance/domain/entities/pending_transaction.dart';
-import 'package:auto_finance/domain/usecases/transfer_pairing_usecase.dart';
-import 'package:auto_finance/features/notification_listener/providers/pairing_provider.dart';
-import 'package:crypto/crypto.dart';
+import 'package:auto_finance/domain/usecases/transfer/transfer_pairing_usecase.dart';
+import 'package:auto_finance/features/transaction/providers/pairing_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:auto_finance/data/local/database/app_database.dart';
-import 'package:auto_finance/domain/usecases/transaction_pipeline_usecase.dart';
-import 'package:auto_finance/domain/usecases/duplicate_transaction_usecase.dart';
+import 'package:auto_finance/domain/usecases/transaction/transaction_pipeline_usecase.dart';
+import 'package:auto_finance/domain/usecases/transaction/duplicate_transaction_usecase.dart';
 import 'transaction_provider.dart';
 
 final pipelineProvider = Provider((ref) => TransactionPipelineUseCase());
@@ -109,86 +106,3 @@ class TransactionAction {
     print("✅ transfer created");
   }
 }
-
-// class TransactionAction {
-//   final AppDatabase db;
-//   final TransactionPipelineUseCase pipeline;
-//   final DuplicateTransactionUseCase duplicate;
-//   final TransferPairingUseCase pairing;
-
-//   TransactionAction({required this.db, required this.pipeline, required this.duplicate, required this.pairing});
-
-//   // Future<void> handle(Map data, List<Transaction> existing) async {
-//   //   final pending = pipeline(data);
-//   //   if (pending == null) return;
-
-//   //   final pairs = pairing.process(pending);
-
-//   //   if (pairs.isEmpty) return;
-
-//   //   final pair = pairs.first;
-
-//   //   final debit = pair.debit;
-//   //   final credit = pair.credit;
-
-//   //   if (debit == null || credit == null) return;
-
-//   //   final trx = debit.amount; // total amount sama
-
-//   //   await db
-//   //       .into(db.transactionsTable)
-//   //       .insert(
-//   //         TransactionsTableCompanion.insert(
-//   //           bank: "${debit.bank} → ${credit.bank}",
-//   //           amount: trx,
-//   //           type: "transfer",
-//   //           category: "transfer",
-//   //           rawText: "${debit.rawText} | ${credit.rawText}",
-//   //           time: credit.time,
-//   //         ),
-//   //       );
-
-//   //   print("✅ PAIRED TRANSACTION CREATED");
-//   // }
-//   Future<void> handle(Map data, List<Transaction> existing) async {
-//     final pending = pipeline(data);
-
-//     if (pending == null) return;
-
-//     final pairs = pairing.process(pending);
-
-//     if (pairs.isNotEmpty) {
-//       final pair = pairs.first;
-
-//       await db
-//           .into(db.transactionsTable)
-//           .insert(
-//             TransactionsTableCompanion.insert(
-//               bank: "${pair.debit!.bank} → ${pair.credit!.bank}",
-//               amount: pair.debit!.amount,
-//               type: "transfer",
-//               category: "transfer",
-//               rawText: "${pair.debit!.rawText} | ${pair.credit!.rawText}",
-//               time: pair.credit!.time,
-//             ),
-//           );
-
-//       return;
-//     }
-
-//     // BELUM ADA PASANGAN
-//     await db
-//         .into(db.transactionsTable)
-//         .insert(
-//           TransactionsTableCompanion.insert(
-//             bank: pending.bank,
-//             amount: pending.amount,
-//             type: pending.type,
-//             category: "unknown",
-//             rawText: pending.rawText,
-//             time: pending.time,
-//           ),
-//         );
-//     print("✅ SINGLE TRANSACTION CREATED");
-//   }
-// }

@@ -1,5 +1,5 @@
 import 'package:auto_finance/domain/entities/pending_transaction.dart';
-import 'package:auto_finance/domain/usecases/transfer_pair.dart';
+import 'package:auto_finance/domain/usecases/transfer/transfer_pair.dart';
 
 class TransferPairingUseCase {
   TransferPair? process(PendingTransaction incoming, List<PendingTransaction> existing) {
