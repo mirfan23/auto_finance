@@ -18,7 +18,7 @@ class GopayParser extends BaseParser {
       type: "expense",
       category: categorizer(text),
       rawText: text,
-      time: DateTime.now(),
+      time: data["timestamp"],
     );
   }
 }

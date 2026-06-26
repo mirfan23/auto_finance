@@ -4,6 +4,8 @@ import 'package:auto_finance/features/notification_listener/providers/transactio
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fx_helper/formatter_helper.dart';
+import 'package:intl/intl.dart';
 
 class NotificationDebugPage extends ConsumerWidget {
   const NotificationDebugPage({super.key});
@@ -87,7 +89,9 @@ class NotificationDebugPage extends ConsumerWidget {
                     Text(item.packageName, style: const TextStyle(fontWeight: FontWeight.bold)),
                     Text("Title: ${item.title}"),
                     Text("Text: ${item.rawText}"),
-                    Text("Time: ${item.timestamp}"),
+                    Text(
+                      "Time: ${FormatterHelper.formatDateWithTime(DateTime.fromMillisecondsSinceEpoch(item.timestamp))}",
+                    ),
                   ],
                 ),
               ),

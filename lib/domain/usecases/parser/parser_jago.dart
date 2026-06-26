@@ -20,7 +20,7 @@ class JagoParser extends BaseParser {
       type: type.name,
       category: categorizer(text),
       rawText: text,
-      time: DateTime.now(),
+      time: data["timestamp"],
     );
   }
 }

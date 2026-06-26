@@ -1,4 +1,3 @@
-import 'package:auto_finance/domain/usecases/parser/parser_dispatcher.dart';
 import 'package:auto_finance/features/notification_listener/providers/transaction_action_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,49 +13,34 @@ class NotificationSyncProvider {
   NotificationSyncProvider(this.ref);
 
   Future<void> sync() async {
+    debugPrint("===== START SYNC =====");
+
     final service = NotificationSyncService();
 
     final notificationDao = ref.read(notificationLogDaoProvider);
 
-    final transactionDao = ref.read(transactionDaoProvider);
-
-    final parser = ParserDispatcher();
+    final action = ref.read(transactionActionProvider);
 
     final notifications = await service.getPendingNotifications();
 
-    final action = ref.read(transactionActionProvider);
+    debugPrint(
+      "TOTAL PENDING NOTIFICATIONS = "
+      "${notifications.length}",
+    );
 
     for (final item in notifications) {
-      // simpan raw notification
       await notificationDao.insert(item);
 
       debugPrint(
-        "SYNC => ${item["packageName"]} | "
+        "SYNC => "
+        "${item["packageName"]} | "
         "${item["title"]} | "
         "${item["text"]}",
       );
 
-      // parse transaksi
-      final trx = parser.parse(item);
-
-      if (trx == null) {
-        debugPrint("PARSER RESULT => NULL");
-        continue;
-      }
-
-      debugPrint(
-        "PARSER RESULT => "
-        "${trx.bank} | "
-        "${trx.amount}",
-      );
-
-      // simpan transaksi
-      // await transactionDao.insert(trx);
       await action.handle(item);
-
-      debugPrint("TRANSACTION INSERTED");
     }
 
-    debugPrint("SYNC COMPLETED");
+    debugPrint("===== END SYNC =====");
   }
 }

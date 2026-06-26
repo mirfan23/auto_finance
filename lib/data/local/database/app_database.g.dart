@@ -551,11 +551,11 @@ class $NotificationLogsTableTable extends NotificationLogsTable
     'timestamp',
   );
   @override
-  late final GeneratedColumn<String> timestamp = GeneratedColumn<String>(
+  late final GeneratedColumn<int> timestamp = GeneratedColumn<int>(
     'timestamp',
     aliasedName,
     false,
-    type: DriftSqlType.string,
+    type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
   static const VerificationMeta _fingerprintMeta = const VerificationMeta(
@@ -669,7 +669,7 @@ class $NotificationLogsTableTable extends NotificationLogsTable
         data['${effectivePrefix}raw_text'],
       )!,
       timestamp: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        DriftSqlType.int,
         data['${effectivePrefix}timestamp'],
       )!,
       fingerprint: attachedDatabase.typeMapping.read(
@@ -691,7 +691,7 @@ class NotificationLogsTableData extends DataClass
   final String packageName;
   final String title;
   final String rawText;
-  final String timestamp;
+  final int timestamp;
   final String fingerprint;
   const NotificationLogsTableData({
     required this.id,
@@ -708,7 +708,7 @@ class NotificationLogsTableData extends DataClass
     map['package_name'] = Variable<String>(packageName);
     map['title'] = Variable<String>(title);
     map['raw_text'] = Variable<String>(rawText);
-    map['timestamp'] = Variable<String>(timestamp);
+    map['timestamp'] = Variable<int>(timestamp);
     map['fingerprint'] = Variable<String>(fingerprint);
     return map;
   }
@@ -734,7 +734,7 @@ class NotificationLogsTableData extends DataClass
       packageName: serializer.fromJson<String>(json['packageName']),
       title: serializer.fromJson<String>(json['title']),
       rawText: serializer.fromJson<String>(json['rawText']),
-      timestamp: serializer.fromJson<String>(json['timestamp']),
+      timestamp: serializer.fromJson<int>(json['timestamp']),
       fingerprint: serializer.fromJson<String>(json['fingerprint']),
     );
   }
@@ -746,7 +746,7 @@ class NotificationLogsTableData extends DataClass
       'packageName': serializer.toJson<String>(packageName),
       'title': serializer.toJson<String>(title),
       'rawText': serializer.toJson<String>(rawText),
-      'timestamp': serializer.toJson<String>(timestamp),
+      'timestamp': serializer.toJson<int>(timestamp),
       'fingerprint': serializer.toJson<String>(fingerprint),
     };
   }
@@ -756,7 +756,7 @@ class NotificationLogsTableData extends DataClass
     String? packageName,
     String? title,
     String? rawText,
-    String? timestamp,
+    int? timestamp,
     String? fingerprint,
   }) => NotificationLogsTableData(
     id: id ?? this.id,
@@ -817,7 +817,7 @@ class NotificationLogsTableCompanion
   final Value<String> packageName;
   final Value<String> title;
   final Value<String> rawText;
-  final Value<String> timestamp;
+  final Value<int> timestamp;
   final Value<String> fingerprint;
   const NotificationLogsTableCompanion({
     this.id = const Value.absent(),
@@ -832,7 +832,7 @@ class NotificationLogsTableCompanion
     required String packageName,
     required String title,
     required String rawText,
-    required String timestamp,
+    required int timestamp,
     required String fingerprint,
   }) : packageName = Value(packageName),
        title = Value(title),
@@ -844,7 +844,7 @@ class NotificationLogsTableCompanion
     Expression<String>? packageName,
     Expression<String>? title,
     Expression<String>? rawText,
-    Expression<String>? timestamp,
+    Expression<int>? timestamp,
     Expression<String>? fingerprint,
   }) {
     return RawValuesInsertable({
@@ -862,7 +862,7 @@ class NotificationLogsTableCompanion
     Value<String>? packageName,
     Value<String>? title,
     Value<String>? rawText,
-    Value<String>? timestamp,
+    Value<int>? timestamp,
     Value<String>? fingerprint,
   }) {
     return NotificationLogsTableCompanion(
@@ -891,7 +891,7 @@ class NotificationLogsTableCompanion
       map['raw_text'] = Variable<String>(rawText.value);
     }
     if (timestamp.present) {
-      map['timestamp'] = Variable<String>(timestamp.value);
+      map['timestamp'] = Variable<int>(timestamp.value);
     }
     if (fingerprint.present) {
       map['fingerprint'] = Variable<String>(fingerprint.value);
@@ -1666,7 +1666,7 @@ typedef $$NotificationLogsTableTableCreateCompanionBuilder =
       required String packageName,
       required String title,
       required String rawText,
-      required String timestamp,
+      required int timestamp,
       required String fingerprint,
     });
 typedef $$NotificationLogsTableTableUpdateCompanionBuilder =
@@ -1675,7 +1675,7 @@ typedef $$NotificationLogsTableTableUpdateCompanionBuilder =
       Value<String> packageName,
       Value<String> title,
       Value<String> rawText,
-      Value<String> timestamp,
+      Value<int> timestamp,
       Value<String> fingerprint,
     });
 
@@ -1708,7 +1708,7 @@ class $$NotificationLogsTableTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get timestamp => $composableBuilder(
+  ColumnFilters<int> get timestamp => $composableBuilder(
     column: $table.timestamp,
     builder: (column) => ColumnFilters(column),
   );
@@ -1748,7 +1748,7 @@ class $$NotificationLogsTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get timestamp => $composableBuilder(
+  ColumnOrderings<int> get timestamp => $composableBuilder(
     column: $table.timestamp,
     builder: (column) => ColumnOrderings(column),
   );
@@ -1782,7 +1782,7 @@ class $$NotificationLogsTableTableAnnotationComposer
   GeneratedColumn<String> get rawText =>
       $composableBuilder(column: $table.rawText, builder: (column) => column);
 
-  GeneratedColumn<String> get timestamp =>
+  GeneratedColumn<int> get timestamp =>
       $composableBuilder(column: $table.timestamp, builder: (column) => column);
 
   GeneratedColumn<String> get fingerprint => $composableBuilder(
@@ -1841,7 +1841,7 @@ class $$NotificationLogsTableTableTableManager
                 Value<String> packageName = const Value.absent(),
                 Value<String> title = const Value.absent(),
                 Value<String> rawText = const Value.absent(),
-                Value<String> timestamp = const Value.absent(),
+                Value<int> timestamp = const Value.absent(),
                 Value<String> fingerprint = const Value.absent(),
               }) => NotificationLogsTableCompanion(
                 id: id,
@@ -1857,7 +1857,7 @@ class $$NotificationLogsTableTableTableManager
                 required String packageName,
                 required String title,
                 required String rawText,
-                required String timestamp,
+                required int timestamp,
                 required String fingerprint,
               }) => NotificationLogsTableCompanion.insert(
                 id: id,
