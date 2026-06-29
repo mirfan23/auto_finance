@@ -1,8 +1,5 @@
-import 'dart:async';
-
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:auto_finance/domain/entities/transaction_type.dart';
-import 'package:auto_finance/features/notification/providers/notification_stream_provider.dart';
 import 'package:auto_finance/features/transaction/providers/transaction_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,94 +19,53 @@ class NotificationPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text("Transactions")),
-      floatingActionButton: SizedBox(
-        height: 100,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            ElevatedButton(
-              onPressed: () async {
-                final dao = ref.read(transactionDaoProvider);
-
-                final data = await dao.getAll();
-
-                debugPrint("TOTAL TRANSACTIONS = ${data.length}");
-
-                for (final e in data) {
-                  debugPrint(
-                    "${e.bank} | "
-                    "${e.amount} | "
-                    "${e.category}",
-                  );
-                }
-              },
-              child: const Text("Print Transactions"),
-            ),
-            ElevatedButton(onPressed: openNotifAccess, child: Text("Aktifkan Akses Notifikasi")),
-          ],
-        ),
-      ),
+      floatingActionButton: ElevatedButton(onPressed: openNotifAccess, child: Text("Aktifkan Akses Notifikasi")),
       body: data.when(
         data: (list) {
-          // final total = list.fold<int>(0, (sum, e) => sum + e.amount);
-          // final income = list.where((e) => e.type == "income").fold<int>(0, (sum, e) => sum + e.amount);
           final income = list.where((e) => e.type == TransactionType.income).fold<int>(0, (sum, e) => sum + e.amount);
           final expense = list.where((e) => e.type == TransactionType.expense).fold<int>(0, (sum, e) => sum + e.amount);
-          final transfer = list
-              .where((e) => e.type == TransactionType.transfer)
-              .fold<int>(0, (sum, e) => sum + e.amount);
 
-          // final expense = list.where((e) => e.type == "expense").fold<int>(0, (sum, e) => sum + e.amount);
-          debugPrint("UI TRANSACTION COUNT = ${list.length}");
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Column(
-                      children: [
-                        const Text("Income"),
-                        Text(
-                          FormatterHelper.formatRupiah(income),
-                          style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
+          return CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Column(
+                        children: [
+                          const Text("Income"),
+                          Text(
+                            FormatterHelper.formatRupiah(income),
+                            style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
 
-                    Column(
-                      children: [
-                        const Text("Expense"),
-                        Text(
-                          FormatterHelper.formatRupiah(expense),
-                          style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
+                      Column(
+                        children: [
+                          const Text("Expense"),
+                          Text(
+                            FormatterHelper.formatRupiah(expense),
+                            style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
 
-                    Column(
-                      children: [
-                        const Text("Transactions"),
-                        Text(list.length.toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                  ],
+                      Column(
+                        children: [
+                          const Text("Transactions"),
+                          Text(list.length.toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              Expanded(
-                child: CustomScrollView(
-                  slivers: [
-                    // SliverToBoxAdapter(
-                    //   child: Padding(
-                    //     padding: const EdgeInsets.all(12),
-                    //     child: Text(
-                    //       "Total: ${FormatterHelper.formatRupiah(total)}",
-                    //       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    //     ),
-                    //   ),
-                    // ),
-                    SliverList(
+              list.isEmpty
+                  ? const SliverFillRemaining(hasScrollBody: false, child: Center(child: Text("Belum ada transaksi")))
+                  : SliverList(
                       delegate: SliverChildBuilderDelegate((context, i) {
                         final e = list[i];
                         return Card(
@@ -155,9 +111,6 @@ class NotificationPage extends ConsumerWidget {
                         );
                       }, childCount: list.length),
                     ),
-                  ],
-                ),
-              ),
             ],
           );
         },

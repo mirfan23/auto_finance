@@ -9,6 +9,7 @@ import io.flutter.plugin.common.EventChannel
 import java.util.HashMap
 
 class NotificationListener : NotificationListenerService() {
+    
 
     companion object {
         var eventSink: EventChannel.EventSink? = null

@@ -1,3 +1,4 @@
+import 'package:auto_finance/debug/fake_notifications.dart';
 import 'package:auto_finance/domain/usecases/transaction/transaction_action_usecase.dart';
 import 'package:auto_finance/features/transaction/providers/finalize_pending_provider.dart';
 import 'package:auto_finance/features/transaction/providers/transaction_provider.dart';
@@ -11,118 +12,108 @@ class DebugTransactionPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(title: const Text("Transaction Debug")),
-      body: Padding(
+      body: ListView(
         padding: const EdgeInsets.all(16),
-        child: ListView(
-          children: [
-            ElevatedButton(
-              onPressed: () async {
-                final db = ref.read(dbProvider);
+        children: [
+          _sectionTitle("🧪 Simulator"),
 
-                final result = await db.customSelect("PRAGMA table_info(pending_transactions_table)").get();
+          _button("Single Expense", () async {
+            await ref.read(transactionActionProvider).handle(FakeNotifications.jagoExpense50k());
+          }),
 
-                for (final row in result) {
-                  debugPrint(row.data.toString());
-                }
-              },
-              child: const Text("Pending Table Info"),
-            ),
-            SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: () async {
-                final db = ref.read(dbProvider);
+          _button("Single Income", () async {
+            await ref.read(transactionActionProvider).handle(FakeNotifications.bcaIncome50k());
+          }),
 
-                final result = await db.customSelect("SELECT * FROM pending_transactions_table").get();
+          _button("Transfer Pair", () async {
+            await FakeNotifications.transfer50k(ref.read(transactionActionProvider));
+          }),
 
-                for (final row in result) {
-                  debugPrint(row.data.toString());
-                }
-              },
-              child: const Text("Print Pending Rows"),
-            ),
-            SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: () async {
-                await ref.read(finalizePendingProvider).execute();
-              },
-              child: const Text("Finalize Pending"),
-            ),
-            SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: () async {
-                await ref.read(transactionActionProvider).handle({
-                  "packageName": "com.jago.digitalBanking",
-                  "title": "Jago",
-                  "text":
-                      "Kamu telah melakukan transfer Rp50.000 ke M IRFAN FADHILA. Butuh bantuan? Silakan Tanya Jago di 1500 746.",
-                  "timestamp": DateTime.now().millisecondsSinceEpoch,
-                });
-              },
-              child: const Text("Fake Jago Debit 50K"),
-            ),
+          const SizedBox(height: 24),
 
-            const SizedBox(height: 12),
+          _sectionTitle("⏳ Pending"),
 
-            ElevatedButton(
-              onPressed: () async {
-                await ref.read(transactionActionProvider).handle({
-                  "packageName": "com.bca.mybca.omni.android",
-                  "title": "Financial Diary",
-                  "text": "You received IDR 50,000.00 from MUHA**AD **FAN *AD at Account Transfer category.",
-                  "timestamp": DateTime.now().millisecondsSinceEpoch,
-                });
-              },
-              child: const Text("Fake BCA Credit 50K"),
-            ),
+          _button("Print Pending", () async {
+            final dao = ref.read(pendingDaoProvider);
 
-            const SizedBox(height: 12),
+            final rows = await dao.getPending();
 
-            ElevatedButton(
-              onPressed: () async {
-                final db = ref.read(dbProvider);
+            debugPrint("========== PENDING ==========");
 
-                await db.delete(db.transactionsTable).go();
+            debugPrint("COUNT = ${rows.length}");
 
-                debugPrint("TRANSACTION TABLE CLEARED");
-              },
-              child: const Text("Clear Transactions"),
-            ),
+            for (final e in rows) {
+              debugPrint(
+                "${e.bank} | "
+                "${e.amount} | "
+                "${e.type.name}",
+              );
+            }
 
-            const SizedBox(height: 12),
+            debugPrint("=============================");
+          }),
 
-            ElevatedButton(
-              onPressed: () async {
-                final dao = ref.read(pendingDaoProvider);
+          _button("Finalize Pending", () async {
+            await ref.read(finalizePendingProvider).execute();
+          }),
 
-                final rows = await dao.getPending();
+          _button("Clear Pending", () async {
+            final db = ref.read(dbProvider);
 
-                debugPrint("PENDING COUNT = ${rows.length}");
+            await db.delete(db.pendingTransactionsTable).go();
 
-                for (final e in rows) {
-                  debugPrint("${e.bank} | ${e.amount} | ${e.type}");
-                }
-              },
-              child: const Text("Print Pending"),
-            ),
+            debugPrint("✅ PENDING CLEARED");
+          }),
 
-            const SizedBox(height: 12),
+          const SizedBox(height: 24),
 
-            ElevatedButton(
-              onPressed: () async {
-                final db = ref.read(dbProvider);
+          _sectionTitle("💰 Transactions"),
 
-                final rows = await db.select(db.transactionsTable).get();
+          _button("Print Transactions", () async {
+            final db = ref.read(dbProvider);
 
-                debugPrint("TOTAL TRANSACTIONS = ${rows.length}");
+            final rows = await db.select(db.transactionsTable).get();
 
-                for (final e in rows) {
-                  debugPrint("${e.bank} | ${e.amount} | ${e.type}");
-                }
-              },
-              child: const Text("Print Transactions"),
-            ),
-          ],
-        ),
+            debugPrint("======= TRANSACTIONS =======");
+
+            debugPrint("COUNT = ${rows.length}");
+
+            for (final e in rows) {
+              debugPrint(
+                "${e.bank} | "
+                "${e.amount} | "
+                "${e.type}",
+              );
+            }
+
+            debugPrint("============================");
+          }),
+
+          _button("Clear Transactions", () async {
+            final db = ref.read(dbProvider);
+
+            await db.delete(db.transactionsTable).go();
+
+            debugPrint("✅ TRANSACTIONS CLEARED");
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _sectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+    );
+  }
+
+  Widget _button(String title, Future<void> Function() onPressed) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: SizedBox(
+        height: 48,
+        child: ElevatedButton(onPressed: onPressed, child: Text(title)),
       ),
     );
   }
