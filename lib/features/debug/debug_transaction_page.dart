@@ -1,4 +1,5 @@
-import 'package:auto_finance/features/transaction/providers/transaction_action_provider.dart';
+import 'package:auto_finance/domain/usecases/transaction/transaction_action_usecase.dart';
+import 'package:auto_finance/features/transaction/providers/finalize_pending_provider.dart';
 import 'package:auto_finance/features/transaction/providers/transaction_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +15,39 @@ class DebugTransactionPage extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         child: ListView(
           children: [
+            ElevatedButton(
+              onPressed: () async {
+                final db = ref.read(dbProvider);
+
+                final result = await db.customSelect("PRAGMA table_info(pending_transactions_table)").get();
+
+                for (final row in result) {
+                  debugPrint(row.data.toString());
+                }
+              },
+              child: const Text("Pending Table Info"),
+            ),
+            SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () async {
+                final db = ref.read(dbProvider);
+
+                final result = await db.customSelect("SELECT * FROM pending_transactions_table").get();
+
+                for (final row in result) {
+                  debugPrint(row.data.toString());
+                }
+              },
+              child: const Text("Print Pending Rows"),
+            ),
+            SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () async {
+                await ref.read(finalizePendingProvider).execute();
+              },
+              child: const Text("Finalize Pending"),
+            ),
+            SizedBox(height: 12),
             ElevatedButton(
               onPressed: () async {
                 await ref.read(transactionActionProvider).handle({

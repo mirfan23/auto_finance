@@ -1,4 +1,4 @@
-import 'package:auto_finance/features/transaction/providers/transaction_action_provider.dart';
+import 'package:auto_finance/domain/usecases/transaction/transaction_action_usecase.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

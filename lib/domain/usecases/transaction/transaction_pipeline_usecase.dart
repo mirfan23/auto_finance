@@ -12,6 +12,7 @@ class TransactionPipelineUseCase {
       id: DateTime.now().microsecondsSinceEpoch.toString(),
       bank: trx.bank,
       amount: trx.amount,
+      category: trx.category.name,
       type: trx.type,
       time: trx.time,
       rawText: trx.rawText,

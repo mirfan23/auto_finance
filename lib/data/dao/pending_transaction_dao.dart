@@ -15,6 +15,7 @@ class PendingTransactionDao {
             id: trx.id,
             bank: trx.bank,
             amount: trx.amount,
+            category: trx.category,
             type: trx.type,
             rawText: trx.rawText,
             time: trx.time,

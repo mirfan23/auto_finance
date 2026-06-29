@@ -20,7 +20,7 @@ class JagoParser extends BaseParser {
       type: type.name,
       category: categorizer(text),
       rawText: text,
-      time: data["timestamp"],
+      time: DateTime.fromMillisecondsSinceEpoch((data["timestamp"] as num).toInt()),
     );
   }
 }

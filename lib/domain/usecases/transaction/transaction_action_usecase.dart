@@ -1,7 +1,9 @@
 import 'package:auto_finance/core/helpers/transaction_fingerprint_helper.dart';
 import 'package:auto_finance/data/dao/pending_transaction_dao.dart';
 import 'package:auto_finance/domain/entities/pending_transaction.dart';
+import 'package:auto_finance/domain/usecases/transaction/finalize_pending_usecase.dart';
 import 'package:auto_finance/domain/usecases/transfer/transfer_pairing_usecase.dart';
+import 'package:auto_finance/features/transaction/providers/finalize_pending_provider.dart';
 import 'package:auto_finance/features/transaction/providers/pairing_provider.dart';
 import 'package:auto_finance/features/transaction/providers/transaction_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,6 +24,7 @@ final transactionActionProvider = Provider<TransactionAction>((ref) {
     duplicate: ref.watch(duplicateProvider),
     pairing: ref.watch(pairingProvider),
     pendingDao: ref.watch(pendingDaoProvider),
+    finalizePending: ref.watch(finalizePendingProvider),
   );
 });
 
@@ -31,6 +34,7 @@ class TransactionAction {
   final DuplicateTransactionUseCase duplicate;
   final TransferPairingUseCase pairing;
   final PendingTransactionDao pendingDao;
+  final FinalizePendingUseCase finalizePending;
 
   TransactionAction({
     required this.db,
@@ -38,6 +42,7 @@ class TransactionAction {
     required this.duplicate,
     required this.pairing,
     required this.pendingDao,
+    required this.finalizePending,
   });
 
   Future<void> handle(Map data) async {
@@ -63,6 +68,7 @@ class TransactionAction {
         id: e.id,
         bank: e.bank,
         amount: e.amount,
+        category: e.category,
         type: e.type,
         rawText: e.rawText,
         time: e.time,
@@ -74,6 +80,7 @@ class TransactionAction {
 
     if (pair == null) {
       print("⏳ waiting pair");
+      await finalizePending.execute();
       return;
     }
 
@@ -102,7 +109,7 @@ class TransactionAction {
             fingerprint: fingerprint,
           ),
         );
-
     print("✅ transfer created");
+    await finalizePending.execute();
   }
 }

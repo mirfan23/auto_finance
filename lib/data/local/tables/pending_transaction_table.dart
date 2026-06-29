@@ -7,6 +7,8 @@ class PendingTransactionsTable extends Table {
 
   IntColumn get amount => integer()();
 
+  TextColumn get category => text()();
+
   TextColumn get type => text()();
 
   TextColumn get rawText => text()();

@@ -25,7 +25,7 @@ class ShopeePayParser extends BaseParser {
       type: isIncome ? "income" : "expense",
       category: categorizer(text),
       rawText: text,
-      time: data["timestamp"],
+      time: DateTime.fromMillisecondsSinceEpoch((data["timestamp"] as num).toInt()),
     );
   }
 }

@@ -3,8 +3,7 @@
 part of 'app_database.dart';
 
 // ignore_for_file: type=lint
-class $TransactionsTableTable extends TransactionsTable
-    with TableInfo<$TransactionsTableTable, TransactionsTableData> {
+class $TransactionsTableTable extends TransactionsTable with TableInfo<$TransactionsTableTable, TransactionsTableData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -18,9 +17,7 @@ class $TransactionsTableTable extends TransactionsTable
     hasAutoIncrement: true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
+    defaultConstraints: GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'),
   );
   static const VerificationMeta _bankMeta = const VerificationMeta('bank');
   @override
@@ -49,9 +46,7 @@ class $TransactionsTableTable extends TransactionsTable
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _categoryMeta = const VerificationMeta(
-    'category',
-  );
+  static const VerificationMeta _categoryMeta = const VerificationMeta('category');
   @override
   late final GeneratedColumn<String> category = GeneratedColumn<String>(
     'category',
@@ -60,9 +55,7 @@ class $TransactionsTableTable extends TransactionsTable
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _rawTextMeta = const VerificationMeta(
-    'rawText',
-  );
+  static const VerificationMeta _rawTextMeta = const VerificationMeta('rawText');
   @override
   late final GeneratedColumn<String> rawText = GeneratedColumn<String>(
     'raw_text',
@@ -80,9 +73,7 @@ class $TransactionsTableTable extends TransactionsTable
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _fingerprintMeta = const VerificationMeta(
-    'fingerprint',
-  );
+  static const VerificationMeta _fingerprintMeta = const VerificationMeta('fingerprint');
   @override
   late final GeneratedColumn<String> fingerprint = GeneratedColumn<String>(
     'fingerprint',
@@ -93,87 +84,51 @@ class $TransactionsTableTable extends TransactionsTable
     defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
   @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    bank,
-    amount,
-    type,
-    category,
-    rawText,
-    time,
-    fingerprint,
-  ];
+  List<GeneratedColumn> get $columns => [id, bank, amount, type, category, rawText, time, fingerprint];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
   static const String $name = 'transactions_table';
   @override
-  VerificationContext validateIntegrity(
-    Insertable<TransactionsTableData> instance, {
-    bool isInserting = false,
-  }) {
+  VerificationContext validateIntegrity(Insertable<TransactionsTableData> instance, {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
     if (data.containsKey('bank')) {
-      context.handle(
-        _bankMeta,
-        bank.isAcceptableOrUnknown(data['bank']!, _bankMeta),
-      );
+      context.handle(_bankMeta, bank.isAcceptableOrUnknown(data['bank']!, _bankMeta));
     } else if (isInserting) {
       context.missing(_bankMeta);
     }
     if (data.containsKey('amount')) {
-      context.handle(
-        _amountMeta,
-        amount.isAcceptableOrUnknown(data['amount']!, _amountMeta),
-      );
+      context.handle(_amountMeta, amount.isAcceptableOrUnknown(data['amount']!, _amountMeta));
     } else if (isInserting) {
       context.missing(_amountMeta);
     }
     if (data.containsKey('type')) {
-      context.handle(
-        _typeMeta,
-        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
-      );
+      context.handle(_typeMeta, type.isAcceptableOrUnknown(data['type']!, _typeMeta));
     } else if (isInserting) {
       context.missing(_typeMeta);
     }
     if (data.containsKey('category')) {
-      context.handle(
-        _categoryMeta,
-        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
-      );
+      context.handle(_categoryMeta, category.isAcceptableOrUnknown(data['category']!, _categoryMeta));
     } else if (isInserting) {
       context.missing(_categoryMeta);
     }
     if (data.containsKey('raw_text')) {
-      context.handle(
-        _rawTextMeta,
-        rawText.isAcceptableOrUnknown(data['raw_text']!, _rawTextMeta),
-      );
+      context.handle(_rawTextMeta, rawText.isAcceptableOrUnknown(data['raw_text']!, _rawTextMeta));
     } else if (isInserting) {
       context.missing(_rawTextMeta);
     }
     if (data.containsKey('time')) {
-      context.handle(
-        _timeMeta,
-        time.isAcceptableOrUnknown(data['time']!, _timeMeta),
-      );
+      context.handle(_timeMeta, time.isAcceptableOrUnknown(data['time']!, _timeMeta));
     } else if (isInserting) {
       context.missing(_timeMeta);
     }
     if (data.containsKey('fingerprint')) {
-      context.handle(
-        _fingerprintMeta,
-        fingerprint.isAcceptableOrUnknown(
-          data['fingerprint']!,
-          _fingerprintMeta,
-        ),
-      );
+      context.handle(_fingerprintMeta, fingerprint.isAcceptableOrUnknown(data['fingerprint']!, _fingerprintMeta));
     } else if (isInserting) {
       context.missing(_fingerprintMeta);
     }
@@ -186,38 +141,14 @@ class $TransactionsTableTable extends TransactionsTable
   TransactionsTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TransactionsTableData(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      bank: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}bank'],
-      )!,
-      amount: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}amount'],
-      )!,
-      type: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}type'],
-      )!,
-      category: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}category'],
-      )!,
-      rawText: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}raw_text'],
-      )!,
-      time: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}time'],
-      )!,
-      fingerprint: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}fingerprint'],
-      )!,
+      id: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      bank: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}bank'])!,
+      amount: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}amount'])!,
+      type: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}type'])!,
+      category: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}category'])!,
+      rawText: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}raw_text'])!,
+      time: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}time'])!,
+      fingerprint: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}fingerprint'])!,
     );
   }
 
@@ -227,8 +158,7 @@ class $TransactionsTableTable extends TransactionsTable
   }
 }
 
-class TransactionsTableData extends DataClass
-    implements Insertable<TransactionsTableData> {
+class TransactionsTableData extends DataClass implements Insertable<TransactionsTableData> {
   final int id;
   final String bank;
   final int amount;
@@ -274,10 +204,7 @@ class TransactionsTableData extends DataClass
     );
   }
 
-  factory TransactionsTableData.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
+  factory TransactionsTableData.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TransactionsTableData(
       id: serializer.fromJson<int>(json['id']),
@@ -333,9 +260,7 @@ class TransactionsTableData extends DataClass
       category: data.category.present ? data.category.value : this.category,
       rawText: data.rawText.present ? data.rawText.value : this.rawText,
       time: data.time.present ? data.time.value : this.time,
-      fingerprint: data.fingerprint.present
-          ? data.fingerprint.value
-          : this.fingerprint,
+      fingerprint: data.fingerprint.present ? data.fingerprint.value : this.fingerprint,
     );
   }
 
@@ -355,8 +280,7 @@ class TransactionsTableData extends DataClass
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, bank, amount, type, category, rawText, time, fingerprint);
+  int get hashCode => Object.hash(id, bank, amount, type, category, rawText, time, fingerprint);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -371,8 +295,7 @@ class TransactionsTableData extends DataClass
           other.fingerprint == this.fingerprint);
 }
 
-class TransactionsTableCompanion
-    extends UpdateCompanion<TransactionsTableData> {
+class TransactionsTableCompanion extends UpdateCompanion<TransactionsTableData> {
   final Value<int> id;
   final Value<String> bank;
   final Value<int> amount;
@@ -512,13 +435,9 @@ class $NotificationLogsTableTable extends NotificationLogsTable
     hasAutoIncrement: true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
+    defaultConstraints: GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'),
   );
-  static const VerificationMeta _packageNameMeta = const VerificationMeta(
-    'packageName',
-  );
+  static const VerificationMeta _packageNameMeta = const VerificationMeta('packageName');
   @override
   late final GeneratedColumn<String> packageName = GeneratedColumn<String>(
     'package_name',
@@ -536,9 +455,7 @@ class $NotificationLogsTableTable extends NotificationLogsTable
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _rawTextMeta = const VerificationMeta(
-    'rawText',
-  );
+  static const VerificationMeta _rawTextMeta = const VerificationMeta('rawText');
   @override
   late final GeneratedColumn<String> rawText = GeneratedColumn<String>(
     'raw_text',
@@ -547,9 +464,7 @@ class $NotificationLogsTableTable extends NotificationLogsTable
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _timestampMeta = const VerificationMeta(
-    'timestamp',
-  );
+  static const VerificationMeta _timestampMeta = const VerificationMeta('timestamp');
   @override
   late final GeneratedColumn<int> timestamp = GeneratedColumn<int>(
     'timestamp',
@@ -558,9 +473,7 @@ class $NotificationLogsTableTable extends NotificationLogsTable
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _fingerprintMeta = const VerificationMeta(
-    'fingerprint',
-  );
+  static const VerificationMeta _fingerprintMeta = const VerificationMeta('fingerprint');
   @override
   late final GeneratedColumn<String> fingerprint = GeneratedColumn<String>(
     'fingerprint',
@@ -571,72 +484,41 @@ class $NotificationLogsTableTable extends NotificationLogsTable
     defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
   @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    packageName,
-    title,
-    rawText,
-    timestamp,
-    fingerprint,
-  ];
+  List<GeneratedColumn> get $columns => [id, packageName, title, rawText, timestamp, fingerprint];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
   static const String $name = 'notification_logs_table';
   @override
-  VerificationContext validateIntegrity(
-    Insertable<NotificationLogsTableData> instance, {
-    bool isInserting = false,
-  }) {
+  VerificationContext validateIntegrity(Insertable<NotificationLogsTableData> instance, {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
     if (data.containsKey('package_name')) {
-      context.handle(
-        _packageNameMeta,
-        packageName.isAcceptableOrUnknown(
-          data['package_name']!,
-          _packageNameMeta,
-        ),
-      );
+      context.handle(_packageNameMeta, packageName.isAcceptableOrUnknown(data['package_name']!, _packageNameMeta));
     } else if (isInserting) {
       context.missing(_packageNameMeta);
     }
     if (data.containsKey('title')) {
-      context.handle(
-        _titleMeta,
-        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
-      );
+      context.handle(_titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
     } else if (isInserting) {
       context.missing(_titleMeta);
     }
     if (data.containsKey('raw_text')) {
-      context.handle(
-        _rawTextMeta,
-        rawText.isAcceptableOrUnknown(data['raw_text']!, _rawTextMeta),
-      );
+      context.handle(_rawTextMeta, rawText.isAcceptableOrUnknown(data['raw_text']!, _rawTextMeta));
     } else if (isInserting) {
       context.missing(_rawTextMeta);
     }
     if (data.containsKey('timestamp')) {
-      context.handle(
-        _timestampMeta,
-        timestamp.isAcceptableOrUnknown(data['timestamp']!, _timestampMeta),
-      );
+      context.handle(_timestampMeta, timestamp.isAcceptableOrUnknown(data['timestamp']!, _timestampMeta));
     } else if (isInserting) {
       context.missing(_timestampMeta);
     }
     if (data.containsKey('fingerprint')) {
-      context.handle(
-        _fingerprintMeta,
-        fingerprint.isAcceptableOrUnknown(
-          data['fingerprint']!,
-          _fingerprintMeta,
-        ),
-      );
+      context.handle(_fingerprintMeta, fingerprint.isAcceptableOrUnknown(data['fingerprint']!, _fingerprintMeta));
     } else if (isInserting) {
       context.missing(_fingerprintMeta);
     }
@@ -646,36 +528,15 @@ class $NotificationLogsTableTable extends NotificationLogsTable
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  NotificationLogsTableData map(
-    Map<String, dynamic> data, {
-    String? tablePrefix,
-  }) {
+  NotificationLogsTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return NotificationLogsTableData(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      packageName: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}package_name'],
-      )!,
-      title: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}title'],
-      )!,
-      rawText: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}raw_text'],
-      )!,
-      timestamp: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}timestamp'],
-      )!,
-      fingerprint: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}fingerprint'],
-      )!,
+      id: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      packageName: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}package_name'])!,
+      title: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+      rawText: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}raw_text'])!,
+      timestamp: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}timestamp'])!,
+      fingerprint: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}fingerprint'])!,
     );
   }
 
@@ -685,8 +546,7 @@ class $NotificationLogsTableTable extends NotificationLogsTable
   }
 }
 
-class NotificationLogsTableData extends DataClass
-    implements Insertable<NotificationLogsTableData> {
+class NotificationLogsTableData extends DataClass implements Insertable<NotificationLogsTableData> {
   final int id;
   final String packageName;
   final String title;
@@ -724,10 +584,7 @@ class NotificationLogsTableData extends DataClass
     );
   }
 
-  factory NotificationLogsTableData.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
+  factory NotificationLogsTableData.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return NotificationLogsTableData(
       id: serializer.fromJson<int>(json['id']),
@@ -766,20 +623,14 @@ class NotificationLogsTableData extends DataClass
     timestamp: timestamp ?? this.timestamp,
     fingerprint: fingerprint ?? this.fingerprint,
   );
-  NotificationLogsTableData copyWithCompanion(
-    NotificationLogsTableCompanion data,
-  ) {
+  NotificationLogsTableData copyWithCompanion(NotificationLogsTableCompanion data) {
     return NotificationLogsTableData(
       id: data.id.present ? data.id.value : this.id,
-      packageName: data.packageName.present
-          ? data.packageName.value
-          : this.packageName,
+      packageName: data.packageName.present ? data.packageName.value : this.packageName,
       title: data.title.present ? data.title.value : this.title,
       rawText: data.rawText.present ? data.rawText.value : this.rawText,
       timestamp: data.timestamp.present ? data.timestamp.value : this.timestamp,
-      fingerprint: data.fingerprint.present
-          ? data.fingerprint.value
-          : this.fingerprint,
+      fingerprint: data.fingerprint.present ? data.fingerprint.value : this.fingerprint,
     );
   }
 
@@ -797,8 +648,7 @@ class NotificationLogsTableData extends DataClass
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, packageName, title, rawText, timestamp, fingerprint);
+  int get hashCode => Object.hash(id, packageName, title, rawText, timestamp, fingerprint);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -811,8 +661,7 @@ class NotificationLogsTableData extends DataClass
           other.fingerprint == this.fingerprint);
 }
 
-class NotificationLogsTableCompanion
-    extends UpdateCompanion<NotificationLogsTableData> {
+class NotificationLogsTableCompanion extends UpdateCompanion<NotificationLogsTableData> {
   final Value<int> id;
   final Value<String> packageName;
   final Value<String> title;
@@ -914,11 +763,7 @@ class NotificationLogsTableCompanion
 }
 
 class $PendingTransactionsTableTable extends PendingTransactionsTable
-    with
-        TableInfo<
-          $PendingTransactionsTableTable,
-          PendingTransactionsTableData
-        > {
+    with TableInfo<$PendingTransactionsTableTable, PendingTransactionsTableData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -950,6 +795,15 @@ class $PendingTransactionsTableTable extends PendingTransactionsTable
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _categoryMeta = const VerificationMeta('category');
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+    'category',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _typeMeta = const VerificationMeta('type');
   @override
   late final GeneratedColumn<String> type = GeneratedColumn<String>(
@@ -959,9 +813,7 @@ class $PendingTransactionsTableTable extends PendingTransactionsTable
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _rawTextMeta = const VerificationMeta(
-    'rawText',
-  );
+  static const VerificationMeta _rawTextMeta = const VerificationMeta('rawText');
   @override
   late final GeneratedColumn<String> rawText = GeneratedColumn<String>(
     'raw_text',
@@ -979,9 +831,7 @@ class $PendingTransactionsTableTable extends PendingTransactionsTable
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _pendingMeta = const VerificationMeta(
-    'pending',
-  );
+  static const VerificationMeta _pendingMeta = const VerificationMeta('pending');
   @override
   late final GeneratedColumn<bool> pending = GeneratedColumn<bool>(
     'pending',
@@ -989,31 +839,18 @@ class $PendingTransactionsTableTable extends PendingTransactionsTable
     false,
     type: DriftSqlType.bool,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("pending" IN (0, 1))',
-    ),
+    defaultConstraints: GeneratedColumn.constraintIsAlways('CHECK ("pending" IN (0, 1))'),
     defaultValue: const Constant(true),
   );
   @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    bank,
-    amount,
-    type,
-    rawText,
-    time,
-    pending,
-  ];
+  List<GeneratedColumn> get $columns => [id, bank, amount, category, type, rawText, time, pending];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
   static const String $name = 'pending_transactions_table';
   @override
-  VerificationContext validateIntegrity(
-    Insertable<PendingTransactionsTableData> instance, {
-    bool isInserting = false,
-  }) {
+  VerificationContext validateIntegrity(Insertable<PendingTransactionsTableData> instance, {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
@@ -1022,50 +859,37 @@ class $PendingTransactionsTableTable extends PendingTransactionsTable
       context.missing(_idMeta);
     }
     if (data.containsKey('bank')) {
-      context.handle(
-        _bankMeta,
-        bank.isAcceptableOrUnknown(data['bank']!, _bankMeta),
-      );
+      context.handle(_bankMeta, bank.isAcceptableOrUnknown(data['bank']!, _bankMeta));
     } else if (isInserting) {
       context.missing(_bankMeta);
     }
     if (data.containsKey('amount')) {
-      context.handle(
-        _amountMeta,
-        amount.isAcceptableOrUnknown(data['amount']!, _amountMeta),
-      );
+      context.handle(_amountMeta, amount.isAcceptableOrUnknown(data['amount']!, _amountMeta));
     } else if (isInserting) {
       context.missing(_amountMeta);
     }
+    if (data.containsKey('category')) {
+      context.handle(_categoryMeta, category.isAcceptableOrUnknown(data['category']!, _categoryMeta));
+    } else if (isInserting) {
+      context.missing(_categoryMeta);
+    }
     if (data.containsKey('type')) {
-      context.handle(
-        _typeMeta,
-        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
-      );
+      context.handle(_typeMeta, type.isAcceptableOrUnknown(data['type']!, _typeMeta));
     } else if (isInserting) {
       context.missing(_typeMeta);
     }
     if (data.containsKey('raw_text')) {
-      context.handle(
-        _rawTextMeta,
-        rawText.isAcceptableOrUnknown(data['raw_text']!, _rawTextMeta),
-      );
+      context.handle(_rawTextMeta, rawText.isAcceptableOrUnknown(data['raw_text']!, _rawTextMeta));
     } else if (isInserting) {
       context.missing(_rawTextMeta);
     }
     if (data.containsKey('time')) {
-      context.handle(
-        _timeMeta,
-        time.isAcceptableOrUnknown(data['time']!, _timeMeta),
-      );
+      context.handle(_timeMeta, time.isAcceptableOrUnknown(data['time']!, _timeMeta));
     } else if (isInserting) {
       context.missing(_timeMeta);
     }
     if (data.containsKey('pending')) {
-      context.handle(
-        _pendingMeta,
-        pending.isAcceptableOrUnknown(data['pending']!, _pendingMeta),
-      );
+      context.handle(_pendingMeta, pending.isAcceptableOrUnknown(data['pending']!, _pendingMeta));
     }
     return context;
   }
@@ -1073,40 +897,17 @@ class $PendingTransactionsTableTable extends PendingTransactionsTable
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  PendingTransactionsTableData map(
-    Map<String, dynamic> data, {
-    String? tablePrefix,
-  }) {
+  PendingTransactionsTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return PendingTransactionsTableData(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}id'],
-      )!,
-      bank: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}bank'],
-      )!,
-      amount: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}amount'],
-      )!,
-      type: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}type'],
-      )!,
-      rawText: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}raw_text'],
-      )!,
-      time: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}time'],
-      )!,
-      pending: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}pending'],
-      )!,
+      id: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      bank: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}bank'])!,
+      amount: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}amount'])!,
+      category: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}category'])!,
+      type: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}type'])!,
+      rawText: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}raw_text'])!,
+      time: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}time'])!,
+      pending: attachedDatabase.typeMapping.read(DriftSqlType.bool, data['${effectivePrefix}pending'])!,
     );
   }
 
@@ -1116,11 +917,11 @@ class $PendingTransactionsTableTable extends PendingTransactionsTable
   }
 }
 
-class PendingTransactionsTableData extends DataClass
-    implements Insertable<PendingTransactionsTableData> {
+class PendingTransactionsTableData extends DataClass implements Insertable<PendingTransactionsTableData> {
   final String id;
   final String bank;
   final int amount;
+  final String category;
   final String type;
   final String rawText;
   final DateTime time;
@@ -1129,6 +930,7 @@ class PendingTransactionsTableData extends DataClass
     required this.id,
     required this.bank,
     required this.amount,
+    required this.category,
     required this.type,
     required this.rawText,
     required this.time,
@@ -1140,6 +942,7 @@ class PendingTransactionsTableData extends DataClass
     map['id'] = Variable<String>(id);
     map['bank'] = Variable<String>(bank);
     map['amount'] = Variable<int>(amount);
+    map['category'] = Variable<String>(category);
     map['type'] = Variable<String>(type);
     map['raw_text'] = Variable<String>(rawText);
     map['time'] = Variable<DateTime>(time);
@@ -1152,6 +955,7 @@ class PendingTransactionsTableData extends DataClass
       id: Value(id),
       bank: Value(bank),
       amount: Value(amount),
+      category: Value(category),
       type: Value(type),
       rawText: Value(rawText),
       time: Value(time),
@@ -1159,15 +963,13 @@ class PendingTransactionsTableData extends DataClass
     );
   }
 
-  factory PendingTransactionsTableData.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
+  factory PendingTransactionsTableData.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return PendingTransactionsTableData(
       id: serializer.fromJson<String>(json['id']),
       bank: serializer.fromJson<String>(json['bank']),
       amount: serializer.fromJson<int>(json['amount']),
+      category: serializer.fromJson<String>(json['category']),
       type: serializer.fromJson<String>(json['type']),
       rawText: serializer.fromJson<String>(json['rawText']),
       time: serializer.fromJson<DateTime>(json['time']),
@@ -1181,6 +983,7 @@ class PendingTransactionsTableData extends DataClass
       'id': serializer.toJson<String>(id),
       'bank': serializer.toJson<String>(bank),
       'amount': serializer.toJson<int>(amount),
+      'category': serializer.toJson<String>(category),
       'type': serializer.toJson<String>(type),
       'rawText': serializer.toJson<String>(rawText),
       'time': serializer.toJson<DateTime>(time),
@@ -1192,6 +995,7 @@ class PendingTransactionsTableData extends DataClass
     String? id,
     String? bank,
     int? amount,
+    String? category,
     String? type,
     String? rawText,
     DateTime? time,
@@ -1200,18 +1004,18 @@ class PendingTransactionsTableData extends DataClass
     id: id ?? this.id,
     bank: bank ?? this.bank,
     amount: amount ?? this.amount,
+    category: category ?? this.category,
     type: type ?? this.type,
     rawText: rawText ?? this.rawText,
     time: time ?? this.time,
     pending: pending ?? this.pending,
   );
-  PendingTransactionsTableData copyWithCompanion(
-    PendingTransactionsTableCompanion data,
-  ) {
+  PendingTransactionsTableData copyWithCompanion(PendingTransactionsTableCompanion data) {
     return PendingTransactionsTableData(
       id: data.id.present ? data.id.value : this.id,
       bank: data.bank.present ? data.bank.value : this.bank,
       amount: data.amount.present ? data.amount.value : this.amount,
+      category: data.category.present ? data.category.value : this.category,
       type: data.type.present ? data.type.value : this.type,
       rawText: data.rawText.present ? data.rawText.value : this.rawText,
       time: data.time.present ? data.time.value : this.time,
@@ -1225,6 +1029,7 @@ class PendingTransactionsTableData extends DataClass
           ..write('id: $id, ')
           ..write('bank: $bank, ')
           ..write('amount: $amount, ')
+          ..write('category: $category, ')
           ..write('type: $type, ')
           ..write('rawText: $rawText, ')
           ..write('time: $time, ')
@@ -1234,8 +1039,7 @@ class PendingTransactionsTableData extends DataClass
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, bank, amount, type, rawText, time, pending);
+  int get hashCode => Object.hash(id, bank, amount, category, type, rawText, time, pending);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1243,17 +1047,18 @@ class PendingTransactionsTableData extends DataClass
           other.id == this.id &&
           other.bank == this.bank &&
           other.amount == this.amount &&
+          other.category == this.category &&
           other.type == this.type &&
           other.rawText == this.rawText &&
           other.time == this.time &&
           other.pending == this.pending);
 }
 
-class PendingTransactionsTableCompanion
-    extends UpdateCompanion<PendingTransactionsTableData> {
+class PendingTransactionsTableCompanion extends UpdateCompanion<PendingTransactionsTableData> {
   final Value<String> id;
   final Value<String> bank;
   final Value<int> amount;
+  final Value<String> category;
   final Value<String> type;
   final Value<String> rawText;
   final Value<DateTime> time;
@@ -1263,6 +1068,7 @@ class PendingTransactionsTableCompanion
     this.id = const Value.absent(),
     this.bank = const Value.absent(),
     this.amount = const Value.absent(),
+    this.category = const Value.absent(),
     this.type = const Value.absent(),
     this.rawText = const Value.absent(),
     this.time = const Value.absent(),
@@ -1273,6 +1079,7 @@ class PendingTransactionsTableCompanion
     required String id,
     required String bank,
     required int amount,
+    required String category,
     required String type,
     required String rawText,
     required DateTime time,
@@ -1281,6 +1088,7 @@ class PendingTransactionsTableCompanion
   }) : id = Value(id),
        bank = Value(bank),
        amount = Value(amount),
+       category = Value(category),
        type = Value(type),
        rawText = Value(rawText),
        time = Value(time);
@@ -1288,6 +1096,7 @@ class PendingTransactionsTableCompanion
     Expression<String>? id,
     Expression<String>? bank,
     Expression<int>? amount,
+    Expression<String>? category,
     Expression<String>? type,
     Expression<String>? rawText,
     Expression<DateTime>? time,
@@ -1298,6 +1107,7 @@ class PendingTransactionsTableCompanion
       if (id != null) 'id': id,
       if (bank != null) 'bank': bank,
       if (amount != null) 'amount': amount,
+      if (category != null) 'category': category,
       if (type != null) 'type': type,
       if (rawText != null) 'raw_text': rawText,
       if (time != null) 'time': time,
@@ -1310,6 +1120,7 @@ class PendingTransactionsTableCompanion
     Value<String>? id,
     Value<String>? bank,
     Value<int>? amount,
+    Value<String>? category,
     Value<String>? type,
     Value<String>? rawText,
     Value<DateTime>? time,
@@ -1320,6 +1131,7 @@ class PendingTransactionsTableCompanion
       id: id ?? this.id,
       bank: bank ?? this.bank,
       amount: amount ?? this.amount,
+      category: category ?? this.category,
       type: type ?? this.type,
       rawText: rawText ?? this.rawText,
       time: time ?? this.time,
@@ -1339,6 +1151,9 @@ class PendingTransactionsTableCompanion
     }
     if (amount.present) {
       map['amount'] = Variable<int>(amount.value);
+    }
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
     }
     if (type.present) {
       map['type'] = Variable<String>(type.value);
@@ -1364,6 +1179,7 @@ class PendingTransactionsTableCompanion
           ..write('id: $id, ')
           ..write('bank: $bank, ')
           ..write('amount: $amount, ')
+          ..write('category: $category, ')
           ..write('type: $type, ')
           ..write('rawText: $rawText, ')
           ..write('time: $time, ')
@@ -1377,15 +1193,11 @@ class PendingTransactionsTableCompanion
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
-  late final $TransactionsTableTable transactionsTable =
-      $TransactionsTableTable(this);
-  late final $NotificationLogsTableTable notificationLogsTable =
-      $NotificationLogsTableTable(this);
-  late final $PendingTransactionsTableTable pendingTransactionsTable =
-      $PendingTransactionsTableTable(this);
+  late final $TransactionsTableTable transactionsTable = $TransactionsTableTable(this);
+  late final $NotificationLogsTableTable notificationLogsTable = $NotificationLogsTableTable(this);
+  late final $PendingTransactionsTableTable pendingTransactionsTable = $PendingTransactionsTableTable(this);
   @override
-  Iterable<TableInfo<Table, Object?>> get allTables =>
-      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
+  Iterable<TableInfo<Table, Object?>> get allTables => allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     transactionsTable,
@@ -1417,8 +1229,7 @@ typedef $$TransactionsTableTableUpdateCompanionBuilder =
       Value<String> fingerprint,
     });
 
-class $$TransactionsTableTableFilterComposer
-    extends Composer<_$AppDatabase, $TransactionsTableTable> {
+class $$TransactionsTableTableFilterComposer extends Composer<_$AppDatabase, $TransactionsTableTable> {
   $$TransactionsTableTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -1426,49 +1237,29 @@ class $$TransactionsTableTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<int> get id => $composableBuilder(column: $table.id, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get bank => $composableBuilder(
-    column: $table.bank,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get bank => $composableBuilder(column: $table.bank, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get amount => $composableBuilder(
-    column: $table.amount,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<int> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get type => $composableBuilder(
-    column: $table.type,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get type => $composableBuilder(column: $table.type, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get category => $composableBuilder(
-    column: $table.category,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get rawText => $composableBuilder(
-    column: $table.rawText,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get rawText =>
+      $composableBuilder(column: $table.rawText, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<DateTime> get time => $composableBuilder(
-    column: $table.time,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<DateTime> get time =>
+      $composableBuilder(column: $table.time, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get fingerprint => $composableBuilder(
-    column: $table.fingerprint,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get fingerprint =>
+      $composableBuilder(column: $table.fingerprint, builder: (column) => ColumnFilters(column));
 }
 
-class $$TransactionsTableTableOrderingComposer
-    extends Composer<_$AppDatabase, $TransactionsTableTable> {
+class $$TransactionsTableTableOrderingComposer extends Composer<_$AppDatabase, $TransactionsTableTable> {
   $$TransactionsTableTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -1476,49 +1267,31 @@ class $$TransactionsTableTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<int> get id => $composableBuilder(column: $table.id, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get bank => $composableBuilder(
-    column: $table.bank,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get bank =>
+      $composableBuilder(column: $table.bank, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<int> get amount => $composableBuilder(
-    column: $table.amount,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<int> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get type => $composableBuilder(
-    column: $table.type,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get category => $composableBuilder(
-    column: $table.category,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get rawText => $composableBuilder(
-    column: $table.rawText,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get rawText =>
+      $composableBuilder(column: $table.rawText, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<DateTime> get time => $composableBuilder(
-    column: $table.time,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<DateTime> get time =>
+      $composableBuilder(column: $table.time, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get fingerprint => $composableBuilder(
-    column: $table.fingerprint,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get fingerprint =>
+      $composableBuilder(column: $table.fingerprint, builder: (column) => ColumnOrderings(column));
 }
 
-class $$TransactionsTableTableAnnotationComposer
-    extends Composer<_$AppDatabase, $TransactionsTableTable> {
+class $$TransactionsTableTableAnnotationComposer extends Composer<_$AppDatabase, $TransactionsTableTable> {
   $$TransactionsTableTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -1526,31 +1299,22 @@ class $$TransactionsTableTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
+  GeneratedColumn<int> get id => $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get bank =>
-      $composableBuilder(column: $table.bank, builder: (column) => column);
+  GeneratedColumn<String> get bank => $composableBuilder(column: $table.bank, builder: (column) => column);
 
-  GeneratedColumn<int> get amount =>
-      $composableBuilder(column: $table.amount, builder: (column) => column);
+  GeneratedColumn<int> get amount => $composableBuilder(column: $table.amount, builder: (column) => column);
 
-  GeneratedColumn<String> get type =>
-      $composableBuilder(column: $table.type, builder: (column) => column);
+  GeneratedColumn<String> get type => $composableBuilder(column: $table.type, builder: (column) => column);
 
-  GeneratedColumn<String> get category =>
-      $composableBuilder(column: $table.category, builder: (column) => column);
+  GeneratedColumn<String> get category => $composableBuilder(column: $table.category, builder: (column) => column);
 
-  GeneratedColumn<String> get rawText =>
-      $composableBuilder(column: $table.rawText, builder: (column) => column);
+  GeneratedColumn<String> get rawText => $composableBuilder(column: $table.rawText, builder: (column) => column);
 
-  GeneratedColumn<DateTime> get time =>
-      $composableBuilder(column: $table.time, builder: (column) => column);
+  GeneratedColumn<DateTime> get time => $composableBuilder(column: $table.time, builder: (column) => column);
 
-  GeneratedColumn<String> get fingerprint => $composableBuilder(
-    column: $table.fingerprint,
-    builder: (column) => column,
-  );
+  GeneratedColumn<String> get fingerprint =>
+      $composableBuilder(column: $table.fingerprint, builder: (column) => column);
 }
 
 class $$TransactionsTableTableTableManager
@@ -1564,33 +1328,18 @@ class $$TransactionsTableTableTableManager
           $$TransactionsTableTableAnnotationComposer,
           $$TransactionsTableTableCreateCompanionBuilder,
           $$TransactionsTableTableUpdateCompanionBuilder,
-          (
-            TransactionsTableData,
-            BaseReferences<
-              _$AppDatabase,
-              $TransactionsTableTable,
-              TransactionsTableData
-            >,
-          ),
+          (TransactionsTableData, BaseReferences<_$AppDatabase, $TransactionsTableTable, TransactionsTableData>),
           TransactionsTableData,
           PrefetchHooks Function()
         > {
-  $$TransactionsTableTableTableManager(
-    _$AppDatabase db,
-    $TransactionsTableTable table,
-  ) : super(
+  $$TransactionsTableTableTableManager(_$AppDatabase db, $TransactionsTableTable table)
+    : super(
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () =>
-              $$TransactionsTableTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$TransactionsTableTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$TransactionsTableTableAnnotationComposer(
-                $db: db,
-                $table: table,
-              ),
+          createFilteringComposer: () => $$TransactionsTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () => $$TransactionsTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () => $$TransactionsTableTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
@@ -1631,9 +1380,7 @@ class $$TransactionsTableTableTableManager
                 time: time,
                 fingerprint: fingerprint,
               ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
+          withReferenceMapper: (p0) => p0.map((e) => (e.readTable(table), BaseReferences(db, table, e))).toList(),
           prefetchHooksCallback: null,
         ),
       );
@@ -1649,14 +1396,7 @@ typedef $$TransactionsTableTableProcessedTableManager =
       $$TransactionsTableTableAnnotationComposer,
       $$TransactionsTableTableCreateCompanionBuilder,
       $$TransactionsTableTableUpdateCompanionBuilder,
-      (
-        TransactionsTableData,
-        BaseReferences<
-          _$AppDatabase,
-          $TransactionsTableTable,
-          TransactionsTableData
-        >,
-      ),
+      (TransactionsTableData, BaseReferences<_$AppDatabase, $TransactionsTableTable, TransactionsTableData>),
       TransactionsTableData,
       PrefetchHooks Function()
     >;
@@ -1679,8 +1419,7 @@ typedef $$NotificationLogsTableTableUpdateCompanionBuilder =
       Value<String> fingerprint,
     });
 
-class $$NotificationLogsTableTableFilterComposer
-    extends Composer<_$AppDatabase, $NotificationLogsTableTable> {
+class $$NotificationLogsTableTableFilterComposer extends Composer<_$AppDatabase, $NotificationLogsTableTable> {
   $$NotificationLogsTableTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -1688,39 +1427,25 @@ class $$NotificationLogsTableTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<int> get id => $composableBuilder(column: $table.id, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get packageName => $composableBuilder(
-    column: $table.packageName,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get packageName =>
+      $composableBuilder(column: $table.packageName, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get title => $composableBuilder(
-    column: $table.title,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get rawText => $composableBuilder(
-    column: $table.rawText,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get rawText =>
+      $composableBuilder(column: $table.rawText, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get timestamp => $composableBuilder(
-    column: $table.timestamp,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<int> get timestamp =>
+      $composableBuilder(column: $table.timestamp, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get fingerprint => $composableBuilder(
-    column: $table.fingerprint,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get fingerprint =>
+      $composableBuilder(column: $table.fingerprint, builder: (column) => ColumnFilters(column));
 }
 
-class $$NotificationLogsTableTableOrderingComposer
-    extends Composer<_$AppDatabase, $NotificationLogsTableTable> {
+class $$NotificationLogsTableTableOrderingComposer extends Composer<_$AppDatabase, $NotificationLogsTableTable> {
   $$NotificationLogsTableTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -1728,39 +1453,25 @@ class $$NotificationLogsTableTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<int> get id => $composableBuilder(column: $table.id, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get packageName => $composableBuilder(
-    column: $table.packageName,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get packageName =>
+      $composableBuilder(column: $table.packageName, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get title => $composableBuilder(
-    column: $table.title,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get rawText => $composableBuilder(
-    column: $table.rawText,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get rawText =>
+      $composableBuilder(column: $table.rawText, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<int> get timestamp => $composableBuilder(
-    column: $table.timestamp,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<int> get timestamp =>
+      $composableBuilder(column: $table.timestamp, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get fingerprint => $composableBuilder(
-    column: $table.fingerprint,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get fingerprint =>
+      $composableBuilder(column: $table.fingerprint, builder: (column) => ColumnOrderings(column));
 }
 
-class $$NotificationLogsTableTableAnnotationComposer
-    extends Composer<_$AppDatabase, $NotificationLogsTableTable> {
+class $$NotificationLogsTableTableAnnotationComposer extends Composer<_$AppDatabase, $NotificationLogsTableTable> {
   $$NotificationLogsTableTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -1768,27 +1479,19 @@ class $$NotificationLogsTableTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
+  GeneratedColumn<int> get id => $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get packageName => $composableBuilder(
-    column: $table.packageName,
-    builder: (column) => column,
-  );
+  GeneratedColumn<String> get packageName =>
+      $composableBuilder(column: $table.packageName, builder: (column) => column);
 
-  GeneratedColumn<String> get title =>
-      $composableBuilder(column: $table.title, builder: (column) => column);
+  GeneratedColumn<String> get title => $composableBuilder(column: $table.title, builder: (column) => column);
 
-  GeneratedColumn<String> get rawText =>
-      $composableBuilder(column: $table.rawText, builder: (column) => column);
+  GeneratedColumn<String> get rawText => $composableBuilder(column: $table.rawText, builder: (column) => column);
 
-  GeneratedColumn<int> get timestamp =>
-      $composableBuilder(column: $table.timestamp, builder: (column) => column);
+  GeneratedColumn<int> get timestamp => $composableBuilder(column: $table.timestamp, builder: (column) => column);
 
-  GeneratedColumn<String> get fingerprint => $composableBuilder(
-    column: $table.fingerprint,
-    builder: (column) => column,
-  );
+  GeneratedColumn<String> get fingerprint =>
+      $composableBuilder(column: $table.fingerprint, builder: (column) => column);
 }
 
 class $$NotificationLogsTableTableTableManager
@@ -1804,37 +1507,19 @@ class $$NotificationLogsTableTableTableManager
           $$NotificationLogsTableTableUpdateCompanionBuilder,
           (
             NotificationLogsTableData,
-            BaseReferences<
-              _$AppDatabase,
-              $NotificationLogsTableTable,
-              NotificationLogsTableData
-            >,
+            BaseReferences<_$AppDatabase, $NotificationLogsTableTable, NotificationLogsTableData>,
           ),
           NotificationLogsTableData,
           PrefetchHooks Function()
         > {
-  $$NotificationLogsTableTableTableManager(
-    _$AppDatabase db,
-    $NotificationLogsTableTable table,
-  ) : super(
+  $$NotificationLogsTableTableTableManager(_$AppDatabase db, $NotificationLogsTableTable table)
+    : super(
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () =>
-              $$NotificationLogsTableTableFilterComposer(
-                $db: db,
-                $table: table,
-              ),
-          createOrderingComposer: () =>
-              $$NotificationLogsTableTableOrderingComposer(
-                $db: db,
-                $table: table,
-              ),
-          createComputedFieldComposer: () =>
-              $$NotificationLogsTableTableAnnotationComposer(
-                $db: db,
-                $table: table,
-              ),
+          createFilteringComposer: () => $$NotificationLogsTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () => $$NotificationLogsTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () => $$NotificationLogsTableTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
@@ -1867,9 +1552,7 @@ class $$NotificationLogsTableTableTableManager
                 timestamp: timestamp,
                 fingerprint: fingerprint,
               ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
+          withReferenceMapper: (p0) => p0.map((e) => (e.readTable(table), BaseReferences(db, table, e))).toList(),
           prefetchHooksCallback: null,
         ),
       );
@@ -1887,11 +1570,7 @@ typedef $$NotificationLogsTableTableProcessedTableManager =
       $$NotificationLogsTableTableUpdateCompanionBuilder,
       (
         NotificationLogsTableData,
-        BaseReferences<
-          _$AppDatabase,
-          $NotificationLogsTableTable,
-          NotificationLogsTableData
-        >,
+        BaseReferences<_$AppDatabase, $NotificationLogsTableTable, NotificationLogsTableData>,
       ),
       NotificationLogsTableData,
       PrefetchHooks Function()
@@ -1901,6 +1580,7 @@ typedef $$PendingTransactionsTableTableCreateCompanionBuilder =
       required String id,
       required String bank,
       required int amount,
+      required String category,
       required String type,
       required String rawText,
       required DateTime time,
@@ -1912,6 +1592,7 @@ typedef $$PendingTransactionsTableTableUpdateCompanionBuilder =
       Value<String> id,
       Value<String> bank,
       Value<int> amount,
+      Value<String> category,
       Value<String> type,
       Value<String> rawText,
       Value<DateTime> time,
@@ -1919,8 +1600,7 @@ typedef $$PendingTransactionsTableTableUpdateCompanionBuilder =
       Value<int> rowid,
     });
 
-class $$PendingTransactionsTableTableFilterComposer
-    extends Composer<_$AppDatabase, $PendingTransactionsTableTable> {
+class $$PendingTransactionsTableTableFilterComposer extends Composer<_$AppDatabase, $PendingTransactionsTableTable> {
   $$PendingTransactionsTableTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -1928,44 +1608,29 @@ class $$PendingTransactionsTableTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get id => $composableBuilder(column: $table.id, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get bank => $composableBuilder(
-    column: $table.bank,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get bank => $composableBuilder(column: $table.bank, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get amount => $composableBuilder(
-    column: $table.amount,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<int> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get type => $composableBuilder(
-    column: $table.type,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get rawText => $composableBuilder(
-    column: $table.rawText,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get type => $composableBuilder(column: $table.type, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<DateTime> get time => $composableBuilder(
-    column: $table.time,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get rawText =>
+      $composableBuilder(column: $table.rawText, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<bool> get pending => $composableBuilder(
-    column: $table.pending,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<DateTime> get time =>
+      $composableBuilder(column: $table.time, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get pending =>
+      $composableBuilder(column: $table.pending, builder: (column) => ColumnFilters(column));
 }
 
-class $$PendingTransactionsTableTableOrderingComposer
-    extends Composer<_$AppDatabase, $PendingTransactionsTableTable> {
+class $$PendingTransactionsTableTableOrderingComposer extends Composer<_$AppDatabase, $PendingTransactionsTableTable> {
   $$PendingTransactionsTableTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -1973,40 +1638,28 @@ class $$PendingTransactionsTableTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get id => $composableBuilder(column: $table.id, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get bank => $composableBuilder(
-    column: $table.bank,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get bank =>
+      $composableBuilder(column: $table.bank, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<int> get amount => $composableBuilder(
-    column: $table.amount,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<int> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get type => $composableBuilder(
-    column: $table.type,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get rawText => $composableBuilder(
-    column: $table.rawText,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<DateTime> get time => $composableBuilder(
-    column: $table.time,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get rawText =>
+      $composableBuilder(column: $table.rawText, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<bool> get pending => $composableBuilder(
-    column: $table.pending,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<DateTime> get time =>
+      $composableBuilder(column: $table.time, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get pending =>
+      $composableBuilder(column: $table.pending, builder: (column) => ColumnOrderings(column));
 }
 
 class $$PendingTransactionsTableTableAnnotationComposer
@@ -2018,26 +1671,21 @@ class $$PendingTransactionsTableTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
+  GeneratedColumn<String> get id => $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get bank =>
-      $composableBuilder(column: $table.bank, builder: (column) => column);
+  GeneratedColumn<String> get bank => $composableBuilder(column: $table.bank, builder: (column) => column);
 
-  GeneratedColumn<int> get amount =>
-      $composableBuilder(column: $table.amount, builder: (column) => column);
+  GeneratedColumn<int> get amount => $composableBuilder(column: $table.amount, builder: (column) => column);
 
-  GeneratedColumn<String> get type =>
-      $composableBuilder(column: $table.type, builder: (column) => column);
+  GeneratedColumn<String> get category => $composableBuilder(column: $table.category, builder: (column) => column);
 
-  GeneratedColumn<String> get rawText =>
-      $composableBuilder(column: $table.rawText, builder: (column) => column);
+  GeneratedColumn<String> get type => $composableBuilder(column: $table.type, builder: (column) => column);
 
-  GeneratedColumn<DateTime> get time =>
-      $composableBuilder(column: $table.time, builder: (column) => column);
+  GeneratedColumn<String> get rawText => $composableBuilder(column: $table.rawText, builder: (column) => column);
 
-  GeneratedColumn<bool> get pending =>
-      $composableBuilder(column: $table.pending, builder: (column) => column);
+  GeneratedColumn<DateTime> get time => $composableBuilder(column: $table.time, builder: (column) => column);
+
+  GeneratedColumn<bool> get pending => $composableBuilder(column: $table.pending, builder: (column) => column);
 }
 
 class $$PendingTransactionsTableTableTableManager
@@ -2053,42 +1701,25 @@ class $$PendingTransactionsTableTableTableManager
           $$PendingTransactionsTableTableUpdateCompanionBuilder,
           (
             PendingTransactionsTableData,
-            BaseReferences<
-              _$AppDatabase,
-              $PendingTransactionsTableTable,
-              PendingTransactionsTableData
-            >,
+            BaseReferences<_$AppDatabase, $PendingTransactionsTableTable, PendingTransactionsTableData>,
           ),
           PendingTransactionsTableData,
           PrefetchHooks Function()
         > {
-  $$PendingTransactionsTableTableTableManager(
-    _$AppDatabase db,
-    $PendingTransactionsTableTable table,
-  ) : super(
+  $$PendingTransactionsTableTableTableManager(_$AppDatabase db, $PendingTransactionsTableTable table)
+    : super(
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () =>
-              $$PendingTransactionsTableTableFilterComposer(
-                $db: db,
-                $table: table,
-              ),
-          createOrderingComposer: () =>
-              $$PendingTransactionsTableTableOrderingComposer(
-                $db: db,
-                $table: table,
-              ),
-          createComputedFieldComposer: () =>
-              $$PendingTransactionsTableTableAnnotationComposer(
-                $db: db,
-                $table: table,
-              ),
+          createFilteringComposer: () => $$PendingTransactionsTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () => $$PendingTransactionsTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () => $$PendingTransactionsTableTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> bank = const Value.absent(),
                 Value<int> amount = const Value.absent(),
+                Value<String> category = const Value.absent(),
                 Value<String> type = const Value.absent(),
                 Value<String> rawText = const Value.absent(),
                 Value<DateTime> time = const Value.absent(),
@@ -2098,6 +1729,7 @@ class $$PendingTransactionsTableTableTableManager
                 id: id,
                 bank: bank,
                 amount: amount,
+                category: category,
                 type: type,
                 rawText: rawText,
                 time: time,
@@ -2109,6 +1741,7 @@ class $$PendingTransactionsTableTableTableManager
                 required String id,
                 required String bank,
                 required int amount,
+                required String category,
                 required String type,
                 required String rawText,
                 required DateTime time,
@@ -2118,15 +1751,14 @@ class $$PendingTransactionsTableTableTableManager
                 id: id,
                 bank: bank,
                 amount: amount,
+                category: category,
                 type: type,
                 rawText: rawText,
                 time: time,
                 pending: pending,
                 rowid: rowid,
               ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
+          withReferenceMapper: (p0) => p0.map((e) => (e.readTable(table), BaseReferences(db, table, e))).toList(),
           prefetchHooksCallback: null,
         ),
       );
@@ -2144,11 +1776,7 @@ typedef $$PendingTransactionsTableTableProcessedTableManager =
       $$PendingTransactionsTableTableUpdateCompanionBuilder,
       (
         PendingTransactionsTableData,
-        BaseReferences<
-          _$AppDatabase,
-          $PendingTransactionsTableTable,
-          PendingTransactionsTableData
-        >,
+        BaseReferences<_$AppDatabase, $PendingTransactionsTableTable, PendingTransactionsTableData>,
       ),
       PendingTransactionsTableData,
       PrefetchHooks Function()
@@ -2162,8 +1790,5 @@ class $AppDatabaseManager {
   $$NotificationLogsTableTableTableManager get notificationLogsTable =>
       $$NotificationLogsTableTableTableManager(_db, _db.notificationLogsTable);
   $$PendingTransactionsTableTableTableManager get pendingTransactionsTable =>
-      $$PendingTransactionsTableTableTableManager(
-        _db,
-        _db.pendingTransactionsTable,
-      );
+      $$PendingTransactionsTableTableTableManager(_db, _db.pendingTransactionsTable);
 }

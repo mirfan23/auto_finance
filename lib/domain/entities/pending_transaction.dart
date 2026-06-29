@@ -2,6 +2,7 @@ class PendingTransaction {
   final String id;
   final String bank;
   final int amount;
+  final String category;
   final String type;
   final DateTime time;
   final String rawText;
@@ -12,6 +13,7 @@ class PendingTransaction {
     required this.id,
     required this.bank,
     required this.amount,
+    required this.category,
     required this.type,
     required this.time,
     required this.rawText,
