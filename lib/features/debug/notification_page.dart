@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:android_intent_plus/android_intent.dart';
+import 'package:auto_finance/domain/entities/transaction_type.dart';
 import 'package:auto_finance/features/notification/providers/notification_stream_provider.dart';
 import 'package:auto_finance/features/transaction/providers/transaction_provider.dart';
 import 'package:flutter/material.dart';
@@ -50,10 +51,15 @@ class NotificationPage extends ConsumerWidget {
       ),
       body: data.when(
         data: (list) {
-          final total = list.fold<int>(0, (sum, e) => sum + e.amount);
-          final income = list.where((e) => e.type == "income").fold<int>(0, (sum, e) => sum + e.amount);
+          // final total = list.fold<int>(0, (sum, e) => sum + e.amount);
+          // final income = list.where((e) => e.type == "income").fold<int>(0, (sum, e) => sum + e.amount);
+          final income = list.where((e) => e.type == TransactionType.income).fold<int>(0, (sum, e) => sum + e.amount);
+          final expense = list.where((e) => e.type == TransactionType.expense).fold<int>(0, (sum, e) => sum + e.amount);
+          final transfer = list
+              .where((e) => e.type == TransactionType.transfer)
+              .fold<int>(0, (sum, e) => sum + e.amount);
 
-          final expense = list.where((e) => e.type == "expense").fold<int>(0, (sum, e) => sum + e.amount);
+          // final expense = list.where((e) => e.type == "expense").fold<int>(0, (sum, e) => sum + e.amount);
           debugPrint("UI TRANSACTION COUNT = ${list.length}");
           return Column(
             children: [
@@ -109,14 +115,20 @@ class NotificationPage extends ConsumerWidget {
                         return Card(
                           margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           child: ListTile(
-                            leading: CircleAvatar(child: Text(e.type == "income" ? "⬆" : "⬇")),
+                            leading: CircleAvatar(
+                              child: Text(switch (e.type) {
+                                TransactionType.income => "⬆",
+                                TransactionType.expense => "⬇",
+                                TransactionType.transfer => "⇄",
+                              }),
+                            ),
 
                             title: Text(e.bank),
 
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("${e.type.toUpperCase()} • ${e.category.name}"),
+                                Text("${e.type.name.toUpperCase()} • ${e.category.name}"),
 
                                 const SizedBox(height: 4),
 
@@ -125,10 +137,18 @@ class NotificationPage extends ConsumerWidget {
                             ),
 
                             trailing: Text(
-                              "${e.type == "income" ? "+" : "-"} ${FormatterHelper.formatRupiah(e.amount)}",
+                              "${switch (e.type) {
+                                TransactionType.income => "+",
+                                TransactionType.expense => "-",
+                                TransactionType.transfer => "⇄",
+                              }} ${FormatterHelper.formatRupiah(e.amount)}",
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: e.type == "income" ? Colors.green : Colors.red,
+                                color: switch (e.type) {
+                                  TransactionType.income => Colors.green,
+                                  TransactionType.expense => Colors.red,
+                                  TransactionType.transfer => Colors.blue,
+                                },
                               ),
                             ),
                           ),

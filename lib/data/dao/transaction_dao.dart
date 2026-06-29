@@ -12,18 +12,7 @@ class TransactionDao {
   TransactionDao(this.db);
 
   Future<void> insert(Transaction trx) async {
-    final fingerprint = md5
-        .convert(
-          utf8.encode(
-            '${trx.bank}'
-            '${trx.amount}'
-            '${trx.type}'
-            '${trx.rawText}',
-          ),
-        )
-        .toString();
-
-    if (await exists(fingerprint)) {
+    if (await exists(trx.id)) {
       debugPrint("TRANSACTION DUPLICATE SKIPPED");
       return;
     }
@@ -32,13 +21,15 @@ class TransactionDao {
         .into(db.transactionsTable)
         .insert(
           TransactionsTableCompanion.insert(
+            id: trx.id,
             bank: trx.bank,
+            fromWallet: Value(trx.fromWallet),
+            toWallet: Value(trx.toWallet),
             amount: trx.amount,
-            type: trx.type,
+            type: trx.type.name,
             category: trx.category.name,
             rawText: trx.rawText,
             time: trx.time,
-            fingerprint: fingerprint,
           ),
         );
   }
@@ -51,8 +42,8 @@ class TransactionDao {
     return db.select(db.transactionsTable).get();
   }
 
-  Future<bool> exists(String fingerprint) async {
-    final result = await (db.select(db.transactionsTable)..where((t) => t.fingerprint.equals(fingerprint))).get();
+  Future<bool> exists(String id) async {
+    final result = await (db.select(db.transactionsTable)..where((t) => t.id.equals(id))).get();
 
     return result.isNotEmpty;
   }

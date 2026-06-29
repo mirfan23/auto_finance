@@ -1,6 +1,6 @@
+import 'package:auto_finance/domain/entities/parser_result.dart';
 import 'package:flutter/foundation.dart';
 
-import '../../entities/transaction.dart';
 import 'parser_bca.dart';
 import 'parser_gopay.dart';
 import 'parser_jago.dart';
@@ -12,7 +12,7 @@ class ParserDispatcher {
   final _gopayParser = GopayParser();
   final _shopeepayParser = ShopeePayParser();
 
-  Transaction? parse(Map data) {
+  ParserResult? parse(Map data) {
     final packageName = (data["packageName"] ?? "").toString().toLowerCase();
 
     debugPrint("PARSER => $packageName");

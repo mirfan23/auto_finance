@@ -1,9 +1,8 @@
+import 'package:auto_finance/domain/entities/parser_result.dart';
 import 'package:auto_finance/domain/usecases/parser/base_parser.dart';
 
-import '../../entities/transaction.dart';
-
 class GopayParser extends BaseParser {
-  Transaction? parse(Map data) {
+  ParserResult? parse(Map data) {
     final text = (data["text"] ?? "").toString();
 
     final match = RegExp(r'Rp([\d\.]+)').firstMatch(text);
@@ -12,10 +11,10 @@ class GopayParser extends BaseParser {
 
     final amount = int.parse(match.group(1)!.replaceAll(".", ""));
 
-    return Transaction(
+    return ParserResult(
       bank: "GoPay",
       amount: amount,
-      type: "expense",
+      type: classifier(text),
       category: categorizer(text),
       rawText: text,
       time: DateTime.fromMillisecondsSinceEpoch((data["timestamp"] as num).toInt()),

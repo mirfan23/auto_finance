@@ -1,9 +1,8 @@
+import 'package:auto_finance/domain/entities/parser_result.dart';
 import 'package:auto_finance/domain/usecases/parser/base_parser.dart';
 
-import '../../entities/transaction.dart';
-
 class BcaParser extends BaseParser {
-  Transaction? parse(Map data) {
+  ParserResult? parse(Map data) {
     final text = (data["text"] ?? "").toString();
 
     final match = RegExp(r'(?:IDR|Rp)\s?([\d\.,]+)', caseSensitive: false).firstMatch(text);
@@ -22,12 +21,10 @@ class BcaParser extends BaseParser {
       return null;
     }
 
-    final type = classifier(text);
-
-    return Transaction(
+    return ParserResult(
       bank: "BCA",
       amount: amount,
-      type: type.name,
+      type: classifier(text),
       category: categorizer(text),
       rawText: text,
       time: DateTime.fromMillisecondsSinceEpoch((data["timestamp"] as num).toInt()),

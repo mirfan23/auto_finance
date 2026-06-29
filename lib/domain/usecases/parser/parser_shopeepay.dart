@@ -1,9 +1,8 @@
+import 'package:auto_finance/domain/entities/parser_result.dart';
 import 'package:auto_finance/domain/usecases/parser/base_parser.dart';
 
-import '../../entities/transaction.dart';
-
 class ShopeePayParser extends BaseParser {
-  Transaction? parse(Map data) {
+  ParserResult? parse(Map data) {
     final text = (data["text"] ?? "").toString();
 
     if (text.isEmpty) return null;
@@ -17,12 +16,10 @@ class ShopeePayParser extends BaseParser {
     final amount = int.tryParse(amountStr);
     if (amount == null) return null;
 
-    final isIncome = text.toLowerCase().contains("diterima");
-
-    return Transaction(
+    return ParserResult(
       bank: "ShopeePay",
       amount: amount,
-      type: isIncome ? "income" : "expense",
+      type: classifier(text),
       category: categorizer(text),
       rawText: text,
       time: DateTime.fromMillisecondsSinceEpoch((data["timestamp"] as num).toInt()),
