@@ -1,8 +1,5 @@
-import 'dart:convert';
-
 import 'package:auto_finance/data/local/database/app_database.dart';
 import 'package:auto_finance/domain/entities/transaction.dart';
-import 'package:crypto/crypto.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 

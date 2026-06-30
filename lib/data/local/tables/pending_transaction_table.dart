@@ -17,6 +17,10 @@ class PendingTransactionsTable extends Table {
 
   BoolColumn get pending => boolean().withDefault(const Constant(true))();
 
+  TextColumn get fromWallet => text().nullable()();
+
+  TextColumn get toWallet => text().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 }

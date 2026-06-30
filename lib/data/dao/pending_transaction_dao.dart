@@ -21,6 +21,8 @@ class PendingTransactionDao {
             type: trx.type.name,
             rawText: trx.rawText,
             time: trx.time,
+            fromWallet: Value(trx.fromWallet),
+            toWallet: Value(trx.toWallet),
           ),
         );
   }
@@ -65,21 +67,13 @@ class PendingTransactionDao {
   Transaction _mapRowToTransaction(PendingTransactionsTableData row) {
     return Transaction(
       id: row.id,
-
       bank: row.bank,
-
-      fromWallet: null,
-
-      toWallet: null,
-
+      fromWallet: row.fromWallet,
+      toWallet: row.toWallet,
       amount: row.amount,
-
       type: TransactionType.values.firstWhere((e) => e.name == row.type),
-
       category: TransactionCategory.values.firstWhere((e) => e.name == row.category),
-
       rawText: row.rawText,
-
       time: row.time,
     );
   }

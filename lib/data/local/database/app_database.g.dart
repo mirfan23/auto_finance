@@ -1069,6 +1069,28 @@ class $PendingTransactionsTableTable extends PendingTransactionsTable
     ),
     defaultValue: const Constant(true),
   );
+  static const VerificationMeta _fromWalletMeta = const VerificationMeta(
+    'fromWallet',
+  );
+  @override
+  late final GeneratedColumn<String> fromWallet = GeneratedColumn<String>(
+    'from_wallet',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _toWalletMeta = const VerificationMeta(
+    'toWallet',
+  );
+  @override
+  late final GeneratedColumn<String> toWallet = GeneratedColumn<String>(
+    'to_wallet',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1079,6 +1101,8 @@ class $PendingTransactionsTableTable extends PendingTransactionsTable
     rawText,
     time,
     pending,
+    fromWallet,
+    toWallet,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1151,6 +1175,18 @@ class $PendingTransactionsTableTable extends PendingTransactionsTable
         pending.isAcceptableOrUnknown(data['pending']!, _pendingMeta),
       );
     }
+    if (data.containsKey('from_wallet')) {
+      context.handle(
+        _fromWalletMeta,
+        fromWallet.isAcceptableOrUnknown(data['from_wallet']!, _fromWalletMeta),
+      );
+    }
+    if (data.containsKey('to_wallet')) {
+      context.handle(
+        _toWalletMeta,
+        toWallet.isAcceptableOrUnknown(data['to_wallet']!, _toWalletMeta),
+      );
+    }
     return context;
   }
 
@@ -1195,6 +1231,14 @@ class $PendingTransactionsTableTable extends PendingTransactionsTable
         DriftSqlType.bool,
         data['${effectivePrefix}pending'],
       )!,
+      fromWallet: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}from_wallet'],
+      ),
+      toWallet: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}to_wallet'],
+      ),
     );
   }
 
@@ -1214,6 +1258,8 @@ class PendingTransactionsTableData extends DataClass
   final String rawText;
   final DateTime time;
   final bool pending;
+  final String? fromWallet;
+  final String? toWallet;
   const PendingTransactionsTableData({
     required this.id,
     required this.bank,
@@ -1223,6 +1269,8 @@ class PendingTransactionsTableData extends DataClass
     required this.rawText,
     required this.time,
     required this.pending,
+    this.fromWallet,
+    this.toWallet,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1235,6 +1283,12 @@ class PendingTransactionsTableData extends DataClass
     map['raw_text'] = Variable<String>(rawText);
     map['time'] = Variable<DateTime>(time);
     map['pending'] = Variable<bool>(pending);
+    if (!nullToAbsent || fromWallet != null) {
+      map['from_wallet'] = Variable<String>(fromWallet);
+    }
+    if (!nullToAbsent || toWallet != null) {
+      map['to_wallet'] = Variable<String>(toWallet);
+    }
     return map;
   }
 
@@ -1248,6 +1302,12 @@ class PendingTransactionsTableData extends DataClass
       rawText: Value(rawText),
       time: Value(time),
       pending: Value(pending),
+      fromWallet: fromWallet == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fromWallet),
+      toWallet: toWallet == null && nullToAbsent
+          ? const Value.absent()
+          : Value(toWallet),
     );
   }
 
@@ -1265,6 +1325,8 @@ class PendingTransactionsTableData extends DataClass
       rawText: serializer.fromJson<String>(json['rawText']),
       time: serializer.fromJson<DateTime>(json['time']),
       pending: serializer.fromJson<bool>(json['pending']),
+      fromWallet: serializer.fromJson<String?>(json['fromWallet']),
+      toWallet: serializer.fromJson<String?>(json['toWallet']),
     );
   }
   @override
@@ -1279,6 +1341,8 @@ class PendingTransactionsTableData extends DataClass
       'rawText': serializer.toJson<String>(rawText),
       'time': serializer.toJson<DateTime>(time),
       'pending': serializer.toJson<bool>(pending),
+      'fromWallet': serializer.toJson<String?>(fromWallet),
+      'toWallet': serializer.toJson<String?>(toWallet),
     };
   }
 
@@ -1291,6 +1355,8 @@ class PendingTransactionsTableData extends DataClass
     String? rawText,
     DateTime? time,
     bool? pending,
+    Value<String?> fromWallet = const Value.absent(),
+    Value<String?> toWallet = const Value.absent(),
   }) => PendingTransactionsTableData(
     id: id ?? this.id,
     bank: bank ?? this.bank,
@@ -1300,6 +1366,8 @@ class PendingTransactionsTableData extends DataClass
     rawText: rawText ?? this.rawText,
     time: time ?? this.time,
     pending: pending ?? this.pending,
+    fromWallet: fromWallet.present ? fromWallet.value : this.fromWallet,
+    toWallet: toWallet.present ? toWallet.value : this.toWallet,
   );
   PendingTransactionsTableData copyWithCompanion(
     PendingTransactionsTableCompanion data,
@@ -1313,6 +1381,10 @@ class PendingTransactionsTableData extends DataClass
       rawText: data.rawText.present ? data.rawText.value : this.rawText,
       time: data.time.present ? data.time.value : this.time,
       pending: data.pending.present ? data.pending.value : this.pending,
+      fromWallet: data.fromWallet.present
+          ? data.fromWallet.value
+          : this.fromWallet,
+      toWallet: data.toWallet.present ? data.toWallet.value : this.toWallet,
     );
   }
 
@@ -1326,14 +1398,26 @@ class PendingTransactionsTableData extends DataClass
           ..write('type: $type, ')
           ..write('rawText: $rawText, ')
           ..write('time: $time, ')
-          ..write('pending: $pending')
+          ..write('pending: $pending, ')
+          ..write('fromWallet: $fromWallet, ')
+          ..write('toWallet: $toWallet')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, bank, amount, category, type, rawText, time, pending);
+  int get hashCode => Object.hash(
+    id,
+    bank,
+    amount,
+    category,
+    type,
+    rawText,
+    time,
+    pending,
+    fromWallet,
+    toWallet,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1345,7 +1429,9 @@ class PendingTransactionsTableData extends DataClass
           other.type == this.type &&
           other.rawText == this.rawText &&
           other.time == this.time &&
-          other.pending == this.pending);
+          other.pending == this.pending &&
+          other.fromWallet == this.fromWallet &&
+          other.toWallet == this.toWallet);
 }
 
 class PendingTransactionsTableCompanion
@@ -1358,6 +1444,8 @@ class PendingTransactionsTableCompanion
   final Value<String> rawText;
   final Value<DateTime> time;
   final Value<bool> pending;
+  final Value<String?> fromWallet;
+  final Value<String?> toWallet;
   final Value<int> rowid;
   const PendingTransactionsTableCompanion({
     this.id = const Value.absent(),
@@ -1368,6 +1456,8 @@ class PendingTransactionsTableCompanion
     this.rawText = const Value.absent(),
     this.time = const Value.absent(),
     this.pending = const Value.absent(),
+    this.fromWallet = const Value.absent(),
+    this.toWallet = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   PendingTransactionsTableCompanion.insert({
@@ -1379,6 +1469,8 @@ class PendingTransactionsTableCompanion
     required String rawText,
     required DateTime time,
     this.pending = const Value.absent(),
+    this.fromWallet = const Value.absent(),
+    this.toWallet = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        bank = Value(bank),
@@ -1396,6 +1488,8 @@ class PendingTransactionsTableCompanion
     Expression<String>? rawText,
     Expression<DateTime>? time,
     Expression<bool>? pending,
+    Expression<String>? fromWallet,
+    Expression<String>? toWallet,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1407,6 +1501,8 @@ class PendingTransactionsTableCompanion
       if (rawText != null) 'raw_text': rawText,
       if (time != null) 'time': time,
       if (pending != null) 'pending': pending,
+      if (fromWallet != null) 'from_wallet': fromWallet,
+      if (toWallet != null) 'to_wallet': toWallet,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1420,6 +1516,8 @@ class PendingTransactionsTableCompanion
     Value<String>? rawText,
     Value<DateTime>? time,
     Value<bool>? pending,
+    Value<String?>? fromWallet,
+    Value<String?>? toWallet,
     Value<int>? rowid,
   }) {
     return PendingTransactionsTableCompanion(
@@ -1431,6 +1529,8 @@ class PendingTransactionsTableCompanion
       rawText: rawText ?? this.rawText,
       time: time ?? this.time,
       pending: pending ?? this.pending,
+      fromWallet: fromWallet ?? this.fromWallet,
+      toWallet: toWallet ?? this.toWallet,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1462,6 +1562,12 @@ class PendingTransactionsTableCompanion
     if (pending.present) {
       map['pending'] = Variable<bool>(pending.value);
     }
+    if (fromWallet.present) {
+      map['from_wallet'] = Variable<String>(fromWallet.value);
+    }
+    if (toWallet.present) {
+      map['to_wallet'] = Variable<String>(toWallet.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1479,6 +1585,365 @@ class PendingTransactionsTableCompanion
           ..write('rawText: $rawText, ')
           ..write('time: $time, ')
           ..write('pending: $pending, ')
+          ..write('fromWallet: $fromWallet, ')
+          ..write('toWallet: $toWallet, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $WalletTableTable extends WalletTable
+    with TableInfo<$WalletTableTable, WalletTableData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WalletTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bankMeta = const VerificationMeta('bank');
+  @override
+  late final GeneratedColumn<String> bank = GeneratedColumn<String>(
+    'bank',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _balanceMeta = const VerificationMeta(
+    'balance',
+  );
+  @override
+  late final GeneratedColumn<int> balance = GeneratedColumn<int>(
+    'balance',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _activeMeta = const VerificationMeta('active');
+  @override
+  late final GeneratedColumn<bool> active = GeneratedColumn<bool>(
+    'active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name, bank, balance, active];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'wallet_table';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<WalletTableData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('bank')) {
+      context.handle(
+        _bankMeta,
+        bank.isAcceptableOrUnknown(data['bank']!, _bankMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bankMeta);
+    }
+    if (data.containsKey('balance')) {
+      context.handle(
+        _balanceMeta,
+        balance.isAcceptableOrUnknown(data['balance']!, _balanceMeta),
+      );
+    }
+    if (data.containsKey('active')) {
+      context.handle(
+        _activeMeta,
+        active.isAcceptableOrUnknown(data['active']!, _activeMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  WalletTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return WalletTableData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      bank: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}bank'],
+      )!,
+      balance: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}balance'],
+      )!,
+      active: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}active'],
+      )!,
+    );
+  }
+
+  @override
+  $WalletTableTable createAlias(String alias) {
+    return $WalletTableTable(attachedDatabase, alias);
+  }
+}
+
+class WalletTableData extends DataClass implements Insertable<WalletTableData> {
+  final String id;
+
+  /// Nama wallet dari user
+  final String name;
+
+  /// Bank / Ewallet
+  final String bank;
+
+  /// Saldo sekarang
+  final int balance;
+
+  /// Masih digunakan
+  final bool active;
+  const WalletTableData({
+    required this.id,
+    required this.name,
+    required this.bank,
+    required this.balance,
+    required this.active,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['bank'] = Variable<String>(bank);
+    map['balance'] = Variable<int>(balance);
+    map['active'] = Variable<bool>(active);
+    return map;
+  }
+
+  WalletTableCompanion toCompanion(bool nullToAbsent) {
+    return WalletTableCompanion(
+      id: Value(id),
+      name: Value(name),
+      bank: Value(bank),
+      balance: Value(balance),
+      active: Value(active),
+    );
+  }
+
+  factory WalletTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return WalletTableData(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      bank: serializer.fromJson<String>(json['bank']),
+      balance: serializer.fromJson<int>(json['balance']),
+      active: serializer.fromJson<bool>(json['active']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'bank': serializer.toJson<String>(bank),
+      'balance': serializer.toJson<int>(balance),
+      'active': serializer.toJson<bool>(active),
+    };
+  }
+
+  WalletTableData copyWith({
+    String? id,
+    String? name,
+    String? bank,
+    int? balance,
+    bool? active,
+  }) => WalletTableData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    bank: bank ?? this.bank,
+    balance: balance ?? this.balance,
+    active: active ?? this.active,
+  );
+  WalletTableData copyWithCompanion(WalletTableCompanion data) {
+    return WalletTableData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      bank: data.bank.present ? data.bank.value : this.bank,
+      balance: data.balance.present ? data.balance.value : this.balance,
+      active: data.active.present ? data.active.value : this.active,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WalletTableData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('bank: $bank, ')
+          ..write('balance: $balance, ')
+          ..write('active: $active')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, bank, balance, active);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WalletTableData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.bank == this.bank &&
+          other.balance == this.balance &&
+          other.active == this.active);
+}
+
+class WalletTableCompanion extends UpdateCompanion<WalletTableData> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<String> bank;
+  final Value<int> balance;
+  final Value<bool> active;
+  final Value<int> rowid;
+  const WalletTableCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.bank = const Value.absent(),
+    this.balance = const Value.absent(),
+    this.active = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  WalletTableCompanion.insert({
+    required String id,
+    required String name,
+    required String bank,
+    this.balance = const Value.absent(),
+    this.active = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name),
+       bank = Value(bank);
+  static Insertable<WalletTableData> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? bank,
+    Expression<int>? balance,
+    Expression<bool>? active,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (bank != null) 'bank': bank,
+      if (balance != null) 'balance': balance,
+      if (active != null) 'active': active,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  WalletTableCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<String>? bank,
+    Value<int>? balance,
+    Value<bool>? active,
+    Value<int>? rowid,
+  }) {
+    return WalletTableCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      bank: bank ?? this.bank,
+      balance: balance ?? this.balance,
+      active: active ?? this.active,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (bank.present) {
+      map['bank'] = Variable<String>(bank.value);
+    }
+    if (balance.present) {
+      map['balance'] = Variable<int>(balance.value);
+    }
+    if (active.present) {
+      map['active'] = Variable<bool>(active.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WalletTableCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('bank: $bank, ')
+          ..write('balance: $balance, ')
+          ..write('active: $active, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1494,6 +1959,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $NotificationLogsTableTable(this);
   late final $PendingTransactionsTableTable pendingTransactionsTable =
       $PendingTransactionsTableTable(this);
+  late final $WalletTableTable walletTable = $WalletTableTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1502,6 +1968,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     transactionsTable,
     notificationLogsTable,
     pendingTransactionsTable,
+    walletTable,
   ];
 }
 
@@ -2042,6 +2509,8 @@ typedef $$PendingTransactionsTableTableCreateCompanionBuilder =
       required String rawText,
       required DateTime time,
       Value<bool> pending,
+      Value<String?> fromWallet,
+      Value<String?> toWallet,
       Value<int> rowid,
     });
 typedef $$PendingTransactionsTableTableUpdateCompanionBuilder =
@@ -2054,6 +2523,8 @@ typedef $$PendingTransactionsTableTableUpdateCompanionBuilder =
       Value<String> rawText,
       Value<DateTime> time,
       Value<bool> pending,
+      Value<String?> fromWallet,
+      Value<String?> toWallet,
       Value<int> rowid,
     });
 
@@ -2103,6 +2574,16 @@ class $$PendingTransactionsTableTableFilterComposer
 
   ColumnFilters<bool> get pending => $composableBuilder(
     column: $table.pending,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fromWallet => $composableBuilder(
+    column: $table.fromWallet,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get toWallet => $composableBuilder(
+    column: $table.toWallet,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -2155,6 +2636,16 @@ class $$PendingTransactionsTableTableOrderingComposer
     column: $table.pending,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get fromWallet => $composableBuilder(
+    column: $table.fromWallet,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get toWallet => $composableBuilder(
+    column: $table.toWallet,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$PendingTransactionsTableTableAnnotationComposer
@@ -2189,6 +2680,14 @@ class $$PendingTransactionsTableTableAnnotationComposer
 
   GeneratedColumn<bool> get pending =>
       $composableBuilder(column: $table.pending, builder: (column) => column);
+
+  GeneratedColumn<String> get fromWallet => $composableBuilder(
+    column: $table.fromWallet,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get toWallet =>
+      $composableBuilder(column: $table.toWallet, builder: (column) => column);
 }
 
 class $$PendingTransactionsTableTableTableManager
@@ -2245,6 +2744,8 @@ class $$PendingTransactionsTableTableTableManager
                 Value<String> rawText = const Value.absent(),
                 Value<DateTime> time = const Value.absent(),
                 Value<bool> pending = const Value.absent(),
+                Value<String?> fromWallet = const Value.absent(),
+                Value<String?> toWallet = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PendingTransactionsTableCompanion(
                 id: id,
@@ -2255,6 +2756,8 @@ class $$PendingTransactionsTableTableTableManager
                 rawText: rawText,
                 time: time,
                 pending: pending,
+                fromWallet: fromWallet,
+                toWallet: toWallet,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -2267,6 +2770,8 @@ class $$PendingTransactionsTableTableTableManager
                 required String rawText,
                 required DateTime time,
                 Value<bool> pending = const Value.absent(),
+                Value<String?> fromWallet = const Value.absent(),
+                Value<String?> toWallet = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PendingTransactionsTableCompanion.insert(
                 id: id,
@@ -2277,6 +2782,8 @@ class $$PendingTransactionsTableTableTableManager
                 rawText: rawText,
                 time: time,
                 pending: pending,
+                fromWallet: fromWallet,
+                toWallet: toWallet,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -2308,6 +2815,206 @@ typedef $$PendingTransactionsTableTableProcessedTableManager =
       PendingTransactionsTableData,
       PrefetchHooks Function()
     >;
+typedef $$WalletTableTableCreateCompanionBuilder =
+    WalletTableCompanion Function({
+      required String id,
+      required String name,
+      required String bank,
+      Value<int> balance,
+      Value<bool> active,
+      Value<int> rowid,
+    });
+typedef $$WalletTableTableUpdateCompanionBuilder =
+    WalletTableCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<String> bank,
+      Value<int> balance,
+      Value<bool> active,
+      Value<int> rowid,
+    });
+
+class $$WalletTableTableFilterComposer
+    extends Composer<_$AppDatabase, $WalletTableTable> {
+  $$WalletTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bank => $composableBuilder(
+    column: $table.bank,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get balance => $composableBuilder(
+    column: $table.balance,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$WalletTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $WalletTableTable> {
+  $$WalletTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bank => $composableBuilder(
+    column: $table.bank,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get balance => $composableBuilder(
+    column: $table.balance,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$WalletTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WalletTableTable> {
+  $$WalletTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get bank =>
+      $composableBuilder(column: $table.bank, builder: (column) => column);
+
+  GeneratedColumn<int> get balance =>
+      $composableBuilder(column: $table.balance, builder: (column) => column);
+
+  GeneratedColumn<bool> get active =>
+      $composableBuilder(column: $table.active, builder: (column) => column);
+}
+
+class $$WalletTableTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $WalletTableTable,
+          WalletTableData,
+          $$WalletTableTableFilterComposer,
+          $$WalletTableTableOrderingComposer,
+          $$WalletTableTableAnnotationComposer,
+          $$WalletTableTableCreateCompanionBuilder,
+          $$WalletTableTableUpdateCompanionBuilder,
+          (
+            WalletTableData,
+            BaseReferences<_$AppDatabase, $WalletTableTable, WalletTableData>,
+          ),
+          WalletTableData,
+          PrefetchHooks Function()
+        > {
+  $$WalletTableTableTableManager(_$AppDatabase db, $WalletTableTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WalletTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WalletTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WalletTableTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> bank = const Value.absent(),
+                Value<int> balance = const Value.absent(),
+                Value<bool> active = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WalletTableCompanion(
+                id: id,
+                name: name,
+                bank: bank,
+                balance: balance,
+                active: active,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                required String bank,
+                Value<int> balance = const Value.absent(),
+                Value<bool> active = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WalletTableCompanion.insert(
+                id: id,
+                name: name,
+                bank: bank,
+                balance: balance,
+                active: active,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$WalletTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $WalletTableTable,
+      WalletTableData,
+      $$WalletTableTableFilterComposer,
+      $$WalletTableTableOrderingComposer,
+      $$WalletTableTableAnnotationComposer,
+      $$WalletTableTableCreateCompanionBuilder,
+      $$WalletTableTableUpdateCompanionBuilder,
+      (
+        WalletTableData,
+        BaseReferences<_$AppDatabase, $WalletTableTable, WalletTableData>,
+      ),
+      WalletTableData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2321,4 +3028,6 @@ class $AppDatabaseManager {
         _db,
         _db.pendingTransactionsTable,
       );
+  $$WalletTableTableTableManager get walletTable =>
+      $$WalletTableTableTableManager(_db, _db.walletTable);
 }
