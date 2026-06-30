@@ -33,4 +33,16 @@ class WalletDao {
   Future<void> delete(String id) async {
     await (db.delete(db.walletTable)..where((t) => t.id.equals(id))).go();
   }
+
+  Future<void> addBalance(String id, int amount) async {
+    final wallet = await (db.select(db.walletTable)..where((t) => t.id.equals(id))).getSingle();
+
+    await updateBalance(id, wallet.balance + amount);
+  }
+
+  Future<void> subtractBalance(String id, int amount) async {
+    final wallet = await (db.select(db.walletTable)..where((t) => t.id.equals(id))).getSingle();
+
+    await updateBalance(id, wallet.balance - amount);
+  }
 }

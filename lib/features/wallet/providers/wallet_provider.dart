@@ -1,5 +1,6 @@
 import 'package:auto_finance/data/dao/wallet_dao.dart';
 import 'package:auto_finance/data/local/database/app_database.dart';
+import 'package:auto_finance/domain/usecases/wallet/apply_transaction_usecase.dart';
 import 'package:auto_finance/domain/usecases/wallet/create_wallet_usecase.dart';
 import 'package:auto_finance/domain/usecases/wallet/delete_wallet_usecase.dart';
 import 'package:auto_finance/domain/usecases/wallet/update_wallet_balance_usecase.dart';
@@ -23,3 +24,5 @@ final walletStreamProvider = StreamProvider<List<WalletTableData>>((ref) {
 });
 
 final walletResolverProvider = Provider((ref) => WalletResolverUseCase(ref.watch(walletDaoProvider)));
+
+final applyTransactionProvider = Provider((ref) => ApplyTransactionUseCase(ref.watch(walletDaoProvider)));

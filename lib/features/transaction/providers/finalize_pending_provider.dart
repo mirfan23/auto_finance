@@ -3,5 +3,8 @@ import 'package:auto_finance/features/transaction/providers/transaction_provider
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final finalizePendingProvider = Provider<FinalizePendingUseCase>((ref) {
-  return FinalizePendingUseCase(pendingDao: ref.watch(pendingDaoProvider), db: ref.watch(dbProvider));
+  return FinalizePendingUseCase(
+    pendingDao: ref.watch(pendingDaoProvider),
+    saveTransaction: ref.watch(saveTransactionProvider),
+  );
 });
