@@ -14,8 +14,10 @@ class WalletDao {
     return db.select(db.walletTable).get();
   }
 
-  Future<void> insert({required String id, required String name, required String bank}) async {
-    await db.into(db.walletTable).insert(WalletTableCompanion.insert(id: id, name: name, bank: bank));
+  Future<void> insert({required String id, required String name, required String bank, int balance = 0}) async {
+    await db
+        .into(db.walletTable)
+        .insert(WalletTableCompanion.insert(id: id, name: name, bank: bank, balance: Value(balance)));
   }
 
   Future<WalletTableData?> findByBank(String bank) async {
@@ -44,5 +46,14 @@ class WalletDao {
     final wallet = await (db.select(db.walletTable)..where((t) => t.id.equals(id))).getSingle();
 
     await updateBalance(id, wallet.balance - amount);
+  }
+
+  Future<void> update({required String id, String? name, int? balance}) async {
+    await (db.update(db.walletTable)..where((t) => t.id.equals(id))).write(
+      WalletTableCompanion(
+        name: name == null ? const Value.absent() : Value(name),
+        balance: balance == null ? const Value.absent() : Value(balance),
+      ),
+    );
   }
 }

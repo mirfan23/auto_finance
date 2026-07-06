@@ -1,11 +1,14 @@
 import 'package:auto_finance/data/dao/wallet_dao.dart';
+import 'package:uuid/uuid.dart';
 
 class CreateWalletUseCase {
   final WalletDao dao;
 
-  CreateWalletUseCase(this.dao);
+  const CreateWalletUseCase(this.dao);
 
-  Future<void> call({required String id, required String name, required String bank}) async {
-    await dao.insert(id: id, name: name, bank: bank);
+  Future<void> call({required String name, required String bank, int balance = 0}) async {
+    const uuid = Uuid();
+
+    await dao.insert(id: uuid.v4(), name: name, bank: bank, balance: balance);
   }
 }

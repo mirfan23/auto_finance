@@ -5,7 +5,7 @@ class UpdateWalletBalanceUseCase {
 
   UpdateWalletBalanceUseCase(this.dao);
 
-  Future<void> call(String id, int balance) async {
-    await dao.updateBalance(id, balance);
+  Future<void> call(String id, int balance, String name) async {
+    await dao.update(id: id, balance: balance, name: name);
   }
 }

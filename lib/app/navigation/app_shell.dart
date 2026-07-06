@@ -1,5 +1,6 @@
 import 'package:auto_finance/app/navigation/bottomnav_provider.dart';
 import 'package:auto_finance/features/debug/debug_transaction_page.dart';
+import 'package:auto_finance/features/wallet/pages/wallet_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -14,7 +15,10 @@ class AppShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final index = ref.watch(bottomNavIndexProvider);
 
-    final pages = const [DashboardPage(), NotificationPage(), NotificationDebugPage(), DebugTransactionPage()];
+    // final pages = const [DashboardPage(), NotificationPage(), NotificationDebugPage(), DebugTransactionPage()];
+    final pages = const [WalletPage(), NotificationPage(), NotificationDebugPage(), DebugTransactionPage()];
+
+    // final pages = const [DashboardPage(), WalletPage(), AnalyticsPage(), SettingsPage()];
 
     return Scaffold(
       body: IndexedStack(index: index, children: pages),
@@ -27,7 +31,8 @@ class AppShell extends ConsumerWidget {
         unselectedItemColor: Colors.grey,
         selectedItemColor: Colors.purple,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: "Dashboard"),
+          // BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: "Dashboard"),
+          BottomNavigationBarItem(icon: Icon(Icons.wallet), label: "Wallet"),
           BottomNavigationBarItem(icon: Icon(Icons.notifications), label: "Notification"),
           BottomNavigationBarItem(icon: Icon(Icons.bug_report), label: "Debug"),
           BottomNavigationBarItem(icon: Icon(Icons.terminal), label: "Debug TRX"),
