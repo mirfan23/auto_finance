@@ -158,4 +158,10 @@ class TransactionDao {
 
     return result.isNotEmpty;
   }
+
+  Future<List<TransactionsTableData>> getByWallet(String walletId) {
+    return (db.select(
+      db.transactionsTable,
+    )..where((t) => t.fromWallet.equals(walletId) | t.toWallet.equals(walletId))).get();
+  }
 }

@@ -29,6 +29,6 @@ class CategorizeTransactionUseCase {
       return TransactionCategory.transfer;
     }
 
-    return TransactionCategory.unknown;
+    return TransactionCategory.other;
   }
 }

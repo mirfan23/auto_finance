@@ -1,1 +1,16 @@
-enum TransactionCategory { food, shopping, transport, bills, transfer, entertainment, unknown }
+enum TransactionCategory {
+  food,
+  shopping,
+  transport,
+  bills,
+  entertainment,
+  health,
+  education,
+  salary,
+  investment,
+  topup,
+  transfer,
+  cashback,
+  gift,
+  other,
+}
