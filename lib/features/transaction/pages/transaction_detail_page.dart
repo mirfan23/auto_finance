@@ -62,14 +62,22 @@ class TransactionDetailPage extends ConsumerWidget {
 
               const SizedBox(height: 24),
 
-              const Text("Raw Notification", style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text("Notifikasi lengkap", style: TextStyle(fontWeight: FontWeight.bold)),
 
               const SizedBox(height: 8),
 
               Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(12)),
-                child: Text(transaction.rawText),
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Theme.of(context).colorScheme.outline),
+                ),
+                child: SelectableText(
+                  transaction.rawText,
+                  style: const TextStyle(height: 1.5),
+                ),
               ),
             ],
           );

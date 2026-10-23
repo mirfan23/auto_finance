@@ -1,4 +1,5 @@
 import 'package:auto_finance/app/router.dart';
+import 'package:auto_finance/app/theme.dart';
 import 'package:auto_finance/features/transaction/providers/startup_provider.dart';
 import 'package:auto_finance/features/notification/services/notification_bus.dart';
 import 'package:auto_finance/features/notification/services/start_notification_listener.dart';
@@ -19,8 +20,8 @@ class _AppRootState extends ConsumerState<MyApp> {
     super.initState();
 
     Future.microtask(() async {
-      startNotificationListener(ref);
-      NotificationBus.start(ref); // 🔥 INI WAJIB
+      NotificationBus.start(ref);
+
       await ref.read(startupSyncProvider).run();
     });
   }
@@ -28,6 +29,10 @@ class _AppRootState extends ConsumerState<MyApp> {
   @override
   Widget build(BuildContext context) {
     initializeDateFormatting('id');
-    return MaterialApp.router(routerConfig: appRouter);
+    return MaterialApp.router(
+      routerConfig: appRouter,
+      theme: AppTheme.light,
+      debugShowCheckedModeBanner: false,
+    );
   }
 }

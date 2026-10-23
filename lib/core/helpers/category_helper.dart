@@ -51,34 +51,34 @@ class CategoryHelper {
   static String title(TransactionCategory category) {
     switch (category) {
       case TransactionCategory.food:
-        return "Food";
+        return "Makanan";
 
       case TransactionCategory.shopping:
-        return "Shopping";
+        return "Belanja";
 
       case TransactionCategory.transport:
-        return "Transport";
+        return "Transportasi";
 
       case TransactionCategory.bills:
-        return "Bills";
+        return "Tagihan";
 
       case TransactionCategory.entertainment:
-        return "Entertainment";
+        return "Hiburan";
 
       case TransactionCategory.health:
-        return "Health";
+        return "Kesehatan";
 
       case TransactionCategory.education:
-        return "Education";
+        return "Pendidikan";
 
       case TransactionCategory.salary:
-        return "Salary";
+        return "Gaji";
 
       case TransactionCategory.investment:
-        return "Investment";
+        return "Investasi";
 
       case TransactionCategory.topup:
-        return "Top Up";
+        return "Isi saldo";
 
       case TransactionCategory.transfer:
         return "Transfer";
@@ -87,10 +87,10 @@ class CategoryHelper {
         return "Cashback";
 
       case TransactionCategory.gift:
-        return "Gift";
+        return "Hadiah";
 
       case TransactionCategory.other:
-        return "Other";
+        return "Lainnya";
     }
   }
 
@@ -118,10 +118,10 @@ class CategoryHelper {
         return Colors.indigo;
 
       case TransactionCategory.salary:
-        return Colors.green;
+        return Colors.blue;
 
       case TransactionCategory.investment:
-        return Colors.teal;
+        return Colors.deepPurple;
 
       case TransactionCategory.topup:
         return Colors.cyan;
@@ -130,7 +130,7 @@ class CategoryHelper {
         return Colors.blueGrey;
 
       case TransactionCategory.cashback:
-        return Colors.lightGreen;
+        return Colors.amber;
 
       case TransactionCategory.gift:
         return Colors.amber;

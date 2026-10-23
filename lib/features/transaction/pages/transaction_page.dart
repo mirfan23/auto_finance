@@ -25,8 +25,29 @@ class TransactionPage extends ConsumerWidget {
             children: [
               const TransactionSearchBar(),
               const TransactionFilterBar(),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 10),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Riwayat transaksi',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ),
+                    Text(
+                      '${list.length} transaksi',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
+              ),
 
-              Expanded(child: list.isEmpty ? const EmptyTransaction() : TransactionList(transactions: list)),
+              Expanded(
+                child: list.isEmpty
+                    ? const EmptyTransaction()
+                    : TransactionList(transactions: list),
+              ),
             ],
           );
         },

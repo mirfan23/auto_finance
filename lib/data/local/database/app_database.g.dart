@@ -1950,6 +1950,486 @@ class WalletTableCompanion extends UpdateCompanion<WalletTableData> {
   }
 }
 
+class $WalletBalanceAdjustmentTableTable extends WalletBalanceAdjustmentTable
+    with
+        TableInfo<
+          $WalletBalanceAdjustmentTableTable,
+          WalletBalanceAdjustmentTableData
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WalletBalanceAdjustmentTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _walletIdMeta = const VerificationMeta(
+    'walletId',
+  );
+  @override
+  late final GeneratedColumn<String> walletId = GeneratedColumn<String>(
+    'wallet_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _walletNameMeta = const VerificationMeta(
+    'walletName',
+  );
+  @override
+  late final GeneratedColumn<String> walletName = GeneratedColumn<String>(
+    'wallet_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _previousBalanceMeta = const VerificationMeta(
+    'previousBalance',
+  );
+  @override
+  late final GeneratedColumn<int> previousBalance = GeneratedColumn<int>(
+    'previous_balance',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _newBalanceMeta = const VerificationMeta(
+    'newBalance',
+  );
+  @override
+  late final GeneratedColumn<int> newBalance = GeneratedColumn<int>(
+    'new_balance',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    walletId,
+    walletName,
+    previousBalance,
+    newBalance,
+    note,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'wallet_balance_adjustment_table';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<WalletBalanceAdjustmentTableData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('wallet_id')) {
+      context.handle(
+        _walletIdMeta,
+        walletId.isAcceptableOrUnknown(data['wallet_id']!, _walletIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_walletIdMeta);
+    }
+    if (data.containsKey('wallet_name')) {
+      context.handle(
+        _walletNameMeta,
+        walletName.isAcceptableOrUnknown(data['wallet_name']!, _walletNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_walletNameMeta);
+    }
+    if (data.containsKey('previous_balance')) {
+      context.handle(
+        _previousBalanceMeta,
+        previousBalance.isAcceptableOrUnknown(
+          data['previous_balance']!,
+          _previousBalanceMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_previousBalanceMeta);
+    }
+    if (data.containsKey('new_balance')) {
+      context.handle(
+        _newBalanceMeta,
+        newBalance.isAcceptableOrUnknown(data['new_balance']!, _newBalanceMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_newBalanceMeta);
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  WalletBalanceAdjustmentTableData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return WalletBalanceAdjustmentTableData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      walletId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}wallet_id'],
+      )!,
+      walletName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}wallet_name'],
+      )!,
+      previousBalance: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}previous_balance'],
+      )!,
+      newBalance: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}new_balance'],
+      )!,
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $WalletBalanceAdjustmentTableTable createAlias(String alias) {
+    return $WalletBalanceAdjustmentTableTable(attachedDatabase, alias);
+  }
+}
+
+class WalletBalanceAdjustmentTableData extends DataClass
+    implements Insertable<WalletBalanceAdjustmentTableData> {
+  final String id;
+  final String walletId;
+  final String walletName;
+  final int previousBalance;
+  final int newBalance;
+  final String note;
+  final DateTime createdAt;
+  const WalletBalanceAdjustmentTableData({
+    required this.id,
+    required this.walletId,
+    required this.walletName,
+    required this.previousBalance,
+    required this.newBalance,
+    required this.note,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['wallet_id'] = Variable<String>(walletId);
+    map['wallet_name'] = Variable<String>(walletName);
+    map['previous_balance'] = Variable<int>(previousBalance);
+    map['new_balance'] = Variable<int>(newBalance);
+    map['note'] = Variable<String>(note);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  WalletBalanceAdjustmentTableCompanion toCompanion(bool nullToAbsent) {
+    return WalletBalanceAdjustmentTableCompanion(
+      id: Value(id),
+      walletId: Value(walletId),
+      walletName: Value(walletName),
+      previousBalance: Value(previousBalance),
+      newBalance: Value(newBalance),
+      note: Value(note),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory WalletBalanceAdjustmentTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return WalletBalanceAdjustmentTableData(
+      id: serializer.fromJson<String>(json['id']),
+      walletId: serializer.fromJson<String>(json['walletId']),
+      walletName: serializer.fromJson<String>(json['walletName']),
+      previousBalance: serializer.fromJson<int>(json['previousBalance']),
+      newBalance: serializer.fromJson<int>(json['newBalance']),
+      note: serializer.fromJson<String>(json['note']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'walletId': serializer.toJson<String>(walletId),
+      'walletName': serializer.toJson<String>(walletName),
+      'previousBalance': serializer.toJson<int>(previousBalance),
+      'newBalance': serializer.toJson<int>(newBalance),
+      'note': serializer.toJson<String>(note),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  WalletBalanceAdjustmentTableData copyWith({
+    String? id,
+    String? walletId,
+    String? walletName,
+    int? previousBalance,
+    int? newBalance,
+    String? note,
+    DateTime? createdAt,
+  }) => WalletBalanceAdjustmentTableData(
+    id: id ?? this.id,
+    walletId: walletId ?? this.walletId,
+    walletName: walletName ?? this.walletName,
+    previousBalance: previousBalance ?? this.previousBalance,
+    newBalance: newBalance ?? this.newBalance,
+    note: note ?? this.note,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  WalletBalanceAdjustmentTableData copyWithCompanion(
+    WalletBalanceAdjustmentTableCompanion data,
+  ) {
+    return WalletBalanceAdjustmentTableData(
+      id: data.id.present ? data.id.value : this.id,
+      walletId: data.walletId.present ? data.walletId.value : this.walletId,
+      walletName: data.walletName.present
+          ? data.walletName.value
+          : this.walletName,
+      previousBalance: data.previousBalance.present
+          ? data.previousBalance.value
+          : this.previousBalance,
+      newBalance: data.newBalance.present
+          ? data.newBalance.value
+          : this.newBalance,
+      note: data.note.present ? data.note.value : this.note,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WalletBalanceAdjustmentTableData(')
+          ..write('id: $id, ')
+          ..write('walletId: $walletId, ')
+          ..write('walletName: $walletName, ')
+          ..write('previousBalance: $previousBalance, ')
+          ..write('newBalance: $newBalance, ')
+          ..write('note: $note, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    walletId,
+    walletName,
+    previousBalance,
+    newBalance,
+    note,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WalletBalanceAdjustmentTableData &&
+          other.id == this.id &&
+          other.walletId == this.walletId &&
+          other.walletName == this.walletName &&
+          other.previousBalance == this.previousBalance &&
+          other.newBalance == this.newBalance &&
+          other.note == this.note &&
+          other.createdAt == this.createdAt);
+}
+
+class WalletBalanceAdjustmentTableCompanion
+    extends UpdateCompanion<WalletBalanceAdjustmentTableData> {
+  final Value<String> id;
+  final Value<String> walletId;
+  final Value<String> walletName;
+  final Value<int> previousBalance;
+  final Value<int> newBalance;
+  final Value<String> note;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const WalletBalanceAdjustmentTableCompanion({
+    this.id = const Value.absent(),
+    this.walletId = const Value.absent(),
+    this.walletName = const Value.absent(),
+    this.previousBalance = const Value.absent(),
+    this.newBalance = const Value.absent(),
+    this.note = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  WalletBalanceAdjustmentTableCompanion.insert({
+    required String id,
+    required String walletId,
+    required String walletName,
+    required int previousBalance,
+    required int newBalance,
+    this.note = const Value.absent(),
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       walletId = Value(walletId),
+       walletName = Value(walletName),
+       previousBalance = Value(previousBalance),
+       newBalance = Value(newBalance),
+       createdAt = Value(createdAt);
+  static Insertable<WalletBalanceAdjustmentTableData> custom({
+    Expression<String>? id,
+    Expression<String>? walletId,
+    Expression<String>? walletName,
+    Expression<int>? previousBalance,
+    Expression<int>? newBalance,
+    Expression<String>? note,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (walletId != null) 'wallet_id': walletId,
+      if (walletName != null) 'wallet_name': walletName,
+      if (previousBalance != null) 'previous_balance': previousBalance,
+      if (newBalance != null) 'new_balance': newBalance,
+      if (note != null) 'note': note,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  WalletBalanceAdjustmentTableCompanion copyWith({
+    Value<String>? id,
+    Value<String>? walletId,
+    Value<String>? walletName,
+    Value<int>? previousBalance,
+    Value<int>? newBalance,
+    Value<String>? note,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return WalletBalanceAdjustmentTableCompanion(
+      id: id ?? this.id,
+      walletId: walletId ?? this.walletId,
+      walletName: walletName ?? this.walletName,
+      previousBalance: previousBalance ?? this.previousBalance,
+      newBalance: newBalance ?? this.newBalance,
+      note: note ?? this.note,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (walletId.present) {
+      map['wallet_id'] = Variable<String>(walletId.value);
+    }
+    if (walletName.present) {
+      map['wallet_name'] = Variable<String>(walletName.value);
+    }
+    if (previousBalance.present) {
+      map['previous_balance'] = Variable<int>(previousBalance.value);
+    }
+    if (newBalance.present) {
+      map['new_balance'] = Variable<int>(newBalance.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WalletBalanceAdjustmentTableCompanion(')
+          ..write('id: $id, ')
+          ..write('walletId: $walletId, ')
+          ..write('walletName: $walletName, ')
+          ..write('previousBalance: $previousBalance, ')
+          ..write('newBalance: $newBalance, ')
+          ..write('note: $note, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1960,6 +2440,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $PendingTransactionsTableTable pendingTransactionsTable =
       $PendingTransactionsTableTable(this);
   late final $WalletTableTable walletTable = $WalletTableTable(this);
+  late final $WalletBalanceAdjustmentTableTable walletBalanceAdjustmentTable =
+      $WalletBalanceAdjustmentTableTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1969,6 +2451,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     notificationLogsTable,
     pendingTransactionsTable,
     walletTable,
+    walletBalanceAdjustmentTable,
   ];
 }
 
@@ -3015,6 +3498,269 @@ typedef $$WalletTableTableProcessedTableManager =
       WalletTableData,
       PrefetchHooks Function()
     >;
+typedef $$WalletBalanceAdjustmentTableTableCreateCompanionBuilder =
+    WalletBalanceAdjustmentTableCompanion Function({
+      required String id,
+      required String walletId,
+      required String walletName,
+      required int previousBalance,
+      required int newBalance,
+      Value<String> note,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$WalletBalanceAdjustmentTableTableUpdateCompanionBuilder =
+    WalletBalanceAdjustmentTableCompanion Function({
+      Value<String> id,
+      Value<String> walletId,
+      Value<String> walletName,
+      Value<int> previousBalance,
+      Value<int> newBalance,
+      Value<String> note,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+class $$WalletBalanceAdjustmentTableTableFilterComposer
+    extends Composer<_$AppDatabase, $WalletBalanceAdjustmentTableTable> {
+  $$WalletBalanceAdjustmentTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get walletId => $composableBuilder(
+    column: $table.walletId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get walletName => $composableBuilder(
+    column: $table.walletName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get previousBalance => $composableBuilder(
+    column: $table.previousBalance,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get newBalance => $composableBuilder(
+    column: $table.newBalance,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$WalletBalanceAdjustmentTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $WalletBalanceAdjustmentTableTable> {
+  $$WalletBalanceAdjustmentTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get walletId => $composableBuilder(
+    column: $table.walletId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get walletName => $composableBuilder(
+    column: $table.walletName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get previousBalance => $composableBuilder(
+    column: $table.previousBalance,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get newBalance => $composableBuilder(
+    column: $table.newBalance,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$WalletBalanceAdjustmentTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WalletBalanceAdjustmentTableTable> {
+  $$WalletBalanceAdjustmentTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get walletId =>
+      $composableBuilder(column: $table.walletId, builder: (column) => column);
+
+  GeneratedColumn<String> get walletName => $composableBuilder(
+    column: $table.walletName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get previousBalance => $composableBuilder(
+    column: $table.previousBalance,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get newBalance => $composableBuilder(
+    column: $table.newBalance,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$WalletBalanceAdjustmentTableTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $WalletBalanceAdjustmentTableTable,
+          WalletBalanceAdjustmentTableData,
+          $$WalletBalanceAdjustmentTableTableFilterComposer,
+          $$WalletBalanceAdjustmentTableTableOrderingComposer,
+          $$WalletBalanceAdjustmentTableTableAnnotationComposer,
+          $$WalletBalanceAdjustmentTableTableCreateCompanionBuilder,
+          $$WalletBalanceAdjustmentTableTableUpdateCompanionBuilder,
+          (
+            WalletBalanceAdjustmentTableData,
+            BaseReferences<
+              _$AppDatabase,
+              $WalletBalanceAdjustmentTableTable,
+              WalletBalanceAdjustmentTableData
+            >,
+          ),
+          WalletBalanceAdjustmentTableData,
+          PrefetchHooks Function()
+        > {
+  $$WalletBalanceAdjustmentTableTableTableManager(
+    _$AppDatabase db,
+    $WalletBalanceAdjustmentTableTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WalletBalanceAdjustmentTableTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$WalletBalanceAdjustmentTableTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$WalletBalanceAdjustmentTableTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> walletId = const Value.absent(),
+                Value<String> walletName = const Value.absent(),
+                Value<int> previousBalance = const Value.absent(),
+                Value<int> newBalance = const Value.absent(),
+                Value<String> note = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WalletBalanceAdjustmentTableCompanion(
+                id: id,
+                walletId: walletId,
+                walletName: walletName,
+                previousBalance: previousBalance,
+                newBalance: newBalance,
+                note: note,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String walletId,
+                required String walletName,
+                required int previousBalance,
+                required int newBalance,
+                Value<String> note = const Value.absent(),
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => WalletBalanceAdjustmentTableCompanion.insert(
+                id: id,
+                walletId: walletId,
+                walletName: walletName,
+                previousBalance: previousBalance,
+                newBalance: newBalance,
+                note: note,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$WalletBalanceAdjustmentTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $WalletBalanceAdjustmentTableTable,
+      WalletBalanceAdjustmentTableData,
+      $$WalletBalanceAdjustmentTableTableFilterComposer,
+      $$WalletBalanceAdjustmentTableTableOrderingComposer,
+      $$WalletBalanceAdjustmentTableTableAnnotationComposer,
+      $$WalletBalanceAdjustmentTableTableCreateCompanionBuilder,
+      $$WalletBalanceAdjustmentTableTableUpdateCompanionBuilder,
+      (
+        WalletBalanceAdjustmentTableData,
+        BaseReferences<
+          _$AppDatabase,
+          $WalletBalanceAdjustmentTableTable,
+          WalletBalanceAdjustmentTableData
+        >,
+      ),
+      WalletBalanceAdjustmentTableData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3030,4 +3776,10 @@ class $AppDatabaseManager {
       );
   $$WalletTableTableTableManager get walletTable =>
       $$WalletTableTableTableManager(_db, _db.walletTable);
+  $$WalletBalanceAdjustmentTableTableTableManager
+  get walletBalanceAdjustmentTable =>
+      $$WalletBalanceAdjustmentTableTableTableManager(
+        _db,
+        _db.walletBalanceAdjustmentTable,
+      );
 }

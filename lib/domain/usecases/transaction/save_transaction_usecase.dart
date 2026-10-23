@@ -13,9 +13,15 @@ class SaveTransactionUseCase {
   //----------------------------------------------------------
 
   Future<void> saveSingle(Transaction trx) async {
+    print(
+      "💾 SAVE SINGLE START => "
+      "${trx.bank} | "
+      "${trx.amount}",
+    );
     await transactionDao.insert(trx);
-
+    print("✅ TRANSACTION DAO INSERT SUCCESS");
     await applyTransaction(trx);
+    print("✅ WALLET BALANCE APPLIED");
   }
 
   //----------------------------------------------------------

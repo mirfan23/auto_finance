@@ -12,6 +12,7 @@ final filteredTransactionProvider = Provider<AsyncValue<List<Transaction>>>((ref
   final keyword = ref.watch(transactionSearchProvider).toLowerCase();
 
   final filter = ref.watch(transactionFilterProvider);
+  print('filter: $filter');
 
   return transactions.whenData((list) {
     var result = list;
@@ -29,6 +30,7 @@ final filteredTransactionProvider = Provider<AsyncValue<List<Transaction>>>((ref
     //--------------------------------
     // Filter
     //--------------------------------
+    print("filtered before: ${result.length}");
 
     switch (filter) {
       case TransactionFilter.all:
@@ -46,7 +48,7 @@ final filteredTransactionProvider = Provider<AsyncValue<List<Transaction>>>((ref
         result = result.where((e) => e.type == TransactionType.transfer).toList();
         break;
     }
-
+    print("filtered after: ${result.length}");
     return result;
   });
 });

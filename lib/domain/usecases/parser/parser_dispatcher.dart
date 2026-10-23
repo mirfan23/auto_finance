@@ -7,6 +7,11 @@ import 'parser_jago.dart';
 import 'parser_shopeepay.dart';
 
 class ParserDispatcher {
+  // Keep in sync with the `packageName.contains(...)` checks below — used
+  // elsewhere to recognize which Room notification_logs rows can ever turn
+  // into a transaction, without re-implementing the parser.
+  static const supportedPackageHints = ['bca', 'jago', 'gojek', 'shopee'];
+
   final _bcaParser = BcaParser();
   final _jagoParser = JagoParser();
   final _gopayParser = GopayParser();

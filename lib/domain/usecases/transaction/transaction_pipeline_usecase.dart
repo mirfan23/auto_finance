@@ -5,13 +5,25 @@ class TransactionPipelineUseCase {
   final ParserDispatcher _dispatcher = ParserDispatcher();
 
   Transaction? call(Map data) {
+    print("🔵 PIPELINE START");
+    print("🔵 DATA => $data");
+
     final result = _dispatcher.parse(data);
 
     if (result == null) {
+      print("❌ PIPELINE RESULT NULL");
       return null;
     }
 
-    return Transaction(
+    print(
+      "✅ PARSER SUCCESS => "
+      "${result.bank} | "
+      "${result.amount} | "
+      "${result.type} | "
+      "${result.category}",
+    );
+
+    final transaction = Transaction(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
       bank: result.bank,
       fromWallet: null,
@@ -22,5 +34,13 @@ class TransactionPipelineUseCase {
       rawText: result.rawText,
       time: result.time,
     );
+
+    print(
+      "✅ TRANSACTION CREATED => "
+      "${transaction.id} | "
+      "${transaction.amount}",
+    );
+
+    return transaction;
   }
 }

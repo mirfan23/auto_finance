@@ -1,3 +1,4 @@
+import 'package:auto_finance/app/theme.dart';
 import 'package:flutter/material.dart';
 
 class DashboardHeader extends StatelessWidget {
@@ -6,27 +7,43 @@ class DashboardHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hour = DateTime.now().hour;
-
-    String greeting;
-
-    if (hour < 11) {
-      greeting = "Selamat Pagi";
-    } else if (hour < 15) {
-      greeting = "Selamat Siang";
-    } else if (hour < 18) {
-      greeting = "Selamat Sore";
-    } else {
-      greeting = "Selamat Malam";
-    }
+    final greeting = switch (hour) {
+      < 11 => 'Selamat pagi',
+      < 15 => 'Selamat siang',
+      < 18 => 'Selamat sore',
+      _ => 'Selamat malam',
+    };
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.fromLTRB(22, 18, 22, 16),
+      child: Row(
         children: [
-          Text(greeting, style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 4),
-          Text("Auto Finance", style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: AppColors.mint,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(
+              Icons.account_balance_rounded,
+              color: AppColors.forest,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(greeting, style: Theme.of(context).textTheme.bodyMedium),
+                const SizedBox(height: 2),
+                Text(
+                  'Auto Finance',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

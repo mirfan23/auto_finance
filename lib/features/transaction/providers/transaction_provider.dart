@@ -46,6 +46,7 @@ final transactionActionProvider = Provider<TransactionAction>((ref) {
     duplicate: ref.watch(duplicateProvider),
     pairing: ref.watch(pairingProvider),
     pendingDao: ref.watch(pendingDaoProvider),
+    transactionDao: ref.watch(transactionDaoProvider),
     finalizePending: ref.watch(finalizePendingProvider),
     walletResolver: ref.watch(walletResolverProvider),
     saveTransaction: ref.watch(saveTransactionProvider),

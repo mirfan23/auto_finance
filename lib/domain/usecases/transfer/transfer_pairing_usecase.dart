@@ -33,6 +33,12 @@ import 'package:auto_finance/domain/entities/transaction.dart';
 import 'package:auto_finance/domain/entities/transaction_type.dart';
 
 class TransferPairingUseCase {
+  // How far apart a debit/credit pair may be and still be considered a
+  // transfer. FinalizePendingUseCase must wait at least this long before
+  // giving up on pairing and finalizing a pending row as a single
+  // transaction, otherwise the pairing window never gets a real chance.
+  static const pairingWindow = Duration(seconds: 60);
+
   TransferPair? process(Transaction incoming, List<Transaction> existing) {
     Transaction? match;
 
@@ -45,7 +51,7 @@ class TransferPairingUseCase {
 
       final timeDiff = item.time.difference(incoming.time).inSeconds.abs();
 
-      if (sameAmount && differentBank && oppositeType && timeDiff <= 60) {
+      if (sameAmount && differentBank && oppositeType && timeDiff <= pairingWindow.inSeconds) {
         match = item;
         break;
       }

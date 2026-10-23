@@ -3,7 +3,6 @@ import 'package:auto_finance/data/local/database/app_database.dart';
 import 'package:auto_finance/data/dao/notification_log_dao.dart';
 import 'package:auto_finance/features/transaction/providers/transaction_provider.dart';
 import 'package:auto_finance/features/notification/services/notification_bus.dart';
-import 'package:auto_finance/features/notification/services/notification_sync_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/notification_service.dart';
 
@@ -37,11 +36,14 @@ final notificationLogStreamProvider = StreamProvider<List<NotificationLogsTableD
   return dao.watchAll();
 });
 
-/// This provider is used to sync the notifications
-final notificationSyncServiceProvider = Provider<NotificationSyncService>((ref) => NotificationSyncService());
-
 /// This provider is used to store the transactions
 final transactionDaoProvider = Provider<TransactionDao>((ref) {
   final db = ref.watch(dbProvider);
   return TransactionDao(db);
 });
+
+// final notificationStartupSyncProvider = FutureProvider<void>((ref) async {
+//   final syncService = ref.watch(notificationSyncServiceProvider);
+
+//   await syncService.syncPendingNotifications();
+// });

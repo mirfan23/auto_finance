@@ -1,61 +1,3 @@
-// import 'package:auto_finance/app/navigation/bottomnav_provider.dart';
-// import 'package:auto_finance/features/dashboard/dashboard_page.dart';
-// import 'package:auto_finance/features/debug/debug_transaction_page.dart';
-// import 'package:auto_finance/features/wallet/pages/wallet_page.dart';
-// import 'package:flutter/material.dart';
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-// import '../../features/debug/notification_page.dart';
-// import '../../features/debug/notification_test_page.dart';
-
-// class AppShell extends ConsumerWidget {
-//   const AppShell({super.key});
-
-//   @override
-//   Widget build(BuildContext context, WidgetRef ref) {
-//     final index = ref.watch(bottomNavIndexProvider);
-
-//     // final pages = const [DashboardPage(), NotificationPage(), NotificationDebugPage(), DebugTransactionPage()];
-//     // final pages = const [WalletPage(), NotificationPage(), NotificationDebugPage(), DebugTransactionPage()];
-//     final pages = [
-//       DashboardPage(),
-//       WalletPage(),
-//       // AnalyticsPage(),
-//       // SettingsPage(),
-//       Container(),
-//       Container(),
-//     ];
-
-//     // final pages = const [DashboardPage(), WalletPage(), AnalyticsPage(), SettingsPage()];
-
-//     return Scaffold(
-//       body: IndexedStack(index: index, children: pages),
-
-//       bottomNavigationBar: BottomNavigationBar(
-//         currentIndex: index,
-//         onTap: (i) {
-//           ref.read(bottomNavIndexProvider.notifier).state = i;
-//         },
-//         unselectedItemColor: Colors.grey,
-//         selectedItemColor: Colors.purple,
-//         // items: const [
-//         //   // BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: "Dashboard"),
-//         //   BottomNavigationBarItem(icon: Icon(Icons.wallet), label: "Wallet"),
-//         //   BottomNavigationBarItem(icon: Icon(Icons.notifications), label: "Notification"),
-//         //   BottomNavigationBarItem(icon: Icon(Icons.bug_report), label: "Debug"),
-//         //   BottomNavigationBarItem(icon: Icon(Icons.terminal), label: "Debug TRX"),
-//         // ],
-//         items: const [
-//           BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: "Home"),
-//           BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet_rounded), label: "Wallet"),
-//           BottomNavigationBarItem(icon: Icon(Icons.bar_chart_rounded), label: "Analytics"),
-//           BottomNavigationBarItem(icon: Icon(Icons.settings_rounded), label: "Settings"),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
 import 'package:auto_finance/app/navigation/bottomnav_provider.dart';
 import 'package:auto_finance/features/analytics/analytics_page.dart';
 import 'package:auto_finance/features/dashboard/dashboard_page.dart';
@@ -68,27 +10,51 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class AppShell extends ConsumerWidget {
   const AppShell({super.key});
 
+  static const _pages = [
+    DashboardPage(),
+    TransactionPage(),
+    WalletPage(),
+    AnalyticsPage(),
+    SettingsPage(),
+  ];
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final index = ref.watch(bottomNavIndexProvider);
 
-    const pages = [DashboardPage(), WalletPage(), AnalyticsPage(), SettingsPage()];
-
     return Scaffold(
-      body: IndexedStack(index: index, children: pages),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: index,
-        onTap: (i) {
-          ref.read(bottomNavIndexProvider.notifier).state = i;
+      body: IndexedStack(index: index, children: _pages),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: index,
+        onDestinationSelected: (value) {
+          ref.read(bottomNavIndexProvider.notifier).state = value;
         },
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.purple,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet_rounded), label: "Wallet"),
-          BottomNavigationBarItem(icon: Icon(Icons.bar_chart_rounded), label: "Analytics"),
-          BottomNavigationBarItem(icon: Icon(Icons.settings_rounded), label: "Settings"),
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home_rounded),
+            label: 'Beranda',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.receipt_long_outlined),
+            selectedIcon: Icon(Icons.receipt_long_rounded),
+            label: 'Transaksi',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.account_balance_wallet_outlined),
+            selectedIcon: Icon(Icons.account_balance_wallet_rounded),
+            label: 'Dompet',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.insert_chart_outlined_rounded),
+            selectedIcon: Icon(Icons.insert_chart_rounded),
+            label: 'Analitik',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.settings_outlined),
+            selectedIcon: Icon(Icons.settings_rounded),
+            label: 'Setelan',
+          ),
         ],
       ),
     );
