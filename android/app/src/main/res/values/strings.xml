@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="finance_widget_description">Ringkasan saldo dan pengeluaran bulan ini</string>
+    <string name="widget_waiting_for_data">Buka aplikasi untuk memperbarui</string>
+    <string name="widget_updated_at">Diperbarui %1$s</string>
+</resources>

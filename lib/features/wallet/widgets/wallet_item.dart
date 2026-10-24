@@ -4,6 +4,7 @@ import 'package:auto_finance/domain/entities/wallet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fx_helper/formatter_helper.dart';
+import 'package:go_router/go_router.dart';
 
 class WalletItem extends ConsumerWidget {
   final Wallet wallet;
@@ -29,7 +30,7 @@ class WalletItem extends ConsumerWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: onTap,
+          onTap: onTap ?? () => context.push('/wallet/${wallet.id}'),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(

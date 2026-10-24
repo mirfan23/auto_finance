@@ -50,6 +50,36 @@ class MainActivity : FlutterActivity() {
             }
         }
 
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            "auto_finance/finance_widget",
+        ).setMethodCallHandler { call, result ->
+            if (call.method != "updateSummary") {
+                result.notImplemented()
+                return@setMethodCallHandler
+            }
+
+            val totalBalance = call.argument<Number>("totalBalance")?.toLong()
+            val monthlyExpense = call.argument<Number>("monthlyExpense")?.toLong()
+            val updatedAt = call.argument<Number>("updatedAt")?.toLong()
+
+            if (totalBalance == null || monthlyExpense == null || updatedAt == null) {
+                result.error("INVALID_WIDGET_DATA", "Widget summary is incomplete", null)
+                return@setMethodCallHandler
+            }
+
+            applicationContext
+                .getSharedPreferences("auto_finance_widget", MODE_PRIVATE)
+                .edit()
+                .putLong("total_balance", totalBalance)
+                .putLong("monthly_expense", monthlyExpense)
+                .putLong("updated_at", updatedAt)
+                .apply()
+
+            FinanceWidgetProvider.updateAll(applicationContext)
+            result.success(null)
+        }
+
         EventChannel(flutterEngine.dartExecutor.binaryMessenger, "notif_stream")
                 .setStreamHandler(
                         object : EventChannel.StreamHandler {
@@ -163,6 +193,80 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "notification_db")
                 .setMethodCallHandler { call, result ->
                     when (call.method) {
+                        "getAllNotifications" -> {
+                            Thread {
+                                try {
+                                    val db = DbProvider.get(applicationContext)
+                                    val output = db.notificationDao().getAll().map {
+                                        hashMapOf(
+                                            "id" to it.id,
+                                            "packageName" to it.packageName,
+                                            "title" to it.title,
+                                            "text" to it.text,
+                                            "timestamp" to it.timestamp,
+                                            "processed" to it.processed,
+                                        )
+                                    }
+                                    runOnUiThread { result.success(output) }
+                                } catch (e: Exception) {
+                                    Log.e("DB_TEST", "GET ALL NOTIFICATIONS ERROR", e)
+                                    runOnUiThread {
+                                        result.error("DB_ERROR", e.message, null)
+                                    }
+                                }
+                            }.start()
+                        }
+                        "reprocessKnownJagoNotificationsOnce" -> {
+                            Thread {
+                                try {
+                                    val preferences = getSharedPreferences("auto_finance_migrations", MODE_PRIVATE)
+                                    val dao = DbProvider.get(applicationContext).notificationDao()
+                                    var count = 0
+                                    val editor = preferences.edit()
+
+                                    val jagoKey = "jago_parser_reprocess_v1"
+                                    if (!preferences.getBoolean(jagoKey, false)) {
+                                        count += dao.requeueProcessedJagoIncomeNotifications()
+                                        count += dao.requeueProcessedJagoPaymentNotifications()
+                                        editor.putBoolean(jagoKey, true)
+                                    }
+
+                                    val jagoPocketKey = "jago_pocket_transfer_reprocess_v1"
+                                    if (!preferences.getBoolean(jagoPocketKey, false)) {
+                                        val pocketCount = dao.requeueProcessedJagoPocketTransfers()
+                                        count += pocketCount
+                                        editor.putBoolean(jagoPocketKey, true)
+                                        Log.i("DB_TEST", "JAGO POCKET TRANSFERS REPROCESS QUEUED => $pocketCount")
+                                    }
+
+                                    val shopeeKey = "shopeepay_topup_60000_reprocess_v1"
+                                    if (!preferences.getBoolean(shopeeKey, false)) {
+                                        val shopeeCount = dao.requeueProcessedShopeePayTopup60000()
+                                        count += shopeeCount
+                                        editor.putBoolean(shopeeKey, true)
+                                        Log.i("DB_TEST", "SHOPEEPAY TOPUP REPROCESS QUEUED => $shopeeCount")
+                                    }
+
+                                    val shopeeIncomingKey = "shopeepay_incoming_bank_transfer_reprocess_v1"
+                                    if (!preferences.getBoolean(shopeeIncomingKey, false)) {
+                                        val cashOutCount = dao.requeueProcessedShopeePayCashOutReceived()
+                                        val biFastCount = dao.requeueProcessedShopeePayBiFastIncoming()
+                                        count += cashOutCount + biFastCount
+                                        editor.putBoolean(shopeeIncomingKey, true)
+                                        Log.i("DB_TEST", "SHOPEEPAY INCOMING BANK TRANSFERS REPROCESS QUEUED => ${cashOutCount + biFastCount}")
+                                    }
+
+                                    editor.apply()
+                                    Log.i("DB_TEST", "KNOWN NOTIFICATIONS REPROCESS QUEUED => $count")
+                                    runOnUiThread { result.success(count) }
+                                } catch (e: Exception) {
+                                    Log.e("DB_TEST", "JAGO PARSER REPROCESS ERROR", e)
+                                    runOnUiThread {
+                                        result.error("DB_ERROR", e.message, null)
+                                    }
+                                }
+                            }.start()
+                        }
                         "getPendingNotifications" -> {
 
                             Thread {

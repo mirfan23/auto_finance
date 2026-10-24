@@ -1,16 +1,17 @@
 import 'package:auto_finance/app/theme.dart';
+import 'package:auto_finance/app/navigation/bottomnav_provider.dart';
 import 'package:auto_finance/domain/entities/wallet.dart';
 import 'package:auto_finance/features/wallet/widgets/wallet_item.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class DashboardWalletPreviewSection extends StatelessWidget {
+class DashboardWalletPreviewSection extends ConsumerWidget {
   final List<Wallet> wallets;
 
   const DashboardWalletPreviewSection({super.key, required this.wallets});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final preview = [...wallets]
       ..sort((a, b) => b.balance.compareTo(a.balance));
 
@@ -31,7 +32,7 @@ class DashboardWalletPreviewSection extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () {
-                  context.push("/wallet");
+                  ref.read(bottomNavIndexProvider.notifier).state = 2;
                 },
                 child: const Text("Semua dompet"),
               ),

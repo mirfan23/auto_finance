@@ -1,10 +1,11 @@
 import 'package:auto_finance/app/theme.dart';
+import 'package:auto_finance/app/navigation/bottomnav_provider.dart';
 import 'package:auto_finance/domain/entities/transaction.dart';
 import 'package:auto_finance/features/transaction/widgets/transaction_item.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class DashboardRecentTransactionSection extends StatelessWidget {
+class DashboardRecentTransactionSection extends ConsumerWidget {
   final List<Transaction> transactions;
 
   const DashboardRecentTransactionSection({
@@ -13,7 +14,7 @@ class DashboardRecentTransactionSection extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
       child: Column(
@@ -29,7 +30,7 @@ class DashboardRecentTransactionSection extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () {
-                  context.push("/transaction");
+                  ref.read(bottomNavIndexProvider.notifier).state = 1;
                 },
                 child: const Text("Semua transaksi"),
               ),

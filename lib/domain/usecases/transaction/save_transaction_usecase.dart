@@ -6,7 +6,10 @@ class SaveTransactionUseCase {
   final TransactionDao transactionDao;
   final ApplyTransactionUseCase applyTransaction;
 
-  SaveTransactionUseCase({required this.transactionDao, required this.applyTransaction});
+  SaveTransactionUseCase({
+    required this.transactionDao,
+    required this.applyTransaction,
+  });
 
   //----------------------------------------------------------
   // SINGLE TRANSACTION
@@ -18,7 +21,11 @@ class SaveTransactionUseCase {
       "${trx.bank} | "
       "${trx.amount}",
     );
-    await transactionDao.insert(trx);
+    final inserted = await transactionDao.insert(trx);
+    if (!inserted) {
+      print("⛔ DUPLICATE SAVE SKIPPED; WALLET BALANCE UNCHANGED");
+      return;
+    }
     print("✅ TRANSACTION DAO INSERT SUCCESS");
     await applyTransaction(trx);
     print("✅ WALLET BALANCE APPLIED");
@@ -28,7 +35,10 @@ class SaveTransactionUseCase {
   // TRANSFER
   //----------------------------------------------------------
 
-  Future<void> saveTransfer({required Transaction debit, required Transaction credit}) async {
+  Future<void> saveTransfer({
+    required Transaction debit,
+    required Transaction credit,
+  }) async {
     final transferId = "transfer_${DateTime.now().microsecondsSinceEpoch}";
 
     await transactionDao.insertTransfer(

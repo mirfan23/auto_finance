@@ -6,12 +6,15 @@ import 'package:auto_finance/domain/entities/transaction_filter.dart';
 import 'package:auto_finance/domain/entities/transaction_type.dart';
 import 'package:auto_finance/features/transaction/providers/transaction_filter_state_provider.dart';
 
-final filteredTransactionProvider = Provider<AsyncValue<List<Transaction>>>((ref) {
+final filteredTransactionProvider = Provider<AsyncValue<List<Transaction>>>((
+  ref,
+) {
   final transactions = ref.watch(transactionStreamProvider);
 
   final keyword = ref.watch(transactionSearchProvider).toLowerCase();
 
   final filter = ref.watch(transactionFilterProvider);
+  final selectedMonth = ref.watch(transactionMonthFilterProvider);
   print('filter: $filter');
 
   return transactions.whenData((list) {
@@ -23,7 +26,15 @@ final filteredTransactionProvider = Provider<AsyncValue<List<Transaction>>>((ref
 
     if (keyword.isNotEmpty) {
       result = result.where((trx) {
-        return trx.bank.toLowerCase().contains(keyword) || trx.rawText.toLowerCase().contains(keyword);
+        return trx.bank.toLowerCase().contains(keyword) ||
+            trx.rawText.toLowerCase().contains(keyword);
+      }).toList();
+    }
+
+    if (selectedMonth != null) {
+      result = result.where((trx) {
+        return trx.time.year == selectedMonth.year &&
+            trx.time.month == selectedMonth.month;
       }).toList();
     }
 
@@ -41,11 +52,15 @@ final filteredTransactionProvider = Provider<AsyncValue<List<Transaction>>>((ref
         break;
 
       case TransactionFilter.expense:
-        result = result.where((e) => e.type == TransactionType.expense).toList();
+        result = result
+            .where((e) => e.type == TransactionType.expense)
+            .toList();
         break;
 
       case TransactionFilter.transfer:
-        result = result.where((e) => e.type == TransactionType.transfer).toList();
+        result = result
+            .where((e) => e.type == TransactionType.transfer)
+            .toList();
         break;
     }
     print("filtered after: ${result.length}");

@@ -168,25 +168,83 @@ class TransactionAction {
       return TransactionActionResult.notTransaction;
     }
 
-    final savedTransactions = (await transactionDao.getPotentialDuplicates(incoming))
-        .map(
-          (row) => Transaction(
-            id: row.id,
-            bank: row.bank,
-            fromWallet: row.fromWallet,
-            toWallet: row.toWallet,
-            amount: row.amount,
-            type: TransactionType.values.byName(row.type),
-            category: TransactionCategory.values.byName(row.category),
-            rawText: row.rawText,
-            time: row.time,
-          ),
-        )
-        .toList();
+    final savedTransactions =
+        (await transactionDao.getPotentialDuplicates(incoming))
+            .map(
+              (row) => Transaction(
+                id: row.id,
+                bank: row.bank,
+                fromWallet: row.fromWallet,
+                toWallet: row.toWallet,
+                amount: row.amount,
+                type: TransactionType.values.byName(row.type),
+                category: TransactionCategory.values.byName(row.category),
+                rawText: row.rawText,
+                time: row.time,
+              ),
+            )
+            .toList();
 
     if (duplicate(incoming, savedTransactions)) {
+      final matches = savedTransactions.where((item) {
+        final sameNotification = duplicate.sameNotificationText(
+          item.rawText,
+          incoming.rawText,
+        );
+        final nearby = item.time.difference(incoming.time).inSeconds.abs() <= 5;
+        return sameNotification && nearby;
+      }).toList();
+
+      if (matches.isNotEmpty) {
+        final wallet = await walletResolver.resolve(incoming.bank);
+        final isInternalPocketMove = _isInternalJagoPocketMove(incoming);
+        final corrected = incoming.copyWith(
+          id: matches.first.id,
+          type: isInternalPocketMove ? TransactionType.transfer : incoming.type,
+          category: isInternalPocketMove
+              ? TransactionCategory.transfer
+              : incoming.category,
+          fromWallet: isInternalPocketMove
+              ? wallet?.id
+              : incoming.type == TransactionType.expense
+              ? wallet?.id
+              : null,
+          toWallet: isInternalPocketMove
+              ? wallet?.id
+              : incoming.type == TransactionType.income
+              ? wallet?.id
+              : null,
+        );
+        await transactionDao.reconcileDuplicateNotifications(
+          matches: matches,
+          corrected: corrected,
+        );
+        print("🔧 DUPLICATE TRANSACTIONS RECONCILED => ${matches.length}");
+      }
+
       print("⛔ DUPLICATE SAVED TRANSACTION IGNORED");
       return TransactionActionResult.duplicate;
+    }
+
+    if (_isInternalJagoPocketMove(incoming)) {
+      final wallet = await walletResolver.resolve(incoming.bank);
+      final pocketTransfer = incoming.copyWith(
+        type: TransactionType.transfer,
+        category: TransactionCategory.transfer,
+        fromWallet: wallet?.id,
+        toWallet: wallet?.id,
+      );
+      try {
+        // A pocket movement is a transfer from Jago to Jago. Saving it as a
+        // transfer records the activity while its net wallet effect is zero.
+        await saveTransaction.saveSingle(pocketTransfer);
+        return TransactionActionResult.processed;
+      } catch (error, stackTrace) {
+        print('❌ JAGO POCKET TRANSFER SAVE FAILED');
+        print(error);
+        print(stackTrace);
+        return TransactionActionResult.failed;
+      }
     }
 
     final wallet = await walletResolver.resolve(incoming.bank);
@@ -196,7 +254,12 @@ class TransactionAction {
       toWallet: incoming.type == TransactionType.income ? wallet?.id : null,
     );
 
-    final exists = await pendingDao.exists(resolved.bank, resolved.amount, resolved.type, resolved.rawText);
+    final exists = await pendingDao.exists(
+      resolved.bank,
+      resolved.amount,
+      resolved.type,
+      resolved.rawText,
+    );
 
     if (exists) {
       print("⛔ DUPLICATE PENDING IGNORED");
@@ -216,7 +279,10 @@ class TransactionAction {
 
     final pending = await pendingDao.getPending();
 
-    final pair = pairing.process(resolved, pending.where((e) => e.id != resolved.id).toList());
+    final pair = pairing.process(
+      resolved,
+      pending.where((e) => e.id != resolved.id).toList(),
+    );
 
     if (pair == null) {
       print("⏳ WAITING PAIR");
@@ -271,5 +337,12 @@ class TransactionAction {
 
       return TransactionActionResult.failed;
     }
+  }
+
+  bool _isInternalJagoPocketMove(Transaction transaction) {
+    final text = transaction.rawText.toLowerCase();
+    return transaction.bank.toLowerCase() == 'jago' &&
+        text.contains('memindahkan') &&
+        text.contains('kantong');
   }
 }

@@ -1,4 +1,5 @@
 import 'package:auto_finance/data/dao/pending_transaction_dao.dart';
+import 'package:auto_finance/data/dao/monthly_budget_dao.dart';
 import 'package:auto_finance/data/dao/transaction_dao.dart';
 import 'package:auto_finance/data/local/database/app_database.dart';
 import 'package:auto_finance/domain/entities/transaction.dart';
@@ -26,6 +27,15 @@ final transactionDaoProvider = Provider<TransactionDao>((ref) {
 final pendingDaoProvider = Provider<PendingTransactionDao>((ref) {
   return PendingTransactionDao(ref.watch(dbProvider));
 });
+
+final monthlyBudgetDaoProvider = Provider<MonthlyBudgetDao>((ref) {
+  return MonthlyBudgetDao(ref.watch(dbProvider));
+});
+
+final monthlyBudgetStreamProvider =
+    StreamProvider<List<MonthlyBudgetsTableData>>((ref) {
+      return ref.watch(monthlyBudgetDaoProvider).watchAll();
+    });
 
 /// UseCases
 final pipelineProvider = Provider((ref) => TransactionPipelineUseCase());
@@ -76,7 +86,10 @@ final transactionStreamProvider = StreamProvider<List<Transaction>>((ref) {
   );
 });
 
-final transactionDetailProvider = FutureProvider.family<Transaction?, String>((ref, id) async {
+final transactionDetailProvider = FutureProvider.family<Transaction?, String>((
+  ref,
+  id,
+) async {
   final dao = TransactionDao(ref.watch(dbProvider));
 
   final row = await dao.getById(id);

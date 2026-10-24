@@ -4,6 +4,7 @@ import 'package:auto_finance/features/dashboard/widgets/dashboard_balance_card.d
 import 'package:auto_finance/features/dashboard/widgets/dashboard_header.dart';
 import 'package:auto_finance/features/dashboard/widgets/dashboard_recent_transaction_section.dart';
 import 'package:auto_finance/features/dashboard/widgets/dashboard_wallet_preview_section.dart';
+import 'package:auto_finance/features/notification/providers/notification_sync_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -34,7 +35,7 @@ class DashboardPage extends ConsumerWidget {
           data: (data) {
             return RefreshIndicator(
               onRefresh: () async {
-                ref.invalidate(dashboardProvider);
+                await ref.read(notificationSyncProvider).sync();
               },
               child: CustomScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),

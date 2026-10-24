@@ -201,13 +201,21 @@ class NotificationListener : NotificationListenerService() {
                 val db =
                     DbProvider.get(applicationContext)
 
-                db.notificationDao()
-                    .insert(entity)
-
-                Log.d(
-                    "DB_TEST",
-                    "INSERT SUCCESS => ${entity.packageName}"
+                val dao = db.notificationDao()
+                val duplicate = dao.hasRecentDuplicate(
+                    entity.packageName,
+                    entity.title,
+                    entity.text,
+                    entity.timestamp - 10_000,
+                    entity.timestamp + 10_000
                 )
+
+                if (duplicate) {
+                    Log.d("DB_TEST", "DUPLICATE NOTIFICATION SKIPPED => ${entity.packageName}")
+                } else {
+                    dao.insert(entity)
+                    Log.d("DB_TEST", "INSERT SUCCESS => ${entity.packageName}")
+                }
 
             } catch (e: Exception) {
 

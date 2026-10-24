@@ -2430,6 +2430,285 @@ class WalletBalanceAdjustmentTableCompanion
   }
 }
 
+class $MonthlyBudgetsTableTable extends MonthlyBudgetsTable
+    with TableInfo<$MonthlyBudgetsTableTable, MonthlyBudgetsTableData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MonthlyBudgetsTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _categoryMeta = const VerificationMeta(
+    'category',
+  );
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+    'category',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _monthlyLimitMeta = const VerificationMeta(
+    'monthlyLimit',
+  );
+  @override
+  late final GeneratedColumn<int> monthlyLimit = GeneratedColumn<int>(
+    'monthly_limit',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [category, monthlyLimit, updatedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'monthly_budgets_table';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<MonthlyBudgetsTableData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('category')) {
+      context.handle(
+        _categoryMeta,
+        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_categoryMeta);
+    }
+    if (data.containsKey('monthly_limit')) {
+      context.handle(
+        _monthlyLimitMeta,
+        monthlyLimit.isAcceptableOrUnknown(
+          data['monthly_limit']!,
+          _monthlyLimitMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_monthlyLimitMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {category};
+  @override
+  MonthlyBudgetsTableData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MonthlyBudgetsTableData(
+      category: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category'],
+      )!,
+      monthlyLimit: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}monthly_limit'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $MonthlyBudgetsTableTable createAlias(String alias) {
+    return $MonthlyBudgetsTableTable(attachedDatabase, alias);
+  }
+}
+
+class MonthlyBudgetsTableData extends DataClass
+    implements Insertable<MonthlyBudgetsTableData> {
+  final String category;
+  final int monthlyLimit;
+  final DateTime updatedAt;
+  const MonthlyBudgetsTableData({
+    required this.category,
+    required this.monthlyLimit,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['category'] = Variable<String>(category);
+    map['monthly_limit'] = Variable<int>(monthlyLimit);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  MonthlyBudgetsTableCompanion toCompanion(bool nullToAbsent) {
+    return MonthlyBudgetsTableCompanion(
+      category: Value(category),
+      monthlyLimit: Value(monthlyLimit),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory MonthlyBudgetsTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MonthlyBudgetsTableData(
+      category: serializer.fromJson<String>(json['category']),
+      monthlyLimit: serializer.fromJson<int>(json['monthlyLimit']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'category': serializer.toJson<String>(category),
+      'monthlyLimit': serializer.toJson<int>(monthlyLimit),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  MonthlyBudgetsTableData copyWith({
+    String? category,
+    int? monthlyLimit,
+    DateTime? updatedAt,
+  }) => MonthlyBudgetsTableData(
+    category: category ?? this.category,
+    monthlyLimit: monthlyLimit ?? this.monthlyLimit,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  MonthlyBudgetsTableData copyWithCompanion(MonthlyBudgetsTableCompanion data) {
+    return MonthlyBudgetsTableData(
+      category: data.category.present ? data.category.value : this.category,
+      monthlyLimit: data.monthlyLimit.present
+          ? data.monthlyLimit.value
+          : this.monthlyLimit,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MonthlyBudgetsTableData(')
+          ..write('category: $category, ')
+          ..write('monthlyLimit: $monthlyLimit, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(category, monthlyLimit, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MonthlyBudgetsTableData &&
+          other.category == this.category &&
+          other.monthlyLimit == this.monthlyLimit &&
+          other.updatedAt == this.updatedAt);
+}
+
+class MonthlyBudgetsTableCompanion
+    extends UpdateCompanion<MonthlyBudgetsTableData> {
+  final Value<String> category;
+  final Value<int> monthlyLimit;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const MonthlyBudgetsTableCompanion({
+    this.category = const Value.absent(),
+    this.monthlyLimit = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  MonthlyBudgetsTableCompanion.insert({
+    required String category,
+    required int monthlyLimit,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : category = Value(category),
+       monthlyLimit = Value(monthlyLimit),
+       updatedAt = Value(updatedAt);
+  static Insertable<MonthlyBudgetsTableData> custom({
+    Expression<String>? category,
+    Expression<int>? monthlyLimit,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (category != null) 'category': category,
+      if (monthlyLimit != null) 'monthly_limit': monthlyLimit,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MonthlyBudgetsTableCompanion copyWith({
+    Value<String>? category,
+    Value<int>? monthlyLimit,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return MonthlyBudgetsTableCompanion(
+      category: category ?? this.category,
+      monthlyLimit: monthlyLimit ?? this.monthlyLimit,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
+    }
+    if (monthlyLimit.present) {
+      map['monthly_limit'] = Variable<int>(monthlyLimit.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MonthlyBudgetsTableCompanion(')
+          ..write('category: $category, ')
+          ..write('monthlyLimit: $monthlyLimit, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2442,6 +2721,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $WalletTableTable walletTable = $WalletTableTable(this);
   late final $WalletBalanceAdjustmentTableTable walletBalanceAdjustmentTable =
       $WalletBalanceAdjustmentTableTable(this);
+  late final $MonthlyBudgetsTableTable monthlyBudgetsTable =
+      $MonthlyBudgetsTableTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2452,6 +2733,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     pendingTransactionsTable,
     walletTable,
     walletBalanceAdjustmentTable,
+    monthlyBudgetsTable,
   ];
 }
 
@@ -3761,6 +4043,186 @@ typedef $$WalletBalanceAdjustmentTableTableProcessedTableManager =
       WalletBalanceAdjustmentTableData,
       PrefetchHooks Function()
     >;
+typedef $$MonthlyBudgetsTableTableCreateCompanionBuilder =
+    MonthlyBudgetsTableCompanion Function({
+      required String category,
+      required int monthlyLimit,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$MonthlyBudgetsTableTableUpdateCompanionBuilder =
+    MonthlyBudgetsTableCompanion Function({
+      Value<String> category,
+      Value<int> monthlyLimit,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$MonthlyBudgetsTableTableFilterComposer
+    extends Composer<_$AppDatabase, $MonthlyBudgetsTableTable> {
+  $$MonthlyBudgetsTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get monthlyLimit => $composableBuilder(
+    column: $table.monthlyLimit,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$MonthlyBudgetsTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $MonthlyBudgetsTableTable> {
+  $$MonthlyBudgetsTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get monthlyLimit => $composableBuilder(
+    column: $table.monthlyLimit,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$MonthlyBudgetsTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MonthlyBudgetsTableTable> {
+  $$MonthlyBudgetsTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumn<int> get monthlyLimit => $composableBuilder(
+    column: $table.monthlyLimit,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$MonthlyBudgetsTableTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $MonthlyBudgetsTableTable,
+          MonthlyBudgetsTableData,
+          $$MonthlyBudgetsTableTableFilterComposer,
+          $$MonthlyBudgetsTableTableOrderingComposer,
+          $$MonthlyBudgetsTableTableAnnotationComposer,
+          $$MonthlyBudgetsTableTableCreateCompanionBuilder,
+          $$MonthlyBudgetsTableTableUpdateCompanionBuilder,
+          (
+            MonthlyBudgetsTableData,
+            BaseReferences<
+              _$AppDatabase,
+              $MonthlyBudgetsTableTable,
+              MonthlyBudgetsTableData
+            >,
+          ),
+          MonthlyBudgetsTableData,
+          PrefetchHooks Function()
+        > {
+  $$MonthlyBudgetsTableTableTableManager(
+    _$AppDatabase db,
+    $MonthlyBudgetsTableTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MonthlyBudgetsTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$MonthlyBudgetsTableTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$MonthlyBudgetsTableTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> category = const Value.absent(),
+                Value<int> monthlyLimit = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MonthlyBudgetsTableCompanion(
+                category: category,
+                monthlyLimit: monthlyLimit,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String category,
+                required int monthlyLimit,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => MonthlyBudgetsTableCompanion.insert(
+                category: category,
+                monthlyLimit: monthlyLimit,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$MonthlyBudgetsTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $MonthlyBudgetsTableTable,
+      MonthlyBudgetsTableData,
+      $$MonthlyBudgetsTableTableFilterComposer,
+      $$MonthlyBudgetsTableTableOrderingComposer,
+      $$MonthlyBudgetsTableTableAnnotationComposer,
+      $$MonthlyBudgetsTableTableCreateCompanionBuilder,
+      $$MonthlyBudgetsTableTableUpdateCompanionBuilder,
+      (
+        MonthlyBudgetsTableData,
+        BaseReferences<
+          _$AppDatabase,
+          $MonthlyBudgetsTableTable,
+          MonthlyBudgetsTableData
+        >,
+      ),
+      MonthlyBudgetsTableData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3782,4 +4244,6 @@ class $AppDatabaseManager {
         _db,
         _db.walletBalanceAdjustmentTable,
       );
+  $$MonthlyBudgetsTableTableTableManager get monthlyBudgetsTable =>
+      $$MonthlyBudgetsTableTableTableManager(_db, _db.monthlyBudgetsTable);
 }

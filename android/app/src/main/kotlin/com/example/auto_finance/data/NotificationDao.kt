@@ -51,6 +51,83 @@ interface NotificationDao {
     fun insert(notification: NotificationEntity)
 
     @Query("""
+        SELECT EXISTS(
+            SELECT 1 FROM notification_logs
+            WHERE packageName = :packageName
+              AND title = :title
+              AND text = :text
+              AND timestamp BETWEEN :fromTimestamp AND :toTimestamp
+        )
+    """)
+    fun hasRecentDuplicate(
+        packageName: String,
+        title: String,
+        text: String,
+        fromTimestamp: Long,
+        toTimestamp: Long
+    ): Boolean
+
+    @Query("""
+        UPDATE notification_logs
+        SET processed = 0
+        WHERE processed = 1
+          AND packageName LIKE '%jago%' COLLATE NOCASE
+          AND LOWER(title || ' ' || text) LIKE '%menerima%'
+    """)
+    fun requeueProcessedJagoIncomeNotifications(): Int
+
+    @Query("""
+        UPDATE notification_logs
+        SET processed = 0
+        WHERE processed = 1
+          AND packageName LIKE '%jago%' COLLATE NOCASE
+          AND LOWER(title || ' ' || text) LIKE '%membayar%'
+    """)
+    fun requeueProcessedJagoPaymentNotifications(): Int
+
+    @Query("""
+        UPDATE notification_logs
+        SET processed = 0
+        WHERE processed = 1
+          AND packageName LIKE '%jago%' COLLATE NOCASE
+          AND LOWER(title || ' ' || text) LIKE '%memindahkan%'
+          AND LOWER(title || ' ' || text) LIKE '%kantong%'
+    """)
+    fun requeueProcessedJagoPocketTransfers(): Int
+
+    @Query("""
+        UPDATE notification_logs
+        SET processed = 0
+        WHERE processed = 1
+          AND packageName LIKE '%shopee%' COLLATE NOCASE
+          AND LOWER(title || ' ' || text) LIKE '%pengisian saldo%'
+          AND LOWER(title || ' ' || text) LIKE '%60.000%'
+          AND LOWER(title || ' ' || text) LIKE '%shopeepay%'
+    """)
+    fun requeueProcessedShopeePayTopup60000(): Int
+
+    @Query("""
+        UPDATE notification_logs
+        SET processed = 0
+        WHERE processed = 1
+          AND packageName LIKE '%shopee%' COLLATE NOCASE
+          AND LOWER(title || ' ' || text) LIKE '%pencairan dana%'
+          AND LOWER(title || ' ' || text) LIKE '%menerima%'
+    """)
+    fun requeueProcessedShopeePayCashOutReceived(): Int
+
+    @Query("""
+        UPDATE notification_logs
+        SET processed = 0
+        WHERE processed = 1
+          AND packageName LIKE '%shopee%' COLLATE NOCASE
+          AND LOWER(title || ' ' || text) LIKE '%mengirimkan dana%'
+          AND LOWER(title || ' ' || text) LIKE '%ke shopeepay%'
+          AND LOWER(title || ' ' || text) LIKE '%bi-fast%'
+    """)
+    fun requeueProcessedShopeePayBiFastIncoming(): Int
+
+    @Query("""
         SELECT * 
         FROM notification_logs
         WHERE processed = 0

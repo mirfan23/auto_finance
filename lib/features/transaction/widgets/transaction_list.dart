@@ -13,11 +13,18 @@ class TransactionList extends StatelessWidget {
   Widget build(BuildContext context) {
     final grouped = TransactionGroupHelper.groupByDate(transactions);
 
-    return ListView(
+    final entries = grouped.entries.toList();
+    return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      children: grouped.entries.map((entry) {
-        return TransactionGroup(title: DateHelper.sectionTitle(entry.key), transactions: entry.value);
-      }).toList(),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final entry = entries[index];
+          return TransactionGroup(
+            title: DateHelper.sectionTitle(entry.key),
+            transactions: entry.value,
+          );
+        }, childCount: entries.length),
+      ),
     );
   }
 }

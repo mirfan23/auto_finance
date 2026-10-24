@@ -3,6 +3,7 @@ import 'package:auto_finance/data/local/tables/pending_transaction_table.dart';
 import 'package:auto_finance/data/local/tables/transaction_table.dart';
 import 'package:auto_finance/data/local/tables/wallet_table.dart';
 import 'package:auto_finance/data/local/tables/wallet_balance_adjustment_table.dart';
+import 'package:auto_finance/data/local/tables/monthly_budgets_table.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
@@ -18,12 +19,13 @@ part 'app_database.g.dart';
     PendingTransactionsTable,
     WalletTable,
     WalletBalanceAdjustmentTable,
+    MonthlyBudgetsTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
   @override
-  int get schemaVersion => 19;
+  int get schemaVersion => 20;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -31,7 +33,11 @@ class AppDatabase extends _$AppDatabase {
       await m.createAll();
     },
     onUpgrade: (m, from, to) async {
-      await m.createAll();
+      if (from < 19) {
+        await m.createAll();
+      } else if (from < 20) {
+        await m.createTable(monthlyBudgetsTable);
+      }
     },
   );
 

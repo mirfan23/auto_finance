@@ -7,20 +7,45 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'notification_stream_provider.dart';
 
-final notificationSyncProvider = Provider<NotificationSyncProvider>((ref) => NotificationSyncProvider(ref));
+final notificationSyncProvider = Provider<NotificationSyncProvider>(
+  (ref) => NotificationSyncProvider(ref),
+);
 
 class NotificationSyncProvider {
   final Ref ref;
+  Future<void>? _activeSync;
 
   NotificationSyncProvider(this.ref);
 
-  Future<void> sync() async {
+  Future<void> sync() {
+    final activeSync = _activeSync;
+    if (activeSync != null) {
+      return activeSync;
+    }
+
+    late final Future<void> task;
+    task = _syncPendingNotifications().whenComplete(() {
+      if (identical(_activeSync, task)) _activeSync = null;
+    });
+    _activeSync = task;
+    return task;
+  }
+
+  Future<void> _syncPendingNotifications() async {
     debugPrint("===== START SYNC =====");
+
+    final requeuedJago =
+        await NotificationDbService.reprocessKnownJagoNotificationsOnce();
+    debugPrint(
+      "🔁 JAGO NOTIFICATIONS QUEUED FOR ONE-TIME REPROCESS => $requeuedJago",
+    );
 
     // One-time (per sync) cleanup: notifications from packages we can never
     // parse into a transaction would otherwise pile up in Room forever and
     // get re-walked on every sync. Dismiss them in bulk before fetching.
-    final cleaned = await NotificationDbService.markUnknownPackagesProcessed(ParserDispatcher.supportedPackageHints);
+    final cleaned = await NotificationDbService.markUnknownPackagesProcessed(
+      ParserDispatcher.supportedPackageHints,
+    );
 
     debugPrint("🧹 CLEANED UNKNOWN PACKAGES => $cleaned");
 

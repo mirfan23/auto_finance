@@ -1,11 +1,14 @@
 import 'package:auto_finance/app/theme.dart';
 import 'package:auto_finance/core/helpers/notification_access_helper.dart';
 import 'package:auto_finance/core/services/data_export_service.dart';
+import 'package:auto_finance/core/services/data_import_service.dart';
 import 'package:auto_finance/core/services/notification_permission_service.dart';
 import 'package:auto_finance/features/transaction/providers/transaction_provider.dart';
 import 'package:auto_finance/features/wallet/providers/wallet_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:go_router/go_router.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -19,6 +22,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
   bool? _notificationAccessEnabled;
   bool _openingSettings = false;
   bool _exportingData = false;
+  bool _importingData = false;
 
   @override
   void initState() {
@@ -78,6 +82,69 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
       }
     } finally {
       if (mounted) setState(() => _exportingData = false);
+    }
+  }
+
+  Future<void> _importData() async {
+    setState(() => _importingData = true);
+    try {
+      final selection = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['csv'],
+        withData: true,
+      );
+      if (selection == null || selection.files.isEmpty) return;
+      final bytes = selection.files.single.bytes;
+      if (bytes == null) throw StateError('File tidak bisa dibaca.');
+
+      final wallets = await ref.read(walletDaoProvider).getAll();
+      final transactions = DataImportService.parseTransactionsCsv(
+        bytes,
+        wallets,
+      );
+      if (!mounted) return;
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Impor transaksi?'),
+          content: Text(
+            '${transactions.length} transaksi akan ditambahkan. Data yang sudah ada akan dilewati. Saldo dompet tidak berubah.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Batal'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Impor'),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true || !mounted) return;
+
+      final result = await DataImportService.importTransactions(
+        transactions: transactions,
+        transactionDao: ref.read(transactionDaoProvider),
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Impor selesai: ${result.imported} ditambahkan, ${result.skipped} duplikat dilewati.',
+            ),
+          ),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Data belum bisa diimpor: $error')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _importingData = false);
     }
   }
 
@@ -182,6 +249,25 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     ),
                   ),
                 ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: _importingData ? null : _importData,
+                    icon: _importingData
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.file_upload_outlined),
+                    label: Text(
+                      _importingData
+                          ? 'Mengimpor transaksi…'
+                          : 'Impor transaksi dari CSV',
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -204,6 +290,28 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   ),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text('DIAGNOSIS', style: Theme.of(context).textTheme.labelMedium),
+          const SizedBox(height: 10),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: AppColors.line),
+            ),
+            child: ListTile(
+              leading: const Icon(
+                Icons.notifications_active_rounded,
+                color: AppColors.forest,
+              ),
+              title: const Text('Riwayat notifikasi'),
+              subtitle: const Text(
+                'Periksa pesan yang ditangkap dan transaksi yang dibuat',
+              ),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () => context.push('/notifications/history'),
             ),
           ),
           const SizedBox(height: 24),

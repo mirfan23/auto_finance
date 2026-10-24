@@ -32,6 +32,13 @@ final dashboardProvider = Provider<AsyncValue<DashboardSummary>>((ref) {
 
   final wallets = walletsAsync.value ?? <Wallet>[];
   final transactions = transactionsAsync.value ?? <Transaction>[];
+  final now = DateTime.now();
+  final monthStart = DateTime(now.year, now.month);
+  final nextMonthStart = DateTime(now.year, now.month + 1);
+  final currentMonthTransactions = transactions.where((transaction) {
+    return !transaction.time.isBefore(monthStart) &&
+        transaction.time.isBefore(nextMonthStart);
+  });
 
   //----------------------------------------
   // Total Asset
@@ -43,7 +50,7 @@ final dashboardProvider = Provider<AsyncValue<DashboardSummary>>((ref) {
   // Income
   //----------------------------------------
 
-  final totalIncome = transactions
+  final totalIncome = currentMonthTransactions
       .where((e) => e.type == TransactionType.income)
       .fold<int>(0, (sum, trx) => sum + trx.amount);
 
@@ -51,7 +58,7 @@ final dashboardProvider = Provider<AsyncValue<DashboardSummary>>((ref) {
   // Expense
   //----------------------------------------
 
-  final totalExpense = transactions
+  final totalExpense = currentMonthTransactions
       .where((e) => e.type == TransactionType.expense)
       .fold<int>(0, (sum, trx) => sum + trx.amount);
 
