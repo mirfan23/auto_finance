@@ -29,6 +29,15 @@ class _AppRootState extends ConsumerState<MyApp> {
       NotificationBus.start(ref);
 
       try {
+        final reconciledPocketMovements = await ref
+            .read(transactionDaoProvider)
+            .reconcileJagoPocketMovements();
+        if (reconciledPocketMovements > 0) {
+          debugPrint(
+            'Reconciled $reconciledPocketMovements old Jago pocket movements.',
+          );
+        }
+
         final removedPromotions = await ref
             .read(transactionDaoProvider)
             .removeJagoPromotionalTransactions();

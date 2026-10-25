@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:auto_finance/app/theme.dart';
 import 'package:auto_finance/core/helpers/category_helper.dart';
+import 'package:auto_finance/core/models/date_filter_selection.dart';
+import 'package:auto_finance/core/widgets/date_filter_bar.dart';
 import 'package:auto_finance/data/local/database/app_database.dart';
 import 'package:auto_finance/domain/entities/received_notification.dart';
 import 'package:auto_finance/domain/entities/transaction.dart';
@@ -29,6 +31,7 @@ class NotificationHistoryPage extends ConsumerStatefulWidget {
 class _NotificationHistoryPageState
     extends ConsumerState<NotificationHistoryPage> {
   _HistoryFilter _filter = _HistoryFilter.all;
+  DateFilterSelection _dateFilter = const DateFilterSelection.all();
 
   @override
   Widget build(BuildContext context) {
@@ -97,15 +100,22 @@ class _NotificationHistoryPageState
       );
     }).toList();
 
-    final recordedCount = entries
+    final dateFilteredEntries = entries
+        .where((entry) => _dateFilter.contains(entry.notification.time))
+        .toList();
+    final recordedCount = dateFilteredEntries
         .where((entry) => entry.transaction != null)
         .length;
     final visibleEntries = switch (_filter) {
-      _HistoryFilter.all => entries,
+      _HistoryFilter.all => dateFilteredEntries,
       _HistoryFilter.recorded =>
-        entries.where((entry) => entry.transaction != null).toList(),
+        dateFilteredEntries
+            .where((entry) => entry.transaction != null)
+            .toList(),
       _HistoryFilter.noTransaction =>
-        entries.where((entry) => entry.transaction == null).toList(),
+        dateFilteredEntries
+            .where((entry) => entry.transaction == null)
+            .toList(),
     };
 
     return Column(
@@ -125,11 +135,17 @@ class _NotificationHistoryPageState
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 14),
+              DateFilterBar(
+                selection: _dateFilter,
+                horizontalPadding: 0,
+                onChanged: (selection) =>
+                    setState(() => _dateFilter = selection),
+              ),
               Wrap(
                 spacing: 8,
                 children: [
                   _FilterChip(
-                    label: 'Semua (${entries.length})',
+                    label: 'Semua (${dateFilteredEntries.length})',
                     selected: _filter == _HistoryFilter.all,
                     onTap: () => setState(() => _filter = _HistoryFilter.all),
                   ),
@@ -141,7 +157,7 @@ class _NotificationHistoryPageState
                   ),
                   _FilterChip(
                     label:
-                        'Belum ada transaksi (${entries.length - recordedCount})',
+                        'Belum ada transaksi (${dateFilteredEntries.length - recordedCount})',
                     selected: _filter == _HistoryFilter.noTransaction,
                     onTap: () =>
                         setState(() => _filter = _HistoryFilter.noTransaction),
@@ -156,6 +172,8 @@ class _NotificationHistoryPageState
               ? _HistoryEmpty(
                   message: entries.isEmpty
                       ? 'Belum ada notifikasi dari Jago, BCA, Gojek/GoPay, atau Shopee/ShopeePay.'
+                      : dateFilteredEntries.isEmpty
+                      ? 'Tidak ada notifikasi pada rentang tanggal ini.'
                       : 'Tidak ada notifikasi pada pilihan ini.',
                 )
               : RefreshIndicator(

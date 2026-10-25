@@ -1,4 +1,5 @@
 import 'package:auto_finance/app/theme.dart';
+import 'package:auto_finance/core/helpers/jago_notification_helper.dart';
 import 'package:auto_finance/domain/entities/transaction.dart';
 import 'package:auto_finance/domain/entities/transaction_categories.dart';
 import 'package:auto_finance/domain/entities/transaction_type.dart';
@@ -38,6 +39,11 @@ class _EditTransactionSheetState extends ConsumerState<EditTransactionSheet> {
   bool _saving = false;
   bool _rememberMerchant = false;
   bool _applyToPast = false;
+  String? _saveError;
+
+  bool get _isJagoPocketMovement =>
+      widget.transaction.bank.toLowerCase().contains('jago') &&
+      JagoNotificationHelper.isPocketMovement(widget.transaction.rawText);
 
   List<TransactionCategory> get _categories => TransactionCategory.values
       .where((category) => category != TransactionCategory.transfer)
@@ -82,10 +88,23 @@ class _EditTransactionSheetState extends ConsumerState<EditTransactionSheet> {
       _type = type;
       if (type == TransactionType.transfer) {
         _category = TransactionCategory.transfer;
+        if (_isJagoPocketMovement) {
+          final jagoWalletId = _fromWalletId ?? _findJagoWalletId();
+          _fromWalletId = jagoWalletId;
+          _toWalletId = jagoWalletId;
+        }
       } else if (_category == TransactionCategory.transfer) {
         _category = TransactionCategory.other;
       }
+      _saveError = null;
     });
+  }
+
+  String? _findJagoWalletId() {
+    for (final wallet in widget.wallets) {
+      if (wallet.bank.toLowerCase().contains('jago')) return wallet.id;
+    }
+    return null;
   }
 
   Future<void> _chooseDate() async {
@@ -111,14 +130,27 @@ class _EditTransactionSheetState extends ConsumerState<EditTransactionSheet> {
     if (!_formKey.currentState!.validate()) return;
     final amount = int.tryParse(_amountController.text.trim());
     if (amount == null || amount <= 0) return;
-    if (_type == TransactionType.transfer && _fromWalletId == _toWalletId) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pilih dua dompet yang berbeda.')),
-      );
+    if (_type == TransactionType.transfer &&
+        _isJagoPocketMovement &&
+        (_fromWalletId == null || _fromWalletId != _toWalletId)) {
+      setState(() {
+        _saveError = 'Pilih dompet Jago yang sama untuk perpindahan kantong.';
+      });
+      return;
+    }
+    if (_type == TransactionType.transfer &&
+        !_isJagoPocketMovement &&
+        (_fromWalletId == null ||
+            _toWalletId == null ||
+            _fromWalletId == _toWalletId)) {
+      setState(() => _saveError = 'Pilih dua dompet yang berbeda.');
       return;
     }
 
-    setState(() => _saving = true);
+    setState(() {
+      _saving = true;
+      _saveError = null;
+    });
     try {
       final updated = widget.transaction.copyWith(
         amount: amount,
@@ -145,9 +177,7 @@ class _EditTransactionSheetState extends ConsumerState<EditTransactionSheet> {
       if (mounted) Navigator.pop(context, true);
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Transaksi belum bisa disimpan: $error')),
-        );
+        setState(() => _saveError = 'Transaksi belum bisa disimpan: $error');
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -310,8 +340,14 @@ class _EditTransactionSheetState extends ConsumerState<EditTransactionSheet> {
                             ? 'Dompet asal'
                             : 'Dompet sumber',
                         value: _fromWalletId,
-                        onChanged: (value) =>
-                            setState(() => _fromWalletId = value),
+                        onChanged: (value) => setState(() {
+                          _fromWalletId = value;
+                          if (_isJagoPocketMovement &&
+                              _type == TransactionType.transfer) {
+                            _toWalletId = value;
+                          }
+                          _saveError = null;
+                        }),
                       ),
                     if (_type == TransactionType.transfer)
                       const SizedBox(height: 14),
@@ -341,6 +377,27 @@ class _EditTransactionSheetState extends ConsumerState<EditTransactionSheet> {
                 ),
               ),
             ),
+            if (_saveError != null) ...[
+              const SizedBox(height: 10),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.errorContainer,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  _saveError!,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onErrorContainer,
+                  ),
+                ),
+              ),
+            ],
+            const SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
               child: FilledButton(

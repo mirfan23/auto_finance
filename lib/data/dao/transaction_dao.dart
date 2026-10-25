@@ -338,6 +338,51 @@ class TransactionDao {
     });
   }
 
+  /// Repairs old Jago pocket notifications that were saved as expenses before
+  /// pocket withdrawals were recognized. A same-wallet transfer has no net
+  /// balance effect, so reversing the old expense restores the wallet total.
+  Future<int> reconcileJagoPocketMovements() {
+    return db.transaction(() async {
+      final rows = await db.select(db.transactionsTable).get();
+      var reconciled = 0;
+
+      for (final row in rows) {
+        if (row.bank.toLowerCase() != 'jago' ||
+            row.type == TransactionType.transfer.name ||
+            !JagoNotificationHelper.isPocketMovement(row.rawText)) {
+          continue;
+        }
+
+        final existing = _toTransaction(row);
+        final jagoWalletId = existing.fromWallet ?? existing.toWallet;
+        final corrected = existing.copyWith(
+          type: TransactionType.transfer,
+          category: TransactionCategory.transfer,
+          fromWallet: jagoWalletId,
+          toWallet: jagoWalletId,
+        );
+
+        // Reverse the previously applied income/expense effect, then apply
+        // the corrected internal transfer in the same database transaction.
+        await _applyBalanceEffect(existing, -1);
+        await _applyBalanceEffect(corrected, 1);
+        await (db.update(
+          db.transactionsTable,
+        )..where((table) => table.id.equals(row.id))).write(
+          TransactionsTableCompanion(
+            type: Value(corrected.type.name),
+            category: Value(corrected.category.name),
+            fromWallet: Value(corrected.fromWallet),
+            toWallet: Value(corrected.toWallet),
+          ),
+        );
+        reconciled++;
+      }
+
+      return reconciled;
+    });
+  }
+
   Future<List<TransactionsTableData>> getPotentialDuplicates(Transaction trx) {
     final start = trx.time.subtract(const Duration(seconds: 5));
     final end = trx.time.add(const Duration(seconds: 5));

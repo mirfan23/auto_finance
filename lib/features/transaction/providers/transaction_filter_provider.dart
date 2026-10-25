@@ -14,7 +14,7 @@ final filteredTransactionProvider = Provider<AsyncValue<List<Transaction>>>((
   final keyword = ref.watch(transactionSearchProvider).toLowerCase();
 
   final filter = ref.watch(transactionFilterProvider);
-  final selectedMonth = ref.watch(transactionMonthFilterProvider);
+  final dateFilter = ref.watch(transactionDateFilterProvider);
   print('filter: $filter');
 
   return transactions.whenData((list) {
@@ -31,12 +31,7 @@ final filteredTransactionProvider = Provider<AsyncValue<List<Transaction>>>((
       }).toList();
     }
 
-    if (selectedMonth != null) {
-      result = result.where((trx) {
-        return trx.time.year == selectedMonth.year &&
-            trx.time.month == selectedMonth.month;
-      }).toList();
-    }
+    result = result.where((trx) => dateFilter.contains(trx.time)).toList();
 
     //--------------------------------
     // Filter
