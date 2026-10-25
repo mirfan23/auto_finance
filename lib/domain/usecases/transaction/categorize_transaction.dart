@@ -1,4 +1,5 @@
 import 'package:auto_finance/domain/entities/transaction_categories.dart';
+import 'package:auto_finance/core/helpers/jago_notification_helper.dart';
 
 class CategorizeTransactionUseCase {
   TransactionCategory call(String text) {
@@ -15,8 +16,28 @@ class CategorizeTransactionUseCase {
       return TransactionCategory.topup;
     }
 
-    if (lower.contains('memindahkan') && lower.contains('kantong')) {
+    if (JagoNotificationHelper.isPocketMovement(text)) {
       return TransactionCategory.transfer;
+    }
+
+    if (_containsAny(lower, [
+      'laundry',
+      'laundromat',
+      'dry clean',
+      'dry-clean',
+      'binatu',
+      'cuci pakaian',
+    ])) {
+      return TransactionCategory.laundry;
+    }
+
+    if (_containsAny(lower, [
+      'listrik',
+      'pln',
+      'token listrik',
+      'electricity',
+    ])) {
+      return TransactionCategory.electricity;
     }
 
     if (_containsAny(lower, [
@@ -43,16 +64,30 @@ class CategorizeTransactionUseCase {
 
     if (_containsAny(lower, [
       'gofood',
+      'grabfood',
+      'shopeefood',
+      'nasi bebek',
+      'songkam',
       'mcd',
       'mcdonald',
       'kfc',
       'resto',
       'restaurant',
       'food',
+      'makanan',
+      'minuman',
       'dining',
+      'food court',
+      'foodcourt',
       'kopi',
       'coffee',
       'cafe',
+      'warung',
+      'groceries',
+      'grocery',
+      'sembako',
+      'bahan makanan',
+      'bahan pokok',
     ])) {
       return TransactionCategory.food;
     }
@@ -124,11 +159,6 @@ class CategorizeTransactionUseCase {
       'tokopedia',
       'lazada',
       'shopping',
-      'groceries',
-      'grocery',
-      'supermarket',
-      'minimarket',
-      'convenience store',
       'belanja',
       'retail',
       'marketplace',

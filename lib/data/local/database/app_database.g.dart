@@ -2709,6 +2709,348 @@ class MonthlyBudgetsTableCompanion
   }
 }
 
+class $MerchantCategoryRulesTableTable extends MerchantCategoryRulesTable
+    with
+        TableInfo<
+          $MerchantCategoryRulesTableTable,
+          MerchantCategoryRulesTableData
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MerchantCategoryRulesTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _merchantKeyMeta = const VerificationMeta(
+    'merchantKey',
+  );
+  @override
+  late final GeneratedColumn<String> merchantKey = GeneratedColumn<String>(
+    'merchant_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _merchantNameMeta = const VerificationMeta(
+    'merchantName',
+  );
+  @override
+  late final GeneratedColumn<String> merchantName = GeneratedColumn<String>(
+    'merchant_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _categoryMeta = const VerificationMeta(
+    'category',
+  );
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+    'category',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    merchantKey,
+    merchantName,
+    category,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'merchant_category_rules_table';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<MerchantCategoryRulesTableData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('merchant_key')) {
+      context.handle(
+        _merchantKeyMeta,
+        merchantKey.isAcceptableOrUnknown(
+          data['merchant_key']!,
+          _merchantKeyMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_merchantKeyMeta);
+    }
+    if (data.containsKey('merchant_name')) {
+      context.handle(
+        _merchantNameMeta,
+        merchantName.isAcceptableOrUnknown(
+          data['merchant_name']!,
+          _merchantNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_merchantNameMeta);
+    }
+    if (data.containsKey('category')) {
+      context.handle(
+        _categoryMeta,
+        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_categoryMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {merchantKey};
+  @override
+  MerchantCategoryRulesTableData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MerchantCategoryRulesTableData(
+      merchantKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}merchant_key'],
+      )!,
+      merchantName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}merchant_name'],
+      )!,
+      category: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $MerchantCategoryRulesTableTable createAlias(String alias) {
+    return $MerchantCategoryRulesTableTable(attachedDatabase, alias);
+  }
+}
+
+class MerchantCategoryRulesTableData extends DataClass
+    implements Insertable<MerchantCategoryRulesTableData> {
+  final String merchantKey;
+  final String merchantName;
+  final String category;
+  final DateTime updatedAt;
+  const MerchantCategoryRulesTableData({
+    required this.merchantKey,
+    required this.merchantName,
+    required this.category,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['merchant_key'] = Variable<String>(merchantKey);
+    map['merchant_name'] = Variable<String>(merchantName);
+    map['category'] = Variable<String>(category);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  MerchantCategoryRulesTableCompanion toCompanion(bool nullToAbsent) {
+    return MerchantCategoryRulesTableCompanion(
+      merchantKey: Value(merchantKey),
+      merchantName: Value(merchantName),
+      category: Value(category),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory MerchantCategoryRulesTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MerchantCategoryRulesTableData(
+      merchantKey: serializer.fromJson<String>(json['merchantKey']),
+      merchantName: serializer.fromJson<String>(json['merchantName']),
+      category: serializer.fromJson<String>(json['category']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'merchantKey': serializer.toJson<String>(merchantKey),
+      'merchantName': serializer.toJson<String>(merchantName),
+      'category': serializer.toJson<String>(category),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  MerchantCategoryRulesTableData copyWith({
+    String? merchantKey,
+    String? merchantName,
+    String? category,
+    DateTime? updatedAt,
+  }) => MerchantCategoryRulesTableData(
+    merchantKey: merchantKey ?? this.merchantKey,
+    merchantName: merchantName ?? this.merchantName,
+    category: category ?? this.category,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  MerchantCategoryRulesTableData copyWithCompanion(
+    MerchantCategoryRulesTableCompanion data,
+  ) {
+    return MerchantCategoryRulesTableData(
+      merchantKey: data.merchantKey.present
+          ? data.merchantKey.value
+          : this.merchantKey,
+      merchantName: data.merchantName.present
+          ? data.merchantName.value
+          : this.merchantName,
+      category: data.category.present ? data.category.value : this.category,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MerchantCategoryRulesTableData(')
+          ..write('merchantKey: $merchantKey, ')
+          ..write('merchantName: $merchantName, ')
+          ..write('category: $category, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(merchantKey, merchantName, category, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MerchantCategoryRulesTableData &&
+          other.merchantKey == this.merchantKey &&
+          other.merchantName == this.merchantName &&
+          other.category == this.category &&
+          other.updatedAt == this.updatedAt);
+}
+
+class MerchantCategoryRulesTableCompanion
+    extends UpdateCompanion<MerchantCategoryRulesTableData> {
+  final Value<String> merchantKey;
+  final Value<String> merchantName;
+  final Value<String> category;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const MerchantCategoryRulesTableCompanion({
+    this.merchantKey = const Value.absent(),
+    this.merchantName = const Value.absent(),
+    this.category = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  MerchantCategoryRulesTableCompanion.insert({
+    required String merchantKey,
+    required String merchantName,
+    required String category,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : merchantKey = Value(merchantKey),
+       merchantName = Value(merchantName),
+       category = Value(category),
+       updatedAt = Value(updatedAt);
+  static Insertable<MerchantCategoryRulesTableData> custom({
+    Expression<String>? merchantKey,
+    Expression<String>? merchantName,
+    Expression<String>? category,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (merchantKey != null) 'merchant_key': merchantKey,
+      if (merchantName != null) 'merchant_name': merchantName,
+      if (category != null) 'category': category,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MerchantCategoryRulesTableCompanion copyWith({
+    Value<String>? merchantKey,
+    Value<String>? merchantName,
+    Value<String>? category,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return MerchantCategoryRulesTableCompanion(
+      merchantKey: merchantKey ?? this.merchantKey,
+      merchantName: merchantName ?? this.merchantName,
+      category: category ?? this.category,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (merchantKey.present) {
+      map['merchant_key'] = Variable<String>(merchantKey.value);
+    }
+    if (merchantName.present) {
+      map['merchant_name'] = Variable<String>(merchantName.value);
+    }
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MerchantCategoryRulesTableCompanion(')
+          ..write('merchantKey: $merchantKey, ')
+          ..write('merchantName: $merchantName, ')
+          ..write('category: $category, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2723,6 +3065,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $WalletBalanceAdjustmentTableTable(this);
   late final $MonthlyBudgetsTableTable monthlyBudgetsTable =
       $MonthlyBudgetsTableTable(this);
+  late final $MerchantCategoryRulesTableTable merchantCategoryRulesTable =
+      $MerchantCategoryRulesTableTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2734,6 +3078,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     walletTable,
     walletBalanceAdjustmentTable,
     monthlyBudgetsTable,
+    merchantCategoryRulesTable,
   ];
 }
 
@@ -4223,6 +4568,210 @@ typedef $$MonthlyBudgetsTableTableProcessedTableManager =
       MonthlyBudgetsTableData,
       PrefetchHooks Function()
     >;
+typedef $$MerchantCategoryRulesTableTableCreateCompanionBuilder =
+    MerchantCategoryRulesTableCompanion Function({
+      required String merchantKey,
+      required String merchantName,
+      required String category,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$MerchantCategoryRulesTableTableUpdateCompanionBuilder =
+    MerchantCategoryRulesTableCompanion Function({
+      Value<String> merchantKey,
+      Value<String> merchantName,
+      Value<String> category,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$MerchantCategoryRulesTableTableFilterComposer
+    extends Composer<_$AppDatabase, $MerchantCategoryRulesTableTable> {
+  $$MerchantCategoryRulesTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get merchantKey => $composableBuilder(
+    column: $table.merchantKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get merchantName => $composableBuilder(
+    column: $table.merchantName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$MerchantCategoryRulesTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $MerchantCategoryRulesTableTable> {
+  $$MerchantCategoryRulesTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get merchantKey => $composableBuilder(
+    column: $table.merchantKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get merchantName => $composableBuilder(
+    column: $table.merchantName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$MerchantCategoryRulesTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MerchantCategoryRulesTableTable> {
+  $$MerchantCategoryRulesTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get merchantKey => $composableBuilder(
+    column: $table.merchantKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get merchantName => $composableBuilder(
+    column: $table.merchantName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$MerchantCategoryRulesTableTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $MerchantCategoryRulesTableTable,
+          MerchantCategoryRulesTableData,
+          $$MerchantCategoryRulesTableTableFilterComposer,
+          $$MerchantCategoryRulesTableTableOrderingComposer,
+          $$MerchantCategoryRulesTableTableAnnotationComposer,
+          $$MerchantCategoryRulesTableTableCreateCompanionBuilder,
+          $$MerchantCategoryRulesTableTableUpdateCompanionBuilder,
+          (
+            MerchantCategoryRulesTableData,
+            BaseReferences<
+              _$AppDatabase,
+              $MerchantCategoryRulesTableTable,
+              MerchantCategoryRulesTableData
+            >,
+          ),
+          MerchantCategoryRulesTableData,
+          PrefetchHooks Function()
+        > {
+  $$MerchantCategoryRulesTableTableTableManager(
+    _$AppDatabase db,
+    $MerchantCategoryRulesTableTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MerchantCategoryRulesTableTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$MerchantCategoryRulesTableTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$MerchantCategoryRulesTableTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> merchantKey = const Value.absent(),
+                Value<String> merchantName = const Value.absent(),
+                Value<String> category = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MerchantCategoryRulesTableCompanion(
+                merchantKey: merchantKey,
+                merchantName: merchantName,
+                category: category,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String merchantKey,
+                required String merchantName,
+                required String category,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => MerchantCategoryRulesTableCompanion.insert(
+                merchantKey: merchantKey,
+                merchantName: merchantName,
+                category: category,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$MerchantCategoryRulesTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $MerchantCategoryRulesTableTable,
+      MerchantCategoryRulesTableData,
+      $$MerchantCategoryRulesTableTableFilterComposer,
+      $$MerchantCategoryRulesTableTableOrderingComposer,
+      $$MerchantCategoryRulesTableTableAnnotationComposer,
+      $$MerchantCategoryRulesTableTableCreateCompanionBuilder,
+      $$MerchantCategoryRulesTableTableUpdateCompanionBuilder,
+      (
+        MerchantCategoryRulesTableData,
+        BaseReferences<
+          _$AppDatabase,
+          $MerchantCategoryRulesTableTable,
+          MerchantCategoryRulesTableData
+        >,
+      ),
+      MerchantCategoryRulesTableData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4246,4 +4795,10 @@ class $AppDatabaseManager {
       );
   $$MonthlyBudgetsTableTableTableManager get monthlyBudgetsTable =>
       $$MonthlyBudgetsTableTableTableManager(_db, _db.monthlyBudgetsTable);
+  $$MerchantCategoryRulesTableTableTableManager
+  get merchantCategoryRulesTable =>
+      $$MerchantCategoryRulesTableTableTableManager(
+        _db,
+        _db.merchantCategoryRulesTable,
+      );
 }

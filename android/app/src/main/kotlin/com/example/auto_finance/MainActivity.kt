@@ -61,9 +61,12 @@ class MainActivity : FlutterActivity() {
 
             val totalBalance = call.argument<Number>("totalBalance")?.toLong()
             val monthlyExpense = call.argument<Number>("monthlyExpense")?.toLong()
+            val budgetItemsJson = call.argument<String>("budgetItemsJson")
             val updatedAt = call.argument<Number>("updatedAt")?.toLong()
 
-            if (totalBalance == null || monthlyExpense == null || updatedAt == null) {
+            if (totalBalance == null || monthlyExpense == null || budgetItemsJson == null ||
+                updatedAt == null
+            ) {
                 result.error("INVALID_WIDGET_DATA", "Widget summary is incomplete", null)
                 return@setMethodCallHandler
             }
@@ -73,6 +76,7 @@ class MainActivity : FlutterActivity() {
                 .edit()
                 .putLong("total_balance", totalBalance)
                 .putLong("monthly_expense", monthlyExpense)
+                .putString("budget_items_json", budgetItemsJson)
                 .putLong("updated_at", updatedAt)
                 .apply()
 

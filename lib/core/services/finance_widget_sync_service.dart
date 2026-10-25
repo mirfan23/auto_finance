@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
@@ -7,6 +9,7 @@ class FinanceWidgetSyncService {
   Future<void> updateSummary({
     required int totalBalance,
     required int monthlyExpense,
+    required List<Map<String, Object>> budgetItems,
     required DateTime updatedAt,
   }) async {
     if (defaultTargetPlatform != TargetPlatform.android) return;
@@ -14,6 +17,7 @@ class FinanceWidgetSyncService {
     await _channel.invokeMethod<void>('updateSummary', {
       'totalBalance': totalBalance,
       'monthlyExpense': monthlyExpense,
+      'budgetItemsJson': jsonEncode(budgetItems),
       'updatedAt': updatedAt.millisecondsSinceEpoch,
     });
   }

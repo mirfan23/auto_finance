@@ -7,6 +7,7 @@ import 'package:auto_finance/domain/entities/transaction.dart';
 import 'package:auto_finance/domain/entities/transaction_categories.dart';
 import 'package:auto_finance/domain/entities/transaction_type.dart';
 import 'package:auto_finance/features/analytics/widgets/monthly_budget_section.dart';
+import 'package:auto_finance/features/analytics/pages/category_expense_detail_page.dart';
 import 'package:auto_finance/features/transaction/providers/transaction_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -230,7 +231,20 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
             message: 'Belum ada pengeluaran di bulan ini.',
           )
         else
-          _CategoryBreakdown(categories: sortedCategories, total: expense),
+          _CategoryBreakdown(
+            categories: sortedCategories,
+            total: expense,
+            onTap: (category) {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => CategoryExpenseDetailPage(
+                    category: category,
+                    month: _selectedMonth,
+                  ),
+                ),
+              );
+            },
+          ),
         const SizedBox(height: 14),
         const _TransferNote(),
       ],
@@ -803,10 +817,15 @@ class _MonthlyTrend extends StatelessWidget {
 }
 
 class _CategoryBreakdown extends StatelessWidget {
-  const _CategoryBreakdown({required this.categories, required this.total});
+  const _CategoryBreakdown({
+    required this.categories,
+    required this.total,
+    required this.onTap,
+  });
 
   final List<MapEntry<TransactionCategory, int>> categories;
   final int total;
+  final ValueChanged<TransactionCategory> onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -821,66 +840,78 @@ class _CategoryBreakdown extends StatelessWidget {
         children: categories.map((entry) {
           final categoryColor = CategoryHelper.color(entry.key);
           final share = total == 0 ? 0.0 : entry.value / total;
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 13),
-            child: Row(
-              children: [
-                Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: categoryColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    CategoryHelper.icon(entry.key),
-                    color: categoryColor,
-                    size: 19,
-                  ),
-                ),
-                const SizedBox(width: 11),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+          return Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(14),
+              onTap: () => onTap(entry.key),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 13),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: categoryColor.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        CategoryHelper.icon(entry.key),
+                        color: categoryColor,
+                        size: 19,
+                      ),
+                    ),
+                    const SizedBox(width: 11),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: Text(
-                              CategoryHelper.title(entry.key),
-                              style: Theme.of(
-                                context,
-                              ).textTheme.titleMedium?.copyWith(fontSize: 14),
-                            ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  CategoryHelper.title(entry.key),
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(fontSize: 14),
+                                ),
+                              ),
+                              Text(
+                                '${(share * 100).round()}%',
+                                style: Theme.of(context).textTheme.labelMedium,
+                              ),
+                            ],
                           ),
-                          Text(
-                            '${(share * 100).round()}%',
-                            style: Theme.of(context).textTheme.labelMedium,
+                          const SizedBox(height: 7),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: LinearProgressIndicator(
+                              value: share.clamp(0.0, 1.0),
+                              minHeight: 6,
+                              backgroundColor: AppColors.canvas,
+                              valueColor: AlwaysStoppedAnimation(categoryColor),
+                            ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 7),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: LinearProgressIndicator(
-                          value: share.clamp(0.0, 1.0),
-                          minHeight: 6,
-                          backgroundColor: AppColors.canvas,
-                          valueColor: AlwaysStoppedAnimation(categoryColor),
-                        ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      FormatterHelper.formatRupiah(entry.value),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 5),
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      color: AppColors.muted,
+                      size: 20,
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 10),
-                Text(
-                  FormatterHelper.formatRupiah(entry.value),
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
+              ),
             ),
           );
         }).toList(),

@@ -12,7 +12,7 @@ class PendingTransactionDao {
   Future<void> insert(Transaction trx) async {
     await db
         .into(db.pendingTransactionsTable)
-        .insert(
+        .insertOnConflictUpdate(
           PendingTransactionsTableCompanion.insert(
             id: trx.id,
             bank: trx.bank,
@@ -28,26 +28,37 @@ class PendingTransactionDao {
   }
 
   Future<List<Transaction>> getPending() async {
-    final rows = await (db.select(db.pendingTransactionsTable)..where((t) => t.pending.equals(true))).get();
+    final rows = await (db.select(
+      db.pendingTransactionsTable,
+    )..where((t) => t.pending.equals(true))).get();
 
     return rows.map(_mapRowToTransaction).toList();
   }
 
   Future<void> markDone(String id) async {
-    await (db.update(
-      db.pendingTransactionsTable,
-    )..where((t) => t.id.equals(id))).write(const PendingTransactionsTableCompanion(pending: Value(false)));
+    await (db.update(db.pendingTransactionsTable)
+          ..where((t) => t.id.equals(id)))
+        .write(const PendingTransactionsTableCompanion(pending: Value(false)));
   }
 
   Future<void> delete(String id) async {
-    await (db.delete(db.pendingTransactionsTable)..where((t) => t.id.equals(id))).go();
+    await (db.delete(
+      db.pendingTransactionsTable,
+    )..where((t) => t.id.equals(id))).go();
   }
 
   Future<void> deleteMany(List<String> ids) async {
-    await (db.delete(db.pendingTransactionsTable)..where((t) => t.id.isIn(ids))).go();
+    await (db.delete(
+      db.pendingTransactionsTable,
+    )..where((t) => t.id.isIn(ids))).go();
   }
 
-  Future<bool> exists(String bank, int amount, TransactionType type, String rawText) async {
+  Future<bool> exists(
+    String bank,
+    int amount,
+    TransactionType type,
+    String rawText,
+  ) async {
     final limit = DateTime.now().subtract(const Duration(seconds: 5));
 
     final rows =
@@ -72,7 +83,9 @@ class PendingTransactionDao {
       toWallet: row.toWallet,
       amount: row.amount,
       type: TransactionType.values.firstWhere((e) => e.name == row.type),
-      category: TransactionCategory.values.firstWhere((e) => e.name == row.category),
+      category: TransactionCategory.values.firstWhere(
+        (e) => e.name == row.category,
+      ),
       rawText: row.rawText,
       time: row.time,
     );

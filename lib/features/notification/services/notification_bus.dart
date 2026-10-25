@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:auto_finance/core/services/notification_db_service.dart';
+import 'package:auto_finance/domain/usecases/transaction/transaction_action_result.dart';
 import 'package:auto_finance/features/notification/providers/notification_stream_provider.dart';
 import 'package:auto_finance/features/transaction/providers/transaction_provider.dart';
 import 'package:flutter/foundation.dart';
@@ -8,7 +10,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'notification_service.dart';
 
 class NotificationBus {
-  static final StreamController<Map<String, dynamic>> _controller = StreamController.broadcast();
+  static final StreamController<Map<String, dynamic>> _controller =
+      StreamController.broadcast();
 
   static Stream<Map<String, dynamic>> get stream => _controller.stream;
 
@@ -32,9 +35,23 @@ class NotificationBus {
         debugPrint("📝 NOTIFICATION LOG SAVED");
 
         // 2. Proses transaction
-        await action.handle(event);
-
-        debugPrint("✅ LIVE NOTIFICATION PROCESSED");
+        final result = await action.handle(event);
+        final notificationId = event['id'];
+        switch (result) {
+          case TransactionActionResult.processed:
+          case TransactionActionResult.duplicate:
+          case TransactionActionResult.notTransaction:
+            if (notificationId is num) {
+              await NotificationDbService.markProcessed(notificationId.toInt());
+            }
+            debugPrint('✅ LIVE NOTIFICATION FINALIZED => $result');
+            break;
+          case TransactionActionResult.waitingPair:
+          case TransactionActionResult.waitingWallet:
+          case TransactionActionResult.failed:
+            debugPrint('⏳ LIVE NOTIFICATION STILL PENDING => $result');
+            break;
+        }
 
         // 3. Broadcast ke UI/debug page
         _controller.add(event);

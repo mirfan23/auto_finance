@@ -102,4 +102,32 @@
             android:textColor="#DCE5F8"
             android:textSize="9sp" />
     </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="ANGGARAN BULAN INI"
+        android:textColor="#C9D8FF"
+        android:textSize="9sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/widget_budget_empty"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:text="Belum ada anggaran"
+        android:textColor="#DCE5F8"
+        android:textSize="11sp" />
+
+    <ListView
+        android:id="@+id/widget_budget_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:divider="#4263A6"
+        android:dividerHeight="1dp"
+        android:fadeScrollbars="true"
+        android:scrollbars="vertical" />
 </LinearLayout>

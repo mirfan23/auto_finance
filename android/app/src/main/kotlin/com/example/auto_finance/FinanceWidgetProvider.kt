@@ -6,9 +6,9 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import android.widget.RemoteViews
-import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -64,6 +64,11 @@ class FinanceWidgetProvider : AppWidgetProvider() {
 
             views.setTextViewText(R.id.widget_total_balance, formatRupiah(totalBalance))
             views.setTextViewText(R.id.widget_monthly_expense, formatRupiah(monthlyExpense))
+            val serviceIntent = Intent(context, BudgetWidgetRemoteViewsService::class.java).apply {
+                data = Uri.parse(toUri(Intent.URI_INTENT_SCHEME) + "#$appWidgetId")
+            }
+            views.setRemoteAdapter(R.id.widget_budget_list, serviceIntent)
+            views.setEmptyView(R.id.widget_budget_list, R.id.widget_budget_empty)
             views.setTextViewText(
                 R.id.widget_updated_at,
                 if (updatedAt == 0L) {
@@ -87,11 +92,11 @@ class FinanceWidgetProvider : AppWidgetProvider() {
             }
 
             manager.updateAppWidget(appWidgetId, views)
+            manager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.widget_budget_list)
         }
 
         private fun formatRupiah(amount: Long): String {
-            val formatted = NumberFormat.getNumberInstance(Locale("id", "ID"))
-                .format(amount)
+            val formatted = java.text.NumberFormat.getNumberInstance(Locale("id", "ID")).format(amount)
             return "Rp $formatted"
         }
     }

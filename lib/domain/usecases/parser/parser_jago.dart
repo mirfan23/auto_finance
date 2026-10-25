@@ -1,3 +1,4 @@
+import 'package:auto_finance/core/helpers/jago_notification_helper.dart';
 import 'package:auto_finance/domain/entities/parser_result.dart';
 import 'package:auto_finance/domain/usecases/parser/base_parser.dart';
 
@@ -9,6 +10,9 @@ class JagoParser extends BaseParser {
       title,
       text,
     ].where((part) => part.trim().isNotEmpty).join(" ");
+
+    // Jago promo messages can contain an amount but are not account activity.
+    if (JagoNotificationHelper.isPromotional(searchableText)) return null;
 
     final match = RegExp(
       r'(?:Rp|IDR)\s?([\d.,]+)',

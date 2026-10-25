@@ -1,5 +1,6 @@
 import 'package:auto_finance/data/dao/pending_transaction_dao.dart';
 import 'package:auto_finance/data/dao/monthly_budget_dao.dart';
+import 'package:auto_finance/data/dao/merchant_category_rule_dao.dart';
 import 'package:auto_finance/data/dao/transaction_dao.dart';
 import 'package:auto_finance/data/local/database/app_database.dart';
 import 'package:auto_finance/domain/entities/transaction.dart';
@@ -32,6 +33,12 @@ final monthlyBudgetDaoProvider = Provider<MonthlyBudgetDao>((ref) {
   return MonthlyBudgetDao(ref.watch(dbProvider));
 });
 
+final merchantCategoryRuleDaoProvider = Provider<MerchantCategoryRuleDao>((
+  ref,
+) {
+  return MerchantCategoryRuleDao(ref.watch(dbProvider));
+});
+
 final monthlyBudgetStreamProvider =
     StreamProvider<List<MonthlyBudgetsTableData>>((ref) {
       return ref.watch(monthlyBudgetDaoProvider).watchAll();
@@ -57,6 +64,7 @@ final transactionActionProvider = Provider<TransactionAction>((ref) {
     pairing: ref.watch(pairingProvider),
     pendingDao: ref.watch(pendingDaoProvider),
     transactionDao: ref.watch(transactionDaoProvider),
+    merchantRules: ref.watch(merchantCategoryRuleDaoProvider),
     finalizePending: ref.watch(finalizePendingProvider),
     walletResolver: ref.watch(walletResolverProvider),
     saveTransaction: ref.watch(saveTransactionProvider),

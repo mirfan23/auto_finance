@@ -5,6 +5,7 @@ import 'package:auto_finance/domain/entities/transaction_type.dart';
 import 'package:auto_finance/domain/entities/wallet.dart';
 import 'package:auto_finance/features/transaction/providers/transaction_provider.dart';
 import 'package:auto_finance/core/helpers/category_helper.dart';
+import 'package:auto_finance/core/helpers/merchant_name_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,12 +29,15 @@ class EditTransactionSheet extends ConsumerStatefulWidget {
 class _EditTransactionSheetState extends ConsumerState<EditTransactionSheet> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _amountController;
+  late final TextEditingController _merchantController;
   late TransactionType _type;
   late TransactionCategory _category;
   String? _fromWalletId;
   String? _toWalletId;
   late DateTime _time;
   bool _saving = false;
+  bool _rememberMerchant = false;
+  bool _applyToPast = false;
 
   List<TransactionCategory> get _categories => TransactionCategory.values
       .where((category) => category != TransactionCategory.transfer)
@@ -44,6 +48,9 @@ class _EditTransactionSheetState extends ConsumerState<EditTransactionSheet> {
     super.initState();
     _amountController = TextEditingController(
       text: widget.transaction.amount.toString(),
+    );
+    _merchantController = TextEditingController(
+      text: MerchantNameHelper.suggest(widget.transaction.rawText) ?? '',
     );
     _type = widget.transaction.type;
     _category = widget.transaction.category;
@@ -65,6 +72,7 @@ class _EditTransactionSheetState extends ConsumerState<EditTransactionSheet> {
   @override
   void dispose() {
     _amountController.dispose();
+    _merchantController.dispose();
     super.dispose();
   }
 
@@ -121,6 +129,19 @@ class _EditTransactionSheetState extends ConsumerState<EditTransactionSheet> {
         time: _time,
       );
       await ref.read(transactionDaoProvider).updateTransaction(updated);
+      if (_rememberMerchant && _merchantController.text.trim().isNotEmpty) {
+        final ruleDao = ref.read(merchantCategoryRuleDaoProvider);
+        await ruleDao.saveRule(
+          merchantName: _merchantController.text,
+          category: _category,
+        );
+        if (_applyToPast) {
+          await ruleDao.recategorizeExisting(
+            merchantName: _merchantController.text,
+            category: _category,
+          );
+        }
+      }
       if (mounted) Navigator.pop(context, true);
     } catch (error) {
       if (mounted) {
@@ -245,6 +266,43 @@ class _EditTransactionSheetState extends ConsumerState<EditTransactionSheet> {
                         ),
                         child: Text(CategoryHelper.title(_category)),
                       ),
+                    if (_type == TransactionType.expense) ...[
+                      const SizedBox(height: 12),
+                      SwitchListTile.adaptive(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Ingat kategori merchant ini'),
+                        subtitle: const Text(
+                          'Simpan di HP untuk transaksi berikutnya.',
+                        ),
+                        value: _rememberMerchant,
+                        onChanged: (value) => setState(() {
+                          _rememberMerchant = value;
+                          if (!value) _applyToPast = false;
+                        }),
+                      ),
+                      if (_rememberMerchant) ...[
+                        TextFormField(
+                          controller: _merchantController,
+                          textCapitalization: TextCapitalization.words,
+                          decoration: const InputDecoration(
+                            labelText: 'Nama merchant',
+                            helperText:
+                                'Periksa atau ubah nama yang terdeteksi.',
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                        CheckboxListTile.adaptive(
+                          contentPadding: EdgeInsets.zero,
+                          title: const Text('Terapkan ke transaksi lama'),
+                          subtitle: const Text(
+                            'Hanya transaksi pengeluaran dengan nama merchant yang sama.',
+                          ),
+                          value: _applyToPast,
+                          onChanged: (value) =>
+                              setState(() => _applyToPast = value ?? false),
+                        ),
+                      ],
+                    ],
                     const SizedBox(height: 14),
                     if (_type != TransactionType.income)
                       _walletDropdown(

@@ -3,6 +3,7 @@ import 'package:auto_finance/core/helpers/category_helper.dart';
 import 'package:auto_finance/domain/entities/transaction.dart';
 import 'package:auto_finance/domain/entities/transaction_categories.dart';
 import 'package:auto_finance/domain/entities/transaction_type.dart';
+import 'package:auto_finance/features/analytics/pages/category_expense_detail_page.dart';
 import 'package:auto_finance/features/transaction/providers/transaction_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -122,7 +123,15 @@ class MonthlyBudgetSection extends ConsumerWidget {
                       category: category,
                       spent: spent,
                       monthlyLimit: budget.monthlyLimit,
-                      onTap: () => _editBudget(
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => CategoryExpenseDetailPage(
+                            category: category,
+                            month: month,
+                          ),
+                        ),
+                      ),
+                      onEdit: () => _editBudget(
                         context,
                         ref,
                         category,
@@ -163,35 +172,16 @@ class MonthlyBudgetSection extends ConsumerWidget {
       return;
     }
 
-    final category = await showModalBottomSheet<TransactionCategory>(
+    final draft = await showModalBottomSheet<_BudgetDraft>(
       context: context,
       useSafeArea: true,
-      builder: (context) => ListView(
-        shrinkWrap: true,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-            child: Text(
-              'Pilih kategori',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-          ),
-          ...available.map(
-            (category) => ListTile(
-              leading: Icon(
-                CategoryHelper.icon(category),
-                color: CategoryHelper.color(category),
-              ),
-              title: Text(CategoryHelper.title(category)),
-              onTap: () => Navigator.pop(context, category),
-            ),
-          ),
-        ],
-      ),
+      isScrollControlled: true,
+      builder: (context) => _AddBudgetSheet(categories: available),
     );
-    if (category == null || !context.mounted) return;
-
-    await _editBudget(context, ref, category, null);
+    if (draft == null || !context.mounted) return;
+    await ref
+        .read(monthlyBudgetDaoProvider)
+        .save(category: draft.category.name, monthlyLimit: draft.monthlyLimit);
   }
 
   Future<void> _editBudget(
@@ -201,7 +191,9 @@ class MonthlyBudgetSection extends ConsumerWidget {
     int? currentLimit,
   ) async {
     final controller = TextEditingController(
-      text: currentLimit?.toString() ?? '',
+      text: currentLimit == null
+          ? ''
+          : FormatterHelper.formatRupiah(currentLimit),
     );
     final formKey = GlobalKey<FormState>();
     final amount = await showDialog<int>(
@@ -214,12 +206,10 @@ class MonthlyBudgetSection extends ConsumerWidget {
             controller: controller,
             autofocus: true,
             keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: 'Batas per bulan',
-              prefixText: 'Rp ',
-            ),
+            inputFormatters: [FormatterHelper.currencyInputFormatter],
+            decoration: const InputDecoration(labelText: 'Batas per bulan'),
             validator: (value) {
-              final parsed = int.tryParse((value ?? '').replaceAll('.', ''));
+              final parsed = FormatterHelper.parseCurrency(value ?? '');
               if (parsed == null || parsed <= 0) {
                 return 'Masukkan nominal yang lebih dari nol.';
               }
@@ -237,7 +227,7 @@ class MonthlyBudgetSection extends ConsumerWidget {
               if (formKey.currentState?.validate() != true) return;
               Navigator.pop(
                 context,
-                int.parse(controller.text.replaceAll('.', '')),
+                FormatterHelper.parseCurrency(controller.text),
               );
             },
             child: const Text('Simpan'),
@@ -282,12 +272,156 @@ class MonthlyBudgetSection extends ConsumerWidget {
   }
 }
 
+class _BudgetDraft {
+  const _BudgetDraft({required this.category, required this.monthlyLimit});
+
+  final TransactionCategory category;
+  final int monthlyLimit;
+}
+
+/// Uses one modal route for both steps so closing the category picker and
+/// immediately opening a second route cannot leave Flutter routes overlapping.
+class _AddBudgetSheet extends StatefulWidget {
+  const _AddBudgetSheet({required this.categories});
+
+  final List<TransactionCategory> categories;
+
+  @override
+  State<_AddBudgetSheet> createState() => _AddBudgetSheetState();
+}
+
+class _AddBudgetSheetState extends State<_AddBudgetSheet> {
+  final _formKey = GlobalKey<FormState>();
+  final _amountController = TextEditingController();
+  TransactionCategory? _category;
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    if (!_formKey.currentState!.validate()) return;
+    final category = _category;
+    if (category == null) return;
+    Navigator.of(context).pop(
+      _BudgetDraft(
+        category: category,
+        monthlyLimit: FormatterHelper.parseCurrency(_amountController.text),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final category = _category;
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    return Padding(
+      padding: EdgeInsets.only(bottom: bottomInset),
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 180),
+        child: category == null
+            ? _categoryPicker(context)
+            : _amountEntry(context, category),
+      ),
+    );
+  }
+
+  Widget _categoryPicker(BuildContext context) {
+    return ListView(
+      key: const ValueKey('category-picker'),
+      shrinkWrap: true,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+          child: Text(
+            'Pilih kategori',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+        ),
+        ...widget.categories.map(
+          (category) => ListTile(
+            leading: Icon(
+              CategoryHelper.icon(category),
+              color: CategoryHelper.color(category),
+            ),
+            title: Text(CategoryHelper.title(category)),
+            onTap: () => setState(() => _category = category),
+          ),
+        ),
+        const SizedBox(height: 12),
+      ],
+    );
+  }
+
+  Widget _amountEntry(BuildContext context, TransactionCategory category) {
+    return SingleChildScrollView(
+      key: const ValueKey('budget-amount'),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                IconButton(
+                  onPressed: () => setState(() => _category = null),
+                  icon: const Icon(Icons.arrow_back_rounded),
+                  tooltip: 'Pilih kategori lain',
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    'Anggaran ${CategoryHelper.title(category)}',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.close_rounded),
+                  tooltip: 'Tutup',
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _amountController,
+              autofocus: true,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FormatterHelper.currencyInputFormatter],
+              decoration: const InputDecoration(
+                labelText: 'Batas per bulan',
+                border: OutlineInputBorder(),
+              ),
+              validator: (value) =>
+                  FormatterHelper.parseCurrency(value ?? '') <= 0
+                  ? 'Masukkan nominal yang lebih dari nol.'
+                  : null,
+              onFieldSubmitted: (_) => _save(),
+            ),
+            const SizedBox(height: 18),
+            FilledButton(
+              onPressed: _save,
+              child: const Text('Simpan anggaran'),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _BudgetRow extends StatelessWidget {
   const _BudgetRow({
     required this.category,
     required this.spent,
     required this.monthlyLimit,
     required this.onTap,
+    required this.onEdit,
     required this.onDelete,
   });
 
@@ -295,6 +429,7 @@ class _BudgetRow extends StatelessWidget {
   final int spent;
   final int monthlyLimit;
   final VoidCallback onTap;
+  final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   @override
@@ -356,7 +491,7 @@ class _BudgetRow extends StatelessWidget {
                     tooltip: 'Kelola anggaran',
                     onSelected: (value) {
                       if (value == 'delete') onDelete();
-                      if (value == 'edit') onTap();
+                      if (value == 'edit') onEdit();
                     },
                     itemBuilder: (context) => const [
                       PopupMenuItem(value: 'edit', child: Text('Ubah batas')),

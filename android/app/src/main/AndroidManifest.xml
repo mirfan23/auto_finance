@@ -68,6 +68,10 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/finance_widget_info" />
         </receiver>
+        <service
+            android:name=".BudgetWidgetRemoteViewsService"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

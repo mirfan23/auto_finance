@@ -1,5 +1,6 @@
 import 'package:auto_finance/data/dao/transaction_dao.dart';
 import 'package:auto_finance/domain/entities/transaction.dart';
+import 'package:auto_finance/domain/entities/transaction_type.dart';
 import 'package:auto_finance/domain/usecases/wallet/apply_transaction_usecase.dart';
 
 class SaveTransactionUseCase {
@@ -39,22 +40,25 @@ class SaveTransactionUseCase {
     required Transaction debit,
     required Transaction credit,
   }) async {
-    final transferId = "transfer_${DateTime.now().microsecondsSinceEpoch}";
+    if (debit.type != TransactionType.expense ||
+        credit.type != TransactionType.income ||
+        debit.amount != credit.amount) {
+      throw StateError('Pasangan transaksi bukan transfer yang valid.');
+    }
 
-    await transactionDao.insertTransfer(
+    // Notification IDs are stable across retries, making the transfer
+    // idempotent even if the app is interrupted before pending rows are
+    // deleted.
+    final transferId = 'transfer_${debit.id}_${credit.id}';
+    final inserted = await transactionDao.insertTransferAndReconcile(
       id: transferId,
-      bank: "${debit.bank} → ${credit.bank}",
-      fromWallet: debit.fromWallet!,
-      toWallet: credit.toWallet!,
-      amount: debit.amount,
-      rawText: "${debit.rawText}\n${credit.rawText}",
-      time: credit.time,
+      debit: debit,
+      credit: credit,
     );
-
-    await applyTransaction.executeTransfer(
-      fromWalletId: debit.fromWallet!,
-      toWalletId: credit.toWallet!,
-      amount: debit.amount,
+    print(
+      inserted
+          ? '✅ TRANSFER SAVED WITH RECONCILIATION => $transferId'
+          : '♻️ TRANSFER ALREADY SAVED; DUPLICATE LEGS RECONCILED => $transferId',
     );
   }
 }

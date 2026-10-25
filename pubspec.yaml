@@ -81,7 +81,7 @@ flutter_launcher_icons:
   remove_alpha_ios : true
   image_path: "assets/icons/app_icons.png"
   adaptive_icon_foreground: "assets/icons/app_icons.png"
-  adaptive_icon_background: "#ffffff"
+  adaptive_icon_background: "#3867D6"
   min_sdk_android: 21 # android min sdk min:16, default 21
   # Use `dart run flutter_launcher_icons` to create the android/app/src/main/res/mipmap-hdpi/ic_launcher.png 
 

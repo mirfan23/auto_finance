@@ -4,6 +4,7 @@ import 'package:auto_finance/data/local/tables/transaction_table.dart';
 import 'package:auto_finance/data/local/tables/wallet_table.dart';
 import 'package:auto_finance/data/local/tables/wallet_balance_adjustment_table.dart';
 import 'package:auto_finance/data/local/tables/monthly_budgets_table.dart';
+import 'package:auto_finance/data/local/tables/merchant_category_rules_table.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
@@ -20,12 +21,13 @@ part 'app_database.g.dart';
     WalletTable,
     WalletBalanceAdjustmentTable,
     MonthlyBudgetsTable,
+    MerchantCategoryRulesTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
   @override
-  int get schemaVersion => 20;
+  int get schemaVersion => 23;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -37,6 +39,34 @@ class AppDatabase extends _$AppDatabase {
         await m.createAll();
       } else if (from < 20) {
         await m.createTable(monthlyBudgetsTable);
+      }
+      if (from < 21) {
+        await customStatement('''
+          UPDATE transactions_table
+          SET category = 'food'
+          WHERE category = 'shopping'
+            AND (
+              LOWER(raw_text) LIKE '%groceries%'
+              OR LOWER(raw_text) LIKE '%grocery%'
+              OR LOWER(raw_text) LIKE '%sembako%'
+              OR LOWER(raw_text) LIKE '%bahan makanan%'
+              OR LOWER(raw_text) LIKE '%bahan pokok%'
+            )
+        ''');
+      }
+      if (from < 22) {
+        await customStatement('''
+          UPDATE transactions_table
+          SET category = 'food'
+          WHERE category = 'shopping'
+            AND (
+              LOWER(raw_text) LIKE '%nasi bebek songkam%'
+              OR LOWER(raw_text) LIKE '%songkam-ho%'
+            )
+        ''');
+      }
+      if (from < 23) {
+        await m.createTable(merchantCategoryRulesTable);
       }
     },
   );

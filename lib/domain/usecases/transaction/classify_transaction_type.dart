@@ -1,4 +1,5 @@
 import '../../entities/transaction_type.dart';
+import '../../../core/helpers/jago_notification_helper.dart';
 
 class ClassifyTransactionTypeUseCase {
   TransactionType call(String text) {
@@ -6,7 +7,7 @@ class ClassifyTransactionTypeUseCase {
 
     // A movement between Jago pockets stays within the same Jago account.
     // Keep it as a transfer so it never reduces the account's total balance.
-    if (lower.contains('memindahkan') && lower.contains('kantong')) {
+    if (JagoNotificationHelper.isPocketMovement(text)) {
       return TransactionType.transfer;
     }
 

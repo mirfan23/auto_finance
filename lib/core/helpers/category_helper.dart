@@ -7,6 +7,12 @@ class CategoryHelper {
       case TransactionCategory.food:
         return Icons.restaurant_rounded;
 
+      case TransactionCategory.laundry:
+        return Icons.local_laundry_service_rounded;
+
+      case TransactionCategory.electricity:
+        return Icons.bolt_rounded;
+
       case TransactionCategory.shopping:
         return Icons.shopping_bag_rounded;
 
@@ -51,10 +57,16 @@ class CategoryHelper {
   static String title(TransactionCategory category) {
     switch (category) {
       case TransactionCategory.food:
-        return "Makanan";
+        return "Makanan & bahan pangan";
+
+      case TransactionCategory.laundry:
+        return "Laundry";
+
+      case TransactionCategory.electricity:
+        return "Listrik";
 
       case TransactionCategory.shopping:
-        return "Belanja";
+        return "Belanja lainnya";
 
       case TransactionCategory.transport:
         return "Transportasi";
@@ -98,6 +110,12 @@ class CategoryHelper {
     switch (category) {
       case TransactionCategory.food:
         return Colors.orange;
+
+      case TransactionCategory.laundry:
+        return Colors.teal;
+
+      case TransactionCategory.electricity:
+        return Colors.amber.shade800;
 
       case TransactionCategory.shopping:
         return Colors.purple;

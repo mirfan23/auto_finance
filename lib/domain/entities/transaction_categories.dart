@@ -1,5 +1,7 @@
 enum TransactionCategory {
   food,
+  laundry,
+  electricity,
   shopping,
   transport,
   bills,

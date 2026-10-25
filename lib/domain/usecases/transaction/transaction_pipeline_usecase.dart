@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:auto_finance/domain/entities/transaction.dart';
 import 'package:auto_finance/domain/usecases/parser/parser_dispatcher.dart';
 
@@ -23,8 +26,18 @@ class TransactionPipelineUseCase {
       "${result.category}",
     );
 
+    final rawNotificationId = data['id'];
+    final notificationIdentity = rawNotificationId == null
+        ? sha256
+              .convert(
+                utf8.encode(
+                  '${data['packageName']}|${data['timestamp']}|${data['title']}|${data['text']}',
+                ),
+              )
+              .toString()
+        : rawNotificationId.toString();
     final transaction = Transaction(
-      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      id: 'notification_$notificationIdentity',
       bank: result.bank,
       fromWallet: null,
       toWallet: null,

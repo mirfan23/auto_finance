@@ -1,5 +1,7 @@
 import 'package:auto_finance/data/dao/pending_transaction_dao.dart';
 import 'package:auto_finance/data/dao/transaction_dao.dart';
+import 'package:auto_finance/data/dao/merchant_category_rule_dao.dart';
+import 'package:auto_finance/core/helpers/jago_notification_helper.dart';
 import 'package:auto_finance/domain/entities/transaction.dart';
 import 'package:auto_finance/domain/entities/transaction_categories.dart';
 import 'package:auto_finance/domain/entities/transaction_type.dart';
@@ -17,6 +19,7 @@ class TransactionAction {
   final TransferPairingUseCase pairing;
   final PendingTransactionDao pendingDao;
   final TransactionDao transactionDao;
+  final MerchantCategoryRuleDao merchantRules;
   final FinalizePendingUseCase finalizePending;
   final WalletResolverUseCase walletResolver;
   final SaveTransactionUseCase saveTransaction;
@@ -27,6 +30,7 @@ class TransactionAction {
     required this.pairing,
     required this.pendingDao,
     required this.transactionDao,
+    required this.merchantRules,
     required this.finalizePending,
     required this.walletResolver,
     required this.saveTransaction,
@@ -157,7 +161,15 @@ class TransactionAction {
   Future<TransactionActionResult> handle(Map data) async {
     print("🟢 TRANSACTION ACTION START");
 
-    final incoming = pipeline(data);
+    final parsed = pipeline(data);
+
+    final learnedCategory =
+        parsed != null && parsed.type == TransactionType.expense
+        ? await merchantRules.categoryForText(parsed.rawText)
+        : null;
+    final incoming = parsed == null || learnedCategory == null
+        ? parsed
+        : parsed.copyWith(category: learnedCategory);
 
     if (incoming == null) {
       // Not a transaction notification at all (unrecognized package/format).
@@ -168,8 +180,51 @@ class TransactionAction {
       return TransactionActionResult.notTransaction;
     }
 
+    final wallet = await walletResolver.resolve(incoming.bank);
+    final resolved = incoming.copyWith(
+      fromWallet: incoming.type == TransactionType.expense ? wallet?.id : null,
+      toWallet: incoming.type == TransactionType.income ? wallet?.id : null,
+    );
+
+    if (await transactionDao.reconcileIfAlreadyPaired(resolved)) {
+      await pendingDao.delete(resolved.id);
+      print('♻️ NOTIFICATION ALREADY COVERED BY SAVED TRANSFER');
+      return TransactionActionResult.duplicate;
+    }
+
+    // A counterpart may already have been finalized as a single transaction
+    // before this notification arrived. Try pending rows first, then saved
+    // singles, so the later pair can still be reconciled into one transfer.
+    final pendingCandidates = await pendingDao.getPending();
+    final pendingPair = pairing.process(
+      resolved,
+      pendingCandidates.where((item) => item.id != resolved.id).toList(),
+    );
+    if (pendingPair != null) {
+      try {
+        await saveTransaction.saveTransfer(
+          debit: pendingPair.debit!,
+          credit: pendingPair.credit!,
+        );
+        await pendingDao.deleteMany([
+          pendingPair.debit!.id,
+          pendingPair.credit!.id,
+        ]);
+        await finalizePending.execute();
+        return TransactionActionResult.processed;
+      } catch (error, stackTrace) {
+        print('❌ PENDING TRANSFER RECONCILIATION FAILED');
+        print(error);
+        print(stackTrace);
+        return TransactionActionResult.failed;
+      }
+    }
+
+    final savedPair = await _pairWithSavedCounterpart(resolved);
+    if (savedPair != null) return savedPair;
+
     final savedTransactions =
-        (await transactionDao.getPotentialDuplicates(incoming))
+        (await transactionDao.getPotentialDuplicates(resolved))
             .map(
               (row) => Transaction(
                 id: row.id,
@@ -191,14 +246,13 @@ class TransactionAction {
           item.rawText,
           incoming.rawText,
         );
-        final nearby = item.time.difference(incoming.time).inSeconds.abs() <= 5;
+        final nearby = item.time.difference(resolved.time).inSeconds.abs() <= 5;
         return sameNotification && nearby;
       }).toList();
 
       if (matches.isNotEmpty) {
-        final wallet = await walletResolver.resolve(incoming.bank);
-        final isInternalPocketMove = _isInternalJagoPocketMove(incoming);
-        final corrected = incoming.copyWith(
+        final isInternalPocketMove = _isInternalJagoPocketMove(resolved);
+        final corrected = resolved.copyWith(
           id: matches.first.id,
           type: isInternalPocketMove ? TransactionType.transfer : incoming.type,
           category: isInternalPocketMove
@@ -206,12 +260,12 @@ class TransactionAction {
               : incoming.category,
           fromWallet: isInternalPocketMove
               ? wallet?.id
-              : incoming.type == TransactionType.expense
+              : resolved.type == TransactionType.expense
               ? wallet?.id
               : null,
           toWallet: isInternalPocketMove
               ? wallet?.id
-              : incoming.type == TransactionType.income
+              : resolved.type == TransactionType.income
               ? wallet?.id
               : null,
         );
@@ -226,9 +280,8 @@ class TransactionAction {
       return TransactionActionResult.duplicate;
     }
 
-    if (_isInternalJagoPocketMove(incoming)) {
-      final wallet = await walletResolver.resolve(incoming.bank);
-      final pocketTransfer = incoming.copyWith(
+    if (_isInternalJagoPocketMove(resolved)) {
+      final pocketTransfer = resolved.copyWith(
         type: TransactionType.transfer,
         category: TransactionCategory.transfer,
         fromWallet: wallet?.id,
@@ -246,13 +299,6 @@ class TransactionAction {
         return TransactionActionResult.failed;
       }
     }
-
-    final wallet = await walletResolver.resolve(incoming.bank);
-
-    final resolved = incoming.copyWith(
-      fromWallet: incoming.type == TransactionType.expense ? wallet?.id : null,
-      toWallet: incoming.type == TransactionType.income ? wallet?.id : null,
-    );
 
     final exists = await pendingDao.exists(
       resolved.bank,
@@ -286,6 +332,13 @@ class TransactionAction {
 
     if (pair == null) {
       print("⏳ WAITING PAIR");
+
+      final savedPair = await _pairWithSavedCounterpart(resolved);
+      if (savedPair != null) {
+        await pendingDao.delete(resolved.id);
+        await finalizePending.execute();
+        return savedPair;
+      }
 
       final finalizedIds = await finalizePending.execute();
 
@@ -340,9 +393,36 @@ class TransactionAction {
   }
 
   bool _isInternalJagoPocketMove(Transaction transaction) {
-    final text = transaction.rawText.toLowerCase();
     return transaction.bank.toLowerCase() == 'jago' &&
-        text.contains('memindahkan') &&
-        text.contains('kantong');
+        JagoNotificationHelper.isPocketMovement(transaction.rawText);
+  }
+
+  Future<TransactionActionResult?> _pairWithSavedCounterpart(
+    Transaction incoming,
+  ) async {
+    final candidates = await transactionDao.getPotentialTransferLegs(
+      incoming,
+      window: TransferPairingUseCase.pairingWindow,
+    );
+    final pair = pairing.process(incoming, candidates);
+    if (pair == null) return null;
+
+    if (pair.debit?.fromWallet == null || pair.credit?.toWallet == null) {
+      return TransactionActionResult.waitingWallet;
+    }
+
+    try {
+      await saveTransaction.saveTransfer(
+        debit: pair.debit!,
+        credit: pair.credit!,
+      );
+      print('✅ SAVED SINGLE TRANSACTIONS RECONCILED INTO TRANSFER');
+      return TransactionActionResult.processed;
+    } catch (error, stackTrace) {
+      print('❌ SAVED TRANSFER RECONCILIATION FAILED');
+      print(error);
+      print(stackTrace);
+      return TransactionActionResult.failed;
+    }
   }
 }
