@@ -15,6 +15,18 @@ import java.util.Locale
 
 class FinanceWidgetProvider : AppWidgetProvider() {
 
+    override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action == ACTION_TOGGLE_VISIBILITY) {
+            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            prefs.edit()
+                .putBoolean(KEY_HIDDEN, !prefs.getBoolean(KEY_HIDDEN, false))
+                .apply()
+            updateAll(context)
+            return
+        }
+        super.onReceive(context, intent)
+    }
+
     override fun onUpdate(
         context: Context,
         appWidgetManager: AppWidgetManager,
@@ -36,6 +48,9 @@ class FinanceWidgetProvider : AppWidgetProvider() {
         private const val KEY_TOTAL_BALANCE = "total_balance"
         private const val KEY_MONTHLY_EXPENSE = "monthly_expense"
         private const val KEY_UPDATED_AT = "updated_at"
+        private const val KEY_HIDDEN = "hide_widget_amounts"
+        private const val ACTION_TOGGLE_VISIBILITY =
+            "com.example.auto_finance.action.TOGGLE_WIDGET_VISIBILITY"
 
         fun updateAll(context: Context) {
             val manager = AppWidgetManager.getInstance(context)
@@ -60,10 +75,38 @@ class FinanceWidgetProvider : AppWidgetProvider() {
             val totalBalance = prefs.getLong(KEY_TOTAL_BALANCE, 0L)
             val monthlyExpense = prefs.getLong(KEY_MONTHLY_EXPENSE, 0L)
             val updatedAt = prefs.getLong(KEY_UPDATED_AT, 0L)
+            val hideAmounts = prefs.getBoolean(KEY_HIDDEN, false)
             val views = RemoteViews(context.packageName, R.layout.finance_widget)
 
-            views.setTextViewText(R.id.widget_total_balance, formatRupiah(totalBalance))
-            views.setTextViewText(R.id.widget_monthly_expense, formatRupiah(monthlyExpense))
+            val maskedAmount = "••••••"
+            views.setTextViewText(
+                R.id.widget_total_balance,
+                if (hideAmounts) maskedAmount else formatRupiah(totalBalance),
+            )
+            views.setTextViewText(
+                R.id.widget_monthly_expense,
+                if (hideAmounts) maskedAmount else formatRupiah(monthlyExpense),
+            )
+            views.setImageViewResource(
+                R.id.widget_toggle_visibility,
+                if (hideAmounts) R.drawable.ic_widget_visibility_off
+                else R.drawable.ic_widget_visibility,
+            )
+            views.setContentDescription(
+                R.id.widget_toggle_visibility,
+                if (hideAmounts) "Tampilkan saldo" else "Sembunyikan saldo",
+            )
+            val toggleIntent = Intent(context, FinanceWidgetProvider::class.java).apply {
+                action = ACTION_TOGGLE_VISIBILITY
+                data = Uri.parse("autofinance://widget/visibility/$appWidgetId")
+            }
+            val togglePendingIntent = PendingIntent.getBroadcast(
+                context,
+                appWidgetId,
+                toggleIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
+            views.setOnClickPendingIntent(R.id.widget_toggle_visibility, togglePendingIntent)
             val serviceIntent = Intent(context, BudgetWidgetRemoteViewsService::class.java).apply {
                 data = Uri.parse(toUri(Intent.URI_INTENT_SCHEME) + "#$appWidgetId")
             }

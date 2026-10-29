@@ -1,12 +1,13 @@
-import 'package:auto_finance/features/debug/debug_transaction_page.dart';
-import 'package:auto_finance/features/debug/notification_page.dart';
-import 'package:auto_finance/features/debug/notification_test_page.dart';
-import 'package:auto_finance/features/splash/splash_page.dart';
-import 'package:auto_finance/features/transaction/pages/transaction_detail_page.dart';
-import 'package:auto_finance/features/transaction/pages/transaction_page.dart';
-import 'package:auto_finance/features/wallet/pages/wallet_page.dart';
-import 'package:auto_finance/features/wallet/pages/wallet_detail_page.dart';
-import 'package:auto_finance/features/notification/pages/notification_history_page.dart';
+import 'package:auto_finance/features/debug/presentation/pages/debug_transaction_page.dart';
+import 'package:auto_finance/features/debug/presentation/pages/notification_page.dart';
+import 'package:auto_finance/features/debug/presentation/pages/notification_test_page.dart';
+import 'package:auto_finance/features/splash/presentation/pages/splash_page.dart';
+import 'package:auto_finance/features/transaction/presentation/pages/transaction_detail_page.dart';
+import 'package:auto_finance/features/transaction/presentation/pages/manual_transaction_page.dart';
+import 'package:auto_finance/features/transaction/presentation/pages/transaction_page.dart';
+import 'package:auto_finance/features/wallet/presentation/pages/wallet_page.dart';
+import 'package:auto_finance/features/wallet/presentation/pages/wallet_detail_page.dart';
+import 'package:auto_finance/features/notification/presentation/pages/notification_history_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:auto_finance/app/navigation/app_shell.dart';
 
@@ -16,6 +17,10 @@ final appRouter = GoRouter(
     GoRoute(path: "/", builder: (_, _) => const AppShell()),
     GoRoute(path: "/splash", builder: (_, _) => const SplashPage()),
     GoRoute(path: '/transaction', builder: (_, _) => const TransactionPage()),
+    GoRoute(
+      path: '/transaction/manual',
+      builder: (_, _) => const ManualTransactionPage(),
+    ),
     GoRoute(path: '/wallet', builder: (_, _) => const WalletPage()),
     GoRoute(
       path: '/wallet/:id',

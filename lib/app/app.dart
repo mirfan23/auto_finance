@@ -2,16 +2,17 @@ import 'package:auto_finance/core/services/finance_widget_sync_service.dart';
 import 'package:auto_finance/app/router.dart';
 import 'package:auto_finance/app/theme.dart';
 import 'package:auto_finance/core/helpers/category_helper.dart';
-import 'package:auto_finance/domain/entities/transaction_categories.dart';
-import 'package:auto_finance/domain/entities/transaction_type.dart';
-import 'package:auto_finance/domain/usecases/transaction/categorize_transaction.dart';
-import 'package:auto_finance/features/notification/services/notification_bus.dart';
-import 'package:auto_finance/features/transaction/providers/startup_provider.dart';
-import 'package:auto_finance/features/transaction/providers/transaction_provider.dart';
-import 'package:auto_finance/features/wallet/providers/wallet_provider.dart';
+import 'package:auto_finance/features/transaction/domain/entities/transaction_categories.dart';
+import 'package:auto_finance/features/transaction/domain/entities/transaction_type.dart';
+import 'package:auto_finance/features/transaction/domain/usecases/categorize_transaction.dart';
+import 'package:auto_finance/features/notification/application/services/notification_bus.dart';
+import 'package:auto_finance/features/transaction/application/providers/startup_provider.dart';
+import 'package:auto_finance/features/transaction/application/providers/transaction_provider.dart';
+import 'package:auto_finance/features/wallet/application/providers/wallet_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
@@ -26,9 +27,19 @@ class _AppRootState extends ConsumerState<MyApp> {
     super.initState();
 
     Future.microtask(() async {
-      NotificationBus.start(ref);
-
       try {
+        const goPayDuplicateRepairKey = 'gopayGooglePlay8880DuplicateRepairV1';
+        final preferences = await SharedPreferences.getInstance();
+        if (!(preferences.getBool(goPayDuplicateRepairKey) ?? false)) {
+          final removedGoPayDuplicate = await ref
+              .read(transactionDaoProvider)
+              .reconcileReportedGoPayGooglePlayDuplicate();
+          await preferences.setBool(goPayDuplicateRepairKey, true);
+          debugPrint(
+            'Reconciled $removedGoPayDuplicate reported GoPay Google Play duplicate(s).',
+          );
+        }
+
         final reconciledPocketMovements = await ref
             .read(transactionDaoProvider)
             .reconcileJagoPocketMovements();
@@ -63,6 +74,7 @@ class _AppRootState extends ConsumerState<MyApp> {
         debugPrint('Transaction recategorization failed: $error\n$stackTrace');
       }
 
+      NotificationBus.start(ref);
       await ref.read(startupSyncProvider).run();
     });
   }
@@ -112,6 +124,7 @@ class _AppRootState extends ConsumerState<MyApp> {
               .where((transaction) => transaction.category == category)
               .fold<int>(0, (total, transaction) => total + transaction.amount);
           return <String, Object>{
+            'categoryKey': category.name,
             'category': CategoryHelper.title(category),
             'spent': spent,
             'limit': budget.monthlyLimit,

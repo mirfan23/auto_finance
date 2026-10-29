@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:auto_finance/domain/usecases/transaction/transaction_action_usecase.dart';
+import 'package:auto_finance/features/transaction/domain/usecases/transaction_action_usecase.dart';
 
 class FakeNotifications {
   FakeNotifications._();

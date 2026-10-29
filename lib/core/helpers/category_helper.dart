@@ -1,4 +1,4 @@
-import 'package:auto_finance/domain/entities/transaction_categories.dart';
+import 'package:auto_finance/features/transaction/domain/entities/transaction_categories.dart';
 import 'package:flutter/material.dart';
 
 class CategoryHelper {
@@ -21,6 +21,9 @@ class CategoryHelper {
 
       case TransactionCategory.bills:
         return Icons.receipt_long_rounded;
+
+      case TransactionCategory.housing:
+        return Icons.home_rounded;
 
       case TransactionCategory.entertainment:
         return Icons.movie_rounded;
@@ -74,6 +77,9 @@ class CategoryHelper {
       case TransactionCategory.bills:
         return "Tagihan";
 
+      case TransactionCategory.housing:
+        return "Housing";
+
       case TransactionCategory.entertainment:
         return "Hiburan";
 
@@ -125,6 +131,9 @@ class CategoryHelper {
 
       case TransactionCategory.bills:
         return Colors.red;
+
+      case TransactionCategory.housing:
+        return Colors.brown;
 
       case TransactionCategory.entertainment:
         return Colors.deepPurple;

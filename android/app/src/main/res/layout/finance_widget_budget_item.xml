@@ -20,7 +20,7 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:text="Makanan &amp; bahan pangan"
-            android:textColor="#FFFFFF"
+            android:textColor="#1D2638"
             android:textSize="11sp"
             android:textStyle="bold" />
 
@@ -31,7 +31,7 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:text="Rp 0 / Rp 0"
-            android:textColor="#DCE5F8"
+            android:textColor="#778196"
             android:textSize="10sp" />
     </LinearLayout>
 
@@ -44,6 +44,6 @@
         android:indeterminate="false"
         android:max="100"
         android:progress="0"
-        android:progressBackgroundTint="#4263A6"
-        android:progressTint="#FFFFFF" />
+        android:progressBackgroundTint="#F5F7FC"
+        android:progressTint="#3867D6" />
 </LinearLayout>

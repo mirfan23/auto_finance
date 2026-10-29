@@ -2458,6 +2458,21 @@ class $MonthlyBudgetsTableTable extends MonthlyBudgetsTable
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _includeInWeeklyBudgetMeta =
+      const VerificationMeta('includeInWeeklyBudget');
+  @override
+  late final GeneratedColumn<bool> includeInWeeklyBudget =
+      GeneratedColumn<bool>(
+        'include_in_weekly_budget',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("include_in_weekly_budget" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
   static const VerificationMeta _updatedAtMeta = const VerificationMeta(
     'updatedAt',
   );
@@ -2470,7 +2485,12 @@ class $MonthlyBudgetsTableTable extends MonthlyBudgetsTable
     requiredDuringInsert: true,
   );
   @override
-  List<GeneratedColumn> get $columns => [category, monthlyLimit, updatedAt];
+  List<GeneratedColumn> get $columns => [
+    category,
+    monthlyLimit,
+    includeInWeeklyBudget,
+    updatedAt,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -2502,6 +2522,15 @@ class $MonthlyBudgetsTableTable extends MonthlyBudgetsTable
     } else if (isInserting) {
       context.missing(_monthlyLimitMeta);
     }
+    if (data.containsKey('include_in_weekly_budget')) {
+      context.handle(
+        _includeInWeeklyBudgetMeta,
+        includeInWeeklyBudget.isAcceptableOrUnknown(
+          data['include_in_weekly_budget']!,
+          _includeInWeeklyBudgetMeta,
+        ),
+      );
+    }
     if (data.containsKey('updated_at')) {
       context.handle(
         _updatedAtMeta,
@@ -2530,6 +2559,10 @@ class $MonthlyBudgetsTableTable extends MonthlyBudgetsTable
         DriftSqlType.int,
         data['${effectivePrefix}monthly_limit'],
       )!,
+      includeInWeeklyBudget: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}include_in_weekly_budget'],
+      )!,
       updatedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at'],
@@ -2547,10 +2580,12 @@ class MonthlyBudgetsTableData extends DataClass
     implements Insertable<MonthlyBudgetsTableData> {
   final String category;
   final int monthlyLimit;
+  final bool includeInWeeklyBudget;
   final DateTime updatedAt;
   const MonthlyBudgetsTableData({
     required this.category,
     required this.monthlyLimit,
+    required this.includeInWeeklyBudget,
     required this.updatedAt,
   });
   @override
@@ -2558,6 +2593,7 @@ class MonthlyBudgetsTableData extends DataClass
     final map = <String, Expression>{};
     map['category'] = Variable<String>(category);
     map['monthly_limit'] = Variable<int>(monthlyLimit);
+    map['include_in_weekly_budget'] = Variable<bool>(includeInWeeklyBudget);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
   }
@@ -2566,6 +2602,7 @@ class MonthlyBudgetsTableData extends DataClass
     return MonthlyBudgetsTableCompanion(
       category: Value(category),
       monthlyLimit: Value(monthlyLimit),
+      includeInWeeklyBudget: Value(includeInWeeklyBudget),
       updatedAt: Value(updatedAt),
     );
   }
@@ -2578,6 +2615,9 @@ class MonthlyBudgetsTableData extends DataClass
     return MonthlyBudgetsTableData(
       category: serializer.fromJson<String>(json['category']),
       monthlyLimit: serializer.fromJson<int>(json['monthlyLimit']),
+      includeInWeeklyBudget: serializer.fromJson<bool>(
+        json['includeInWeeklyBudget'],
+      ),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
   }
@@ -2587,6 +2627,7 @@ class MonthlyBudgetsTableData extends DataClass
     return <String, dynamic>{
       'category': serializer.toJson<String>(category),
       'monthlyLimit': serializer.toJson<int>(monthlyLimit),
+      'includeInWeeklyBudget': serializer.toJson<bool>(includeInWeeklyBudget),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
   }
@@ -2594,10 +2635,12 @@ class MonthlyBudgetsTableData extends DataClass
   MonthlyBudgetsTableData copyWith({
     String? category,
     int? monthlyLimit,
+    bool? includeInWeeklyBudget,
     DateTime? updatedAt,
   }) => MonthlyBudgetsTableData(
     category: category ?? this.category,
     monthlyLimit: monthlyLimit ?? this.monthlyLimit,
+    includeInWeeklyBudget: includeInWeeklyBudget ?? this.includeInWeeklyBudget,
     updatedAt: updatedAt ?? this.updatedAt,
   );
   MonthlyBudgetsTableData copyWithCompanion(MonthlyBudgetsTableCompanion data) {
@@ -2606,6 +2649,9 @@ class MonthlyBudgetsTableData extends DataClass
       monthlyLimit: data.monthlyLimit.present
           ? data.monthlyLimit.value
           : this.monthlyLimit,
+      includeInWeeklyBudget: data.includeInWeeklyBudget.present
+          ? data.includeInWeeklyBudget.value
+          : this.includeInWeeklyBudget,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
   }
@@ -2615,19 +2661,22 @@ class MonthlyBudgetsTableData extends DataClass
     return (StringBuffer('MonthlyBudgetsTableData(')
           ..write('category: $category, ')
           ..write('monthlyLimit: $monthlyLimit, ')
+          ..write('includeInWeeklyBudget: $includeInWeeklyBudget, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(category, monthlyLimit, updatedAt);
+  int get hashCode =>
+      Object.hash(category, monthlyLimit, includeInWeeklyBudget, updatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is MonthlyBudgetsTableData &&
           other.category == this.category &&
           other.monthlyLimit == this.monthlyLimit &&
+          other.includeInWeeklyBudget == this.includeInWeeklyBudget &&
           other.updatedAt == this.updatedAt);
 }
 
@@ -2635,17 +2684,20 @@ class MonthlyBudgetsTableCompanion
     extends UpdateCompanion<MonthlyBudgetsTableData> {
   final Value<String> category;
   final Value<int> monthlyLimit;
+  final Value<bool> includeInWeeklyBudget;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
   const MonthlyBudgetsTableCompanion({
     this.category = const Value.absent(),
     this.monthlyLimit = const Value.absent(),
+    this.includeInWeeklyBudget = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   MonthlyBudgetsTableCompanion.insert({
     required String category,
     required int monthlyLimit,
+    this.includeInWeeklyBudget = const Value.absent(),
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
   }) : category = Value(category),
@@ -2654,12 +2706,15 @@ class MonthlyBudgetsTableCompanion
   static Insertable<MonthlyBudgetsTableData> custom({
     Expression<String>? category,
     Expression<int>? monthlyLimit,
+    Expression<bool>? includeInWeeklyBudget,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (category != null) 'category': category,
       if (monthlyLimit != null) 'monthly_limit': monthlyLimit,
+      if (includeInWeeklyBudget != null)
+        'include_in_weekly_budget': includeInWeeklyBudget,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -2668,12 +2723,15 @@ class MonthlyBudgetsTableCompanion
   MonthlyBudgetsTableCompanion copyWith({
     Value<String>? category,
     Value<int>? monthlyLimit,
+    Value<bool>? includeInWeeklyBudget,
     Value<DateTime>? updatedAt,
     Value<int>? rowid,
   }) {
     return MonthlyBudgetsTableCompanion(
       category: category ?? this.category,
       monthlyLimit: monthlyLimit ?? this.monthlyLimit,
+      includeInWeeklyBudget:
+          includeInWeeklyBudget ?? this.includeInWeeklyBudget,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
     );
@@ -2687,6 +2745,11 @@ class MonthlyBudgetsTableCompanion
     }
     if (monthlyLimit.present) {
       map['monthly_limit'] = Variable<int>(monthlyLimit.value);
+    }
+    if (includeInWeeklyBudget.present) {
+      map['include_in_weekly_budget'] = Variable<bool>(
+        includeInWeeklyBudget.value,
+      );
     }
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
@@ -2702,6 +2765,7 @@ class MonthlyBudgetsTableCompanion
     return (StringBuffer('MonthlyBudgetsTableCompanion(')
           ..write('category: $category, ')
           ..write('monthlyLimit: $monthlyLimit, ')
+          ..write('includeInWeeklyBudget: $includeInWeeklyBudget, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -4392,6 +4456,7 @@ typedef $$MonthlyBudgetsTableTableCreateCompanionBuilder =
     MonthlyBudgetsTableCompanion Function({
       required String category,
       required int monthlyLimit,
+      Value<bool> includeInWeeklyBudget,
       required DateTime updatedAt,
       Value<int> rowid,
     });
@@ -4399,6 +4464,7 @@ typedef $$MonthlyBudgetsTableTableUpdateCompanionBuilder =
     MonthlyBudgetsTableCompanion Function({
       Value<String> category,
       Value<int> monthlyLimit,
+      Value<bool> includeInWeeklyBudget,
       Value<DateTime> updatedAt,
       Value<int> rowid,
     });
@@ -4419,6 +4485,11 @@ class $$MonthlyBudgetsTableTableFilterComposer
 
   ColumnFilters<int> get monthlyLimit => $composableBuilder(
     column: $table.monthlyLimit,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get includeInWeeklyBudget => $composableBuilder(
+    column: $table.includeInWeeklyBudget,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4447,6 +4518,11 @@ class $$MonthlyBudgetsTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get includeInWeeklyBudget => $composableBuilder(
+    column: $table.includeInWeeklyBudget,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
@@ -4467,6 +4543,11 @@ class $$MonthlyBudgetsTableTableAnnotationComposer
 
   GeneratedColumn<int> get monthlyLimit => $composableBuilder(
     column: $table.monthlyLimit,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get includeInWeeklyBudget => $composableBuilder(
+    column: $table.includeInWeeklyBudget,
     builder: (column) => column,
   );
 
@@ -4519,11 +4600,13 @@ class $$MonthlyBudgetsTableTableTableManager
               ({
                 Value<String> category = const Value.absent(),
                 Value<int> monthlyLimit = const Value.absent(),
+                Value<bool> includeInWeeklyBudget = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => MonthlyBudgetsTableCompanion(
                 category: category,
                 monthlyLimit: monthlyLimit,
+                includeInWeeklyBudget: includeInWeeklyBudget,
                 updatedAt: updatedAt,
                 rowid: rowid,
               ),
@@ -4531,11 +4614,13 @@ class $$MonthlyBudgetsTableTableTableManager
               ({
                 required String category,
                 required int monthlyLimit,
+                Value<bool> includeInWeeklyBudget = const Value.absent(),
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
               }) => MonthlyBudgetsTableCompanion.insert(
                 category: category,
                 monthlyLimit: monthlyLimit,
+                includeInWeeklyBudget: includeInWeeklyBudget,
                 updatedAt: updatedAt,
                 rowid: rowid,
               ),

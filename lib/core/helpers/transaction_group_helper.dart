@@ -1,4 +1,4 @@
-import 'package:auto_finance/domain/entities/transaction.dart';
+import 'package:auto_finance/features/transaction/domain/entities/transaction.dart';
 
 class TransactionGroupHelper {
   static Map<DateTime, List<Transaction>> groupByDate(List<Transaction> transactions) {

@@ -18,17 +18,19 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="AutoFinance"
-            android:textColor="#FFFFFF"
+            android:textColor="#1D2638"
             android:textSize="14sp"
             android:textStyle="bold" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="RINGKASAN"
-            android:textColor="#C9D8FF"
-            android:textSize="9sp"
-            android:textStyle="bold" />
+        <ImageView
+            android:id="@+id/widget_toggle_visibility"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Sembunyikan saldo"
+            android:padding="7dp"
+            android:src="@drawable/ic_widget_visibility"
+            android:tint="#3867D6" />
     </LinearLayout>
 
     <TextView
@@ -36,7 +38,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:text="TOTAL SALDO"
-        android:textColor="#C9D8FF"
+        android:textColor="#778196"
         android:textSize="9sp"
         android:textStyle="bold" />
 
@@ -48,7 +50,7 @@
         android:ellipsize="end"
         android:maxLines="1"
         android:text="Rp 0"
-        android:textColor="#FFFFFF"
+        android:textColor="#1D2638"
         android:textSize="24sp"
         android:textStyle="bold" />
 
@@ -58,7 +60,7 @@
         android:layout_marginTop="10dp"
         android:layout_marginBottom="8dp"
         android:text=""
-        android:background="#4263A6" />
+        android:background="#E6EAF2" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -76,7 +78,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="PENGELUARAN BULAN INI"
-                android:textColor="#C9D8FF"
+                android:textColor="#778196"
                 android:textSize="9sp"
                 android:textStyle="bold" />
 
@@ -88,7 +90,7 @@
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:text="Rp 0"
-                android:textColor="#FFFFFF"
+                android:textColor="#1D2638"
                 android:textSize="15sp"
                 android:textStyle="bold" />
         </LinearLayout>
@@ -99,7 +101,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:text="Belum diperbarui"
-            android:textColor="#DCE5F8"
+            android:textColor="#778196"
             android:textSize="9sp" />
     </LinearLayout>
 
@@ -108,7 +110,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:text="ANGGARAN BULAN INI"
-        android:textColor="#C9D8FF"
+        android:textColor="#778196"
         android:textSize="9sp"
         android:textStyle="bold" />
 
@@ -118,7 +120,7 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:text="Belum ada anggaran"
-        android:textColor="#DCE5F8"
+        android:textColor="#778196"
         android:textSize="11sp" />
 
     <ListView
@@ -126,7 +128,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:divider="#4263A6"
+        android:divider="#E6EAF2"
         android:dividerHeight="1dp"
         android:fadeScrollbars="true"
         android:scrollbars="vertical" />

@@ -1,0 +1,107 @@
+import 'package:auto_finance/data/local/database/app_database.dart';
+import 'package:auto_finance/core/helpers/notification_text_merger.dart';
+import 'package:auto_finance/features/transaction/domain/entities/transaction.dart';
+import 'package:auto_finance/features/transaction/domain/entities/transaction_categories.dart';
+import 'package:auto_finance/features/transaction/domain/entities/transaction_type.dart';
+import 'package:drift/drift.dart';
+
+class PendingTransactionDao {
+  final AppDatabase db;
+
+  PendingTransactionDao(this.db);
+
+  Future<void> insert(Transaction trx) async {
+    await db
+        .into(db.pendingTransactionsTable)
+        .insertOnConflictUpdate(
+          PendingTransactionsTableCompanion.insert(
+            id: trx.id,
+            bank: trx.bank,
+            amount: trx.amount,
+            category: trx.category.name,
+            type: trx.type.name,
+            rawText: trx.rawText,
+            time: trx.time,
+            fromWallet: Value(trx.fromWallet),
+            toWallet: Value(trx.toWallet),
+          ),
+        );
+  }
+
+  Future<List<Transaction>> getPending() async {
+    final rows = await (db.select(
+      db.pendingTransactionsTable,
+    )..where((t) => t.pending.equals(true))).get();
+
+    return rows.map(_mapRowToTransaction).toList();
+  }
+
+  Future<void> markDone(String id) async {
+    await (db.update(db.pendingTransactionsTable)
+          ..where((t) => t.id.equals(id)))
+        .write(const PendingTransactionsTableCompanion(pending: Value(false)));
+  }
+
+  Future<void> delete(String id) async {
+    await (db.delete(
+      db.pendingTransactionsTable,
+    )..where((t) => t.id.equals(id))).go();
+  }
+
+  Future<void> deleteMany(List<String> ids) async {
+    await (db.delete(
+      db.pendingTransactionsTable,
+    )..where((t) => t.id.isIn(ids))).go();
+  }
+
+  Future<void> appendNotificationText(String id, String additionalText) async {
+    final row = await (db.select(
+      db.pendingTransactionsTable,
+    )..where((table) => table.id.equals(id))).getSingleOrNull();
+    if (row == null) return;
+
+    final merged = NotificationTextMerger.merge(row.rawText, additionalText);
+    if (merged == row.rawText) return;
+    await (db.update(db.pendingTransactionsTable)
+          ..where((table) => table.id.equals(id)))
+        .write(PendingTransactionsTableCompanion(rawText: Value(merged)));
+  }
+
+  Future<bool> exists(
+    String bank,
+    int amount,
+    TransactionType type,
+    String rawText,
+  ) async {
+    final limit = DateTime.now().subtract(const Duration(seconds: 5));
+
+    final rows =
+        await (db.select(db.pendingTransactionsTable)..where(
+              (t) =>
+                  t.bank.equals(bank) &
+                  t.amount.equals(amount) &
+                  t.type.equals(type.name) &
+                  t.rawText.equals(rawText) &
+                  t.time.isBiggerOrEqualValue(limit),
+            ))
+            .get();
+
+    return rows.isNotEmpty;
+  }
+
+  Transaction _mapRowToTransaction(PendingTransactionsTableData row) {
+    return Transaction(
+      id: row.id,
+      bank: row.bank,
+      fromWallet: row.fromWallet,
+      toWallet: row.toWallet,
+      amount: row.amount,
+      type: TransactionType.values.firstWhere((e) => e.name == row.type),
+      category: TransactionCategory.values.firstWhere(
+        (e) => e.name == row.category,
+      ),
+      rawText: row.rawText,
+      time: row.time,
+    );
+  }
+}

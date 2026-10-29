@@ -12,7 +12,8 @@ class JagoNotificationHelper {
         lower.contains('pemindahan');
     final pocketMentions = RegExp(r'\bkantong\b').allMatches(lower).length;
 
-    final namesBothPockets = explicitMovement &&
+    final namesBothPockets =
+        explicitMovement &&
         pocketMentions >= 2 &&
         lower.contains('dari') &&
         lower.contains('ke');
@@ -28,6 +29,8 @@ class JagoNotificationHelper {
 
   static bool isPromotional(String text) {
     final lower = text.toLowerCase();
+    final firstPurchaseBonus =
+        lower.contains('bonus') && lower.contains('pembelian pertama');
     final bonusForYou =
         lower.contains('bonus') &&
         lower.contains('buat kamu') &&
@@ -37,6 +40,6 @@ class JagoNotificationHelper {
         lower.contains('bayar pakai') &&
         lower.contains('jago syariah');
 
-    return bonusForYou || conditionalBonus;
+    return firstPurchaseBonus || bonusForYou || conditionalBonus;
   }
 }

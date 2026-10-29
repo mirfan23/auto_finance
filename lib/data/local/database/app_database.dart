@@ -27,7 +27,7 @@ part 'app_database.g.dart';
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
   @override
-  int get schemaVersion => 23;
+  int get schemaVersion => 24;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -65,8 +65,21 @@ class AppDatabase extends _$AppDatabase {
             )
         ''');
       }
-      if (from < 23) {
+      if (from >= 19 && from < 23) {
         await m.createTable(merchantCategoryRulesTable);
+      }
+      if (from >= 20 && from < 24) {
+        await m.addColumn(
+          monthlyBudgetsTable,
+          monthlyBudgetsTable.includeInWeeklyBudget,
+        );
+      }
+      if (from < 24) {
+        await customStatement('''
+          UPDATE monthly_budgets_table
+          SET include_in_weekly_budget = 1
+          WHERE category = 'food'
+        ''');
       }
     },
   );

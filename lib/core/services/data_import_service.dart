@@ -1,10 +1,12 @@
 import 'dart:convert';
 
-import 'package:auto_finance/data/dao/transaction_dao.dart';
+import 'package:auto_finance/features/transaction/data/dao/transaction_dao.dart';
+import 'package:auto_finance/features/wallet/data/dao/wallet_dao.dart';
 import 'package:auto_finance/data/local/database/app_database.dart';
-import 'package:auto_finance/domain/entities/transaction.dart' as entity;
-import 'package:auto_finance/domain/entities/transaction_categories.dart';
-import 'package:auto_finance/domain/entities/transaction_type.dart';
+import 'package:auto_finance/features/transaction/domain/entities/transaction.dart' as entity;
+import 'package:auto_finance/features/transaction/domain/entities/transaction_categories.dart';
+import 'package:auto_finance/features/transaction/domain/entities/transaction_type.dart';
+import 'package:auto_finance/features/wallet/domain/entities/wallet.dart' as wallet_entity;
 
 class DataImportSummary {
   final int imported;
@@ -14,6 +16,84 @@ class DataImportSummary {
 }
 
 class DataImportService {
+  static List<wallet_entity.Wallet> parseWalletsCsv(List<int> bytes) {
+    var csvText = utf8.decode(bytes, allowMalformed: false);
+    if (csvText.startsWith('\uFEFF')) csvText = csvText.substring(1);
+    final rows = _parseCsv(csvText);
+    if (rows.isEmpty) throw const FormatException('File CSV kosong.');
+
+    const requiredHeaders = ['id', 'nama', 'layanan', 'saldo', 'aktif'];
+    final headers = rows.first;
+    if (headers.length != requiredHeaders.length ||
+        !requiredHeaders.every(headers.contains)) {
+      throw const FormatException(
+        'Kolom tidak cocok. Pilih CSV dompet hasil ekspor AutoFinance.',
+      );
+    }
+    final columns = {for (var i = 0; i < headers.length; i++) headers[i]: i};
+    String value(List<String> row, String key) => row[columns[key]!].trim();
+    bool parseActive(String value) {
+      switch (value.toLowerCase()) {
+        case 'ya':
+        case 'true':
+        case '1':
+          return true;
+        case 'tidak':
+        case 'false':
+        case '0':
+          return false;
+        default:
+          throw const FormatException('Status aktif tidak valid.');
+      }
+    }
+
+    final wallets = <wallet_entity.Wallet>[];
+    for (var rowIndex = 1; rowIndex < rows.length; rowIndex++) {
+      final row = rows[rowIndex];
+      if (row.every((field) => field.trim().isEmpty)) continue;
+      if (row.length != headers.length) {
+        throw FormatException(
+          'Jumlah kolom baris ${rowIndex + 1} tidak cocok.',
+        );
+      }
+      try {
+        final id = value(row, 'id');
+        final name = value(row, 'nama');
+        final bank = value(row, 'layanan');
+        final balance = int.parse(value(row, 'saldo'));
+        if (id.isEmpty || name.isEmpty || bank.isEmpty) {
+          throw const FormatException('ID, nama, atau layanan kosong.');
+        }
+        wallets.add(
+          wallet_entity.Wallet(
+            id: id,
+            name: name,
+            bank: bank,
+            balance: balance,
+            active: parseActive(value(row, 'aktif')),
+          ),
+        );
+      } catch (error) {
+        throw FormatException('Data baris ${rowIndex + 1} tidak valid: $error');
+      }
+    }
+    if (wallets.isEmpty) {
+      throw const FormatException('Tidak ada dompet untuk diimpor.');
+    }
+    return wallets;
+  }
+
+  static Future<DataImportSummary> importWallets({
+    required List<wallet_entity.Wallet> wallets,
+    required WalletDao walletDao,
+  }) async {
+    final imported = await walletDao.insertMissing(wallets);
+    return DataImportSummary(
+      imported: imported,
+      skipped: wallets.length - imported,
+    );
+  }
+
   static List<entity.Transaction> parseTransactionsCsv(
     List<int> bytes,
     List<WalletTableData> wallets,
@@ -150,8 +230,9 @@ class DataImportService {
         field.write(char);
       }
     }
-    if (quoted)
+    if (quoted) {
       throw const FormatException('CSV memiliki kutip yang belum ditutup.');
+    }
     if (field.isNotEmpty || row.isNotEmpty) {
       row.add(field.toString());
       if (row.any((value) => value.isNotEmpty)) rows.add(row);

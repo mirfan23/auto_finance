@@ -1,9 +1,8 @@
 import 'package:auto_finance/app/navigation/bottomnav_provider.dart';
-import 'package:auto_finance/features/analytics/analytics_page.dart';
-import 'package:auto_finance/features/dashboard/dashboard_page.dart';
-import 'package:auto_finance/features/settings/settings_page.dart';
-import 'package:auto_finance/features/transaction/pages/transaction_page.dart';
-import 'package:auto_finance/features/wallet/pages/wallet_page.dart';
+import 'package:auto_finance/features/analytics/presentation/pages/analytics_page.dart';
+import 'package:auto_finance/features/settings/presentation/pages/settings_page.dart';
+import 'package:auto_finance/features/transaction/presentation/pages/transaction_page.dart';
+import 'package:auto_finance/features/wallet/presentation/pages/wallet_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,7 +10,6 @@ class AppShell extends ConsumerWidget {
   const AppShell({super.key});
 
   static const _pages = [
-    DashboardPage(),
     TransactionPage(),
     WalletPage(),
     AnalyticsPage(),
@@ -30,11 +28,6 @@ class AppShell extends ConsumerWidget {
           ref.read(bottomNavIndexProvider.notifier).state = value;
         },
         destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home_rounded),
-            label: 'Beranda',
-          ),
           NavigationDestination(
             icon: Icon(Icons.receipt_long_outlined),
             selectedIcon: Icon(Icons.receipt_long_rounded),
