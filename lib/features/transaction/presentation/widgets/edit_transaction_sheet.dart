@@ -45,9 +45,56 @@ class _EditTransactionSheetState extends ConsumerState<EditTransactionSheet> {
       widget.transaction.bank.toLowerCase().contains('jago') &&
       JagoNotificationHelper.isPocketMovement(widget.transaction.rawText);
 
-  List<TransactionCategory> get _categories => TransactionCategory.values
-      .where((category) => category != TransactionCategory.transfer)
-      .toList();
+  static const _expenseCategories = [
+    TransactionCategory.food,
+    TransactionCategory.laundry,
+    TransactionCategory.electricity,
+    TransactionCategory.shopping,
+    TransactionCategory.transport,
+    TransactionCategory.bills,
+    TransactionCategory.housing,
+    TransactionCategory.entertainment,
+    TransactionCategory.health,
+    TransactionCategory.education,
+    TransactionCategory.topup,
+    TransactionCategory.other,
+  ];
+
+  static const _incomeCategories = [
+    TransactionCategory.salary,
+    TransactionCategory.investment,
+    TransactionCategory.cashback,
+    TransactionCategory.gift,
+  ];
+
+  List<DropdownMenuItem<TransactionCategory>> get _categoryItems => [
+    _categoryGroupLabel('Pengeluaran'),
+    ..._expenseCategories.map(_categoryItem),
+    _categoryGroupLabel('Pemasukan'),
+    ..._incomeCategories.map(_categoryItem),
+  ];
+
+  DropdownMenuItem<TransactionCategory> _categoryGroupLabel(String label) =>
+      DropdownMenuItem<TransactionCategory>(
+        enabled: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      );
+
+  DropdownMenuItem<TransactionCategory> _categoryItem(
+    TransactionCategory category,
+  ) => DropdownMenuItem(
+    value: category,
+    child: Text(CategoryHelper.title(category)),
+  );
 
   @override
   void initState() {
@@ -274,14 +321,7 @@ class _EditTransactionSheetState extends ConsumerState<EditTransactionSheet> {
                           labelText: 'Kategori',
                           border: OutlineInputBorder(),
                         ),
-                        items: _categories
-                            .map(
-                              (category) => DropdownMenuItem(
-                                value: category,
-                                child: Text(CategoryHelper.title(category)),
-                              ),
-                            )
-                            .toList(),
+                        items: _categoryItems,
                         onChanged: (value) {
                           if (value != null) {
                             setState(() => _category = value);

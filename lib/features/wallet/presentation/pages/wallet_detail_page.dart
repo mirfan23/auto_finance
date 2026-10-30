@@ -56,22 +56,16 @@ class _WalletDetailPageState extends ConsumerState<WalletDetailPage> {
             body: const Center(child: Text('Dompet tidak ditemukan.')),
           );
         }
-        final selectedWallet = wallet!;
+        final selectedWallet = wallet;
 
         return Scaffold(
           appBar: AppBar(title: Text(selectedWallet.name)),
           body: transactions.when(
-            loading: () => const Center(
-              child: CircularProgressIndicator(color: AppColors.forest),
-            ),
+            loading: () => const Center(child: CircularProgressIndicator(color: AppColors.forest)),
             error: (error, _) => Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text('Transaksi belum bisa dimuat.\n$error'),
-              ),
+              child: Padding(padding: const EdgeInsets.all(24), child: Text('Transaksi belum bisa dimuat.\n$error')),
             ),
-            data: (allTransactions) =>
-                _buildContent(selectedWallet, allTransactions),
+            data: (allTransactions) => _buildContent(selectedWallet, allTransactions),
           ),
         );
       },
@@ -80,34 +74,24 @@ class _WalletDetailPageState extends ConsumerState<WalletDetailPage> {
 
   Widget _buildContent(Wallet wallet, List<Transaction> allTransactions) {
     final related = allTransactions.where((transaction) {
-      return transaction.fromWallet == wallet.id ||
-          transaction.toWallet == wallet.id;
+      return transaction.fromWallet == wallet.id || transaction.toWallet == wallet.id;
     }).toList()..sort((a, b) => b.time.compareTo(a.time));
 
     final monthFiltered = _selectedMonth == null
         ? related
         : related.where((transaction) {
-            return transaction.time.year == _selectedMonth!.year &&
-                transaction.time.month == _selectedMonth!.month;
+            return transaction.time.year == _selectedMonth!.year && transaction.time.month == _selectedMonth!.month;
           }).toList();
 
     final shown = switch (_filter) {
       _WalletTransactionFilter.all => monthFiltered,
       _WalletTransactionFilter.income =>
         monthFiltered
-            .where(
-              (transaction) =>
-                  transaction.type == TransactionType.income &&
-                  transaction.toWallet == wallet.id,
-            )
+            .where((transaction) => transaction.type == TransactionType.income && transaction.toWallet == wallet.id)
             .toList(),
       _WalletTransactionFilter.expense =>
         monthFiltered
-            .where(
-              (transaction) =>
-                  transaction.type == TransactionType.expense &&
-                  transaction.fromWallet == wallet.id,
-            )
+            .where((transaction) => transaction.type == TransactionType.expense && transaction.fromWallet == wallet.id)
             .toList(),
     };
 
@@ -133,44 +117,27 @@ class _WalletDetailPageState extends ConsumerState<WalletDetailPage> {
                 CircleAvatar(
                   radius: 23,
                   backgroundColor: Colors.white.withValues(alpha: 0.14),
-                  child: Icon(
-                    BankHelper.icon(wallet.bank),
-                    color: Colors.white,
-                  ),
+                  child: Icon(BankHelper.icon(wallet.bank), color: Colors.white),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        BankHelper.title(wallet.bank),
-                        style: const TextStyle(color: Colors.white70),
-                      ),
+                      Text(BankHelper.title(wallet.bank), style: const TextStyle(color: Colors.white70)),
                       const SizedBox(height: 4),
                       Text(
-                        hidden
-                            ? '••••••••'
-                            : FormatterHelper.formatRupiah(wallet.balance),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        hidden ? '••••••••' : FormatterHelper.formatRupiah(wallet.balance),
+                        style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w700),
                       ),
                     ],
                   ),
                 ),
                 IconButton(
-                  onPressed: () =>
-                      ref.read(hideMoneyValuesProvider.notifier).toggle(),
+                  onPressed: () => ref.read(hideMoneyValuesProvider.notifier).toggle(),
                   color: Colors.white70,
                   tooltip: hidden ? 'Tampilkan saldo' : 'Sembunyikan saldo',
-                  icon: Icon(
-                    hidden
-                        ? Icons.visibility_outlined
-                        : Icons.visibility_off_outlined,
-                  ),
+                  icon: Icon(hidden ? Icons.visibility_outlined : Icons.visibility_off_outlined),
                 ),
               ],
             ),
@@ -187,22 +154,12 @@ class _WalletDetailPageState extends ConsumerState<WalletDetailPage> {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: SegmentedButton<_WalletTransactionFilter>(
             segments: const [
-              ButtonSegment(
-                value: _WalletTransactionFilter.all,
-                label: Text('Semua'),
-              ),
-              ButtonSegment(
-                value: _WalletTransactionFilter.income,
-                label: Text('Pemasukan'),
-              ),
-              ButtonSegment(
-                value: _WalletTransactionFilter.expense,
-                label: Text('Pengeluaran'),
-              ),
+              ButtonSegment(value: _WalletTransactionFilter.all, label: Text('Semua')),
+              ButtonSegment(value: _WalletTransactionFilter.income, label: Text('Pemasukan')),
+              ButtonSegment(value: _WalletTransactionFilter.expense, label: Text('Pengeluaran')),
             ],
             selected: {_filter},
-            onSelectionChanged: (selection) =>
-                setState(() => _filter = selection.first),
+            onSelectionChanged: (selection) => setState(() => _filter = selection.first),
             showSelectedIcon: false,
           ),
         ),
@@ -210,16 +167,8 @@ class _WalletDetailPageState extends ConsumerState<WalletDetailPage> {
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
           child: Row(
             children: [
-              Expanded(
-                child: Text(
-                  'Transaksi dompet',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-              ),
-              Text(
-                '${shown.length} transaksi',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
+              Expanded(child: Text('Transaksi dompet', style: Theme.of(context).textTheme.titleMedium)),
+              Text('${shown.length} transaksi', style: Theme.of(context).textTheme.bodyMedium),
             ],
           ),
         ),
@@ -230,10 +179,8 @@ class _WalletDetailPageState extends ConsumerState<WalletDetailPage> {
                   padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
                   itemCount: shown.length,
                   separatorBuilder: (_, _) => const SizedBox(height: 2),
-                  itemBuilder: (context, index) => _WalletTransactionCard(
-                    transaction: shown[index],
-                    walletId: wallet.id,
-                  ),
+                  itemBuilder: (context, index) =>
+                      _WalletTransactionCard(transaction: shown[index], walletId: wallet.id),
                 ),
         ),
       ],
@@ -242,10 +189,7 @@ class _WalletDetailPageState extends ConsumerState<WalletDetailPage> {
 }
 
 class _WalletTransactionCard extends StatelessWidget {
-  const _WalletTransactionCard({
-    required this.transaction,
-    required this.walletId,
-  });
+  const _WalletTransactionCard({required this.transaction, required this.walletId});
 
   final Transaction transaction;
   final String walletId;
@@ -254,9 +198,7 @@ class _WalletTransactionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isIncome = transaction.type == TransactionType.income;
     final isExpense = transaction.type == TransactionType.expense;
-    final isTransferIn =
-        transaction.type == TransactionType.transfer &&
-        transaction.toWallet == walletId;
+    final isTransferIn = transaction.type == TransactionType.transfer && transaction.toWallet == walletId;
     final color = isIncome || isTransferIn
         ? AppColors.income
         : isExpense
@@ -288,9 +230,7 @@ class _WalletTransactionCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundColor: CategoryHelper.color(
-                  transaction.category,
-                ).withValues(alpha: 0.12),
+                backgroundColor: CategoryHelper.color(transaction.category).withValues(alpha: 0.12),
                 child: Icon(
                   CategoryHelper.icon(transaction.category),
                   size: 18,
@@ -302,19 +242,13 @@ class _WalletTransactionCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      BankHelper.title(transaction.bank),
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
+                    Text(BankHelper.title(transaction.bank), style: Theme.of(context).textTheme.titleSmall),
                     const SizedBox(height: 4),
                     Text(
                       rawText.isEmpty ? typeLabel : rawText,
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.muted,
-                        height: 1.35,
-                      ),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.muted, height: 1.35),
                     ),
                     const SizedBox(height: 5),
                     Text(
@@ -328,10 +262,7 @@ class _WalletTransactionCard extends StatelessWidget {
               Text(
                 '$amountPrefix${FormatterHelper.formatRupiah(transaction.amount)}',
                 textAlign: TextAlign.end,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: color,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: color, fontWeight: FontWeight.w700),
               ),
             ],
           ),
@@ -351,11 +282,7 @@ class _EmptyWalletTransactions extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.receipt_long_outlined,
-            size: 34,
-            color: AppColors.muted,
-          ),
+          const Icon(Icons.receipt_long_outlined, size: 34, color: AppColors.muted),
           const SizedBox(height: 10),
           Text(
             'Belum ada transaksi pada filter ini.',

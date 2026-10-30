@@ -77,6 +77,7 @@ class TransactionPage extends ConsumerWidget {
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'transaction-add-fab',
         onPressed: () => context.push('/transaction/manual'),
         icon: const Icon(Icons.add_rounded),
         label: const Text('Tambah transaksi'),

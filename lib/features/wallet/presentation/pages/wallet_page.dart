@@ -19,6 +19,7 @@ class WalletPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Dompet')),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'wallet-add-fab',
         onPressed: () => showModalBottomSheet<void>(
           context: context,
           isScrollControlled: true,

@@ -335,12 +335,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
           const SizedBox(height: 24),
           Text('DIAGNOSIS', style: Theme.of(context).textTheme.labelMedium),
           const SizedBox(height: 10),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
+          Material(
+            color: Colors.white,
+            shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: AppColors.line),
+              side: BorderSide(color: AppColors.line),
             ),
+            clipBehavior: Clip.antiAlias,
             child: ListTile(
               leading: const Icon(
                 Icons.notifications_active_rounded,
