@@ -9,6 +9,8 @@ import 'package:auto_finance/features/transaction/domain/entities/transaction_ty
 import 'package:auto_finance/features/analytics/presentation/widgets/monthly_budget_section.dart';
 import 'package:auto_finance/features/analytics/presentation/pages/category_expense_detail_page.dart';
 import 'package:auto_finance/features/transaction/application/providers/transaction_provider.dart';
+import 'package:auto_finance/features/wallet/application/providers/wallet_provider.dart';
+import 'package:auto_finance/features/wallet/domain/entities/wallet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fx_helper/formatter_helper.dart';
@@ -23,6 +25,8 @@ class AnalyticsPage extends ConsumerStatefulWidget {
 
 class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
   DateTime _selectedMonth = DateTime(DateTime.now().year, DateTime.now().month);
+  bool _expenseByWallet = false;
+  bool _incomeByWallet = false;
 
   static const _monthNames = [
     'Januari',
@@ -52,39 +56,34 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
   Widget build(BuildContext context) {
     final transactionsAsync = ref.watch(transactionStreamProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Statistik')),
-      body: transactionsAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.forest),
-        ),
-        error: (error, _) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Text(
-              'Statistik belum bisa dimuat.\n$error',
-              textAlign: TextAlign.center,
+    return DefaultTabController(
+      length: 5,
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Statistik')),
+        body: transactionsAsync.when(
+          loading: () => const Center(
+            child: CircularProgressIndicator(color: AppColors.forest),
+          ),
+          error: (error, _) => Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(
+                'Statistik belum bisa dimuat.\n$error',
+                textAlign: TextAlign.center,
+              ),
             ),
           ),
+          data: (transactions) => _buildContent(transactions),
         ),
-        data: (transactions) => _buildContent(transactions),
       ),
     );
   }
 
   Widget _buildContent(List<Transaction> allTransactions) {
+    final wallets = ref.watch(walletStreamProvider).valueOrNull ?? const [];
     final monthTransactions = allTransactions
         .where((transaction) => _isSameMonth(transaction.time, _selectedMonth))
         .toList();
-    final previousMonth = _shiftMonth(_selectedMonth, -1);
-    final previousTransactions = allTransactions
-        .where((transaction) => _isSameMonth(transaction.time, previousMonth))
-        .toList();
-
-    final income = _sum(monthTransactions, TransactionType.income);
-    final expense = _sum(monthTransactions, TransactionType.expense);
-    final previousExpense = _sum(previousTransactions, TransactionType.expense);
-    final net = income - expense;
     final incomeTransactions =
         monthTransactions
             .where((transaction) => transaction.type == TransactionType.income)
@@ -95,158 +94,371 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
             .where((transaction) => transaction.type == TransactionType.expense)
             .toList()
           ..sort((a, b) => b.time.compareTo(a.time));
-    final expenseByCategory = <TransactionCategory, int>{};
-    for (final transaction in expenseTransactions) {
-      expenseByCategory.update(
-        transaction.category,
-        (amount) => amount + transaction.amount,
-        ifAbsent: () => transaction.amount,
-      );
-    }
-    final sortedCategories = expenseByCategory.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-
+    final income = _sum(monthTransactions, TransactionType.income);
+    final expense = _sum(monthTransactions, TransactionType.expense);
+    final net = income - expense;
     final monthStart = DateTime(_selectedMonth.year, _selectedMonth.month);
-    final daysInMonth = DateTime(
-      _selectedMonth.year,
-      _selectedMonth.month + 1,
-    ).day;
     final today = DateTime.now();
-    final isCurrentMonth = _isSameMonth(today, _selectedMonth);
-    final elapsedDays = isCurrentMonth ? today.day : daysInMonth;
-    final averageDailyExpense = expense == 0
-        ? 0
-        : (expense / elapsedDays).round();
-    final comparison = _expenseComparison(expense, previousExpense);
+    final trendMonths = List.generate(6, (index) {
+      final month = _shiftMonth(monthStart, index - 5);
+      final items = allTransactions
+          .where((transaction) => _isSameMonth(transaction.time, month))
+          .toList();
+      return _MonthTrendData(
+        month: month,
+        income: _sum(items, TransactionType.income),
+        expense: _sum(items, TransactionType.expense),
+        selected: _isSameMonth(month, _selectedMonth),
+      );
+    });
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 30),
+    return Column(
       children: [
-        _MonthSelector(
-          label: _monthLabel(_selectedMonth),
-          onPrevious: () =>
-              setState(() => _selectedMonth = _shiftMonth(_selectedMonth, -1)),
-          onNext: _isSameMonth(today, _selectedMonth)
-              ? null
-              : () => setState(
-                  () => _selectedMonth = _shiftMonth(_selectedMonth, 1),
-                ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
+          child: _MonthSelector(
+            label: _monthLabel(_selectedMonth),
+            onPrevious: () => setState(
+              () => _selectedMonth = _shiftMonth(_selectedMonth, -1),
+            ),
+            onNext: _isSameMonth(today, _selectedMonth)
+                ? null
+                : () => setState(
+                    () => _selectedMonth = _shiftMonth(_selectedMonth, 1),
+                  ),
+          ),
         ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _AmountCard(
-                title: 'Pemasukan',
-                amount: income,
-                color: AppColors.income,
-                icon: Icons.south_west_rounded,
-                onTap: () => _showTransactionDetails(
-                  title: 'Detail pemasukan',
-                  transactions: incomeTransactions,
-                  total: income,
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _AmountCard(
-                title: 'Pengeluaran',
-                amount: expense,
-                color: AppColors.expense,
-                icon: Icons.north_east_rounded,
-                onTap: () => _showTransactionDetails(
-                  title: 'Detail pengeluaran',
-                  transactions: expenseTransactions,
-                  total: expense,
-                ),
-              ),
-            ),
+        TabBar(
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
+          tabs: const [
+            Tab(text: 'Pengeluaran'),
+            Tab(text: 'Pemasukan'),
+            Tab(text: 'Anggaran'),
+            Tab(text: 'Arus kas'),
+            Tab(text: 'Aset'),
           ],
         ),
-        const SizedBox(height: 12),
+        Expanded(
+          child: TabBarView(
+            children: [
+              _buildBreakdownTab(
+                transactions: expenseTransactions,
+                wallets: wallets,
+                type: TransactionType.expense,
+                byWallet: _expenseByWallet,
+                onDimensionChanged: (value) =>
+                    setState(() => _expenseByWallet = value),
+              ),
+              _buildBreakdownTab(
+                transactions: incomeTransactions,
+                wallets: wallets,
+                type: TransactionType.income,
+                byWallet: _incomeByWallet,
+                onDimensionChanged: (value) =>
+                    setState(() => _incomeByWallet = value),
+              ),
+              ListView(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+                children: [
+                  MonthlyBudgetSection(
+                    month: _selectedMonth,
+                    transactions: monthTransactions,
+                  ),
+                ],
+              ),
+              _buildCashFlowTab(
+                income: income,
+                expense: expense,
+                net: net,
+                transactionCount: monthTransactions.length,
+                trendMonths: trendMonths,
+              ),
+              _buildAssetsTab(wallets),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBreakdownTab({
+    required List<Transaction> transactions,
+    required List<Wallet> wallets,
+    required TransactionType type,
+    required bool byWallet,
+    required ValueChanged<bool> onDimensionChanged,
+  }) {
+    final total = transactions.fold<int>(
+      0,
+      (sum, transaction) => sum + transaction.amount,
+    );
+    final entries = byWallet
+        ? _walletBreakdown(transactions, wallets, type)
+        : _categoryBreakdown(transactions, type);
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
+      children: [
+        Center(
+          child: SegmentedButton<bool>(
+            segments: const [
+              ButtonSegment(value: false, label: Text('Kategori')),
+              ButtonSegment(value: true, label: Text('Dompet')),
+            ],
+            selected: {byWallet},
+            onSelectionChanged: (selection) =>
+                onDimensionChanged(selection.first),
+          ),
+        ),
+        const SizedBox(height: 14),
+        if (entries.isEmpty)
+          _EmptyCard(
+            icon: type == TransactionType.expense
+                ? Icons.pie_chart_outline_rounded
+                : Icons.south_west_rounded,
+            message: type == TransactionType.expense
+                ? 'Belum ada pengeluaran di bulan ini.'
+                : 'Belum ada pemasukan di bulan ini.',
+          )
+        else ...[
+          _DonutChart(
+            entries: entries,
+            centerLabel: type == TransactionType.expense
+                ? 'Total pengeluaran'
+                : 'Total pemasukan',
+            total: total,
+          ),
+          const SizedBox(height: 10),
+          _BreakdownList(entries: entries, total: total),
+        ],
+      ],
+    );
+  }
+
+  List<_BreakdownItem> _categoryBreakdown(
+    List<Transaction> transactions,
+    TransactionType type,
+  ) {
+    final grouped = <TransactionCategory, List<Transaction>>{};
+    for (final transaction in transactions) {
+      grouped.putIfAbsent(transaction.category, () => []).add(transaction);
+    }
+    final sorted = grouped.entries.toList()
+      ..sort(
+        (a, b) =>
+            _transactionTotal(b.value).compareTo(_transactionTotal(a.value)),
+      );
+    return sorted
+        .map((entry) {
+          final category = entry.key;
+          return _BreakdownItem(
+            label: CategoryHelper.title(category),
+            amount: _transactionTotal(entry.value),
+            color: CategoryHelper.color(category),
+            icon: CategoryHelper.icon(category),
+            onTap: () {
+              if (type == TransactionType.expense) {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => CategoryExpenseDetailPage(
+                      category: category,
+                      month: _selectedMonth,
+                    ),
+                  ),
+                );
+              } else {
+                _showTransactionDetails(
+                  title: 'Pemasukan · ${CategoryHelper.title(category)}',
+                  transactions: entry.value,
+                  total: _transactionTotal(entry.value),
+                );
+              }
+            },
+          );
+        })
+        .toList(growable: false);
+  }
+
+  List<_BreakdownItem> _walletBreakdown(
+    List<Transaction> transactions,
+    List<Wallet> wallets,
+    TransactionType type,
+  ) {
+    final walletMap = {for (final wallet in wallets) wallet.id: wallet};
+    final grouped = <String, List<Transaction>>{};
+    for (final transaction in transactions) {
+      final walletId = type == TransactionType.expense
+          ? transaction.fromWallet
+          : transaction.toWallet;
+      grouped.putIfAbsent(walletId ?? '', () => []).add(transaction);
+    }
+    final sorted = grouped.entries.toList()
+      ..sort(
+        (a, b) =>
+            _transactionTotal(b.value).compareTo(_transactionTotal(a.value)),
+      );
+    const colors = [
+      Color(0xFF3968D6),
+      Color(0xFF20A6A6),
+      Color(0xFFE89B25),
+      Color(0xFF9D41B5),
+      Color(0xFFE45F72),
+      Color(0xFF687A8C),
+    ];
+    final items = <_BreakdownItem>[];
+    for (var index = 0; index < sorted.length; index++) {
+      final entry = sorted[index];
+      final walletName =
+          walletMap[entry.key]?.name ?? 'Dompet belum ditentukan';
+      items.add(
+        _BreakdownItem(
+          label: walletName,
+          amount: _transactionTotal(entry.value),
+          color: colors[index % colors.length],
+          icon: Icons.account_balance_wallet_rounded,
+          onTap: () => _showTransactionDetails(
+            title:
+                '${type == TransactionType.expense ? 'Pengeluaran' : 'Pemasukan'} · $walletName',
+            transactions: entry.value,
+            total: _transactionTotal(entry.value),
+          ),
+        ),
+      );
+    }
+    return items;
+  }
+
+  int _transactionTotal(List<Transaction> transactions) =>
+      transactions.fold(0, (sum, transaction) => sum + transaction.amount);
+
+  Widget _buildCashFlowTab({
+    required int income,
+    required int expense,
+    required int net,
+    required int transactionCount,
+    required List<_MonthTrendData> trendMonths,
+  }) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+      children: [
         _NetCard(net: net),
         const SizedBox(height: 12),
         Row(
           children: [
             Expanded(
               child: _SmallStatCard(
-                icon: Icons.receipt_long_rounded,
-                title: 'Transaksi',
-                value: '${monthTransactions.length}',
-                subtitle: 'termasuk transfer',
+                icon: Icons.south_west_rounded,
+                title: 'Pemasukan',
+                value: FormatterHelper.formatRupiah(income),
+                subtitle: 'bulan ini',
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: _SmallStatCard(
-                icon: Icons.calendar_today_rounded,
-                title: 'Rata-rata keluar',
-                value: FormatterHelper.formatRupiah(averageDailyExpense),
-                subtitle: 'per hari',
+                icon: Icons.north_east_rounded,
+                title: 'Pengeluaran',
+                value: FormatterHelper.formatRupiah(expense),
+                subtitle: '$transactionCount transaksi',
               ),
             ),
           ],
         ),
-        const SizedBox(height: 22),
-        MonthlyBudgetSection(
-          month: _selectedMonth,
-          transactions: monthTransactions,
-        ),
         const SizedBox(height: 24),
+        _SectionTitle(
+          title: 'Tren pemasukan',
+          subtitle: 'Perbandingan enam bulan terakhir',
+        ),
+        const SizedBox(height: 12),
+        _MonthlyTrend(
+          months: trendMonths
+              .map(
+                (month) => _MonthExpense(
+                  month: month.month,
+                  amount: month.income,
+                  selected: month.selected,
+                ),
+              )
+              .toList(growable: false),
+          monthNames: _monthNames,
+          color: AppColors.income,
+        ),
+        const SizedBox(height: 22),
         _SectionTitle(
           title: 'Tren pengeluaran',
           subtitle: 'Perbandingan enam bulan terakhir',
         ),
         const SizedBox(height: 12),
         _MonthlyTrend(
-          months: List.generate(6, (index) {
-            final month = _shiftMonth(monthStart, index - 5);
-            return _MonthExpense(
-              month: month,
-              amount: _sum(
-                allTransactions
-                    .where(
-                      (transaction) => _isSameMonth(transaction.time, month),
-                    )
-                    .toList(),
-                TransactionType.expense,
-              ),
-              selected: _isSameMonth(month, _selectedMonth),
-            );
-          }),
-          monthNames: _monthNames,
-        ),
-        const SizedBox(height: 24),
-        _SectionTitle(
-          title: 'Pengeluaran per kategori',
-          subtitle:
-              comparison ??
-              'Belum ada data bulan sebelumnya untuk dibandingkan',
-        ),
-        const SizedBox(height: 12),
-        if (sortedCategories.isEmpty)
-          const _EmptyCard(
-            icon: Icons.pie_chart_outline_rounded,
-            message: 'Belum ada pengeluaran di bulan ini.',
-          )
-        else
-          _CategoryBreakdown(
-            categories: sortedCategories,
-            total: expense,
-            onTap: (category) {
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => CategoryExpenseDetailPage(
-                    category: category,
-                    month: _selectedMonth,
-                  ),
+          months: trendMonths
+              .map(
+                (month) => _MonthExpense(
+                  month: month.month,
+                  amount: month.expense,
+                  selected: month.selected,
                 ),
-              );
-            },
+              )
+              .toList(growable: false),
+          monthNames: _monthNames,
+          color: AppColors.expense,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAssetsTab(List<Wallet> wallets) {
+    final activeWallets = wallets.where((wallet) => wallet.active).toList()
+      ..sort((a, b) => b.balance.compareTo(a.balance));
+    final positive = activeWallets
+        .where((wallet) => wallet.balance > 0)
+        .toList(growable: false);
+    final total = positive.fold<int>(0, (sum, wallet) => sum + wallet.balance);
+    const colors = [
+      Color(0xFF3968D6),
+      Color(0xFF20A6A6),
+      Color(0xFFE89B25),
+      Color(0xFF9D41B5),
+      Color(0xFFE45F72),
+      Color(0xFF687A8C),
+    ];
+    final entries = [
+      for (var index = 0; index < positive.length; index++)
+        _BreakdownItem(
+          label: positive.elementAt(index).name,
+          amount: positive.elementAt(index).balance,
+          color: colors[index % colors.length],
+          icon: Icons.account_balance_wallet_rounded,
+        ),
+    ];
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+      children: [
+        if (entries.isEmpty)
+          const _EmptyCard(
+            icon: Icons.account_balance_wallet_outlined,
+            message: 'Belum ada saldo dompet positif untuk ditampilkan.',
+          )
+        else ...[
+          _DonutChart(
+            entries: entries,
+            centerLabel: 'Total aset',
+            total: total,
           ),
-        const SizedBox(height: 14),
-        const _TransferNote(),
+          const SizedBox(height: 10),
+          _BreakdownList(entries: entries, total: total),
+        ],
+        if (activeWallets.any((wallet) => wallet.balance < 0)) ...[
+          const SizedBox(height: 18),
+          _SectionTitle(
+            title: 'Saldo negatif',
+            subtitle: 'Dompet berikut memiliki saldo di bawah nol',
+          ),
+          const SizedBox(height: 10),
+          ...activeWallets
+              .where((wallet) => wallet.balance < 0)
+              .map((wallet) => _NegativeWalletRow(wallet: wallet)),
+        ],
       ],
     );
   }
@@ -272,14 +484,6 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
         total: total,
       ),
     );
-  }
-
-  String? _expenseComparison(int current, int previous) {
-    if (previous == 0) return null;
-    final change = ((current - previous) / previous * 100).round();
-    if (change == 0) return 'Sama dengan bulan sebelumnya';
-    final direction = change > 0 ? 'naik' : 'turun';
-    return 'Pengeluaran $direction ${change.abs()}% dari bulan sebelumnya';
   }
 }
 
@@ -314,71 +518,6 @@ class _MonthSelector extends StatelessWidget {
           icon: const Icon(Icons.chevron_right_rounded),
         ),
       ],
-    );
-  }
-}
-
-class _AmountCard extends StatelessWidget {
-  const _AmountCard({
-    required this.title,
-    required this.amount,
-    required this.color,
-    required this.icon,
-    required this.onTap,
-  });
-
-  final String title;
-  final int amount;
-  final Color color;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(20),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.line),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(icon, color: color, size: 19),
-                  const Spacer(),
-                  Icon(Icons.chevron_right_rounded, color: AppColors.muted),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(title, style: Theme.of(context).textTheme.bodyMedium),
-              const SizedBox(height: 5),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  FormatterHelper.formatRupiah(amount),
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleMedium?.copyWith(color: color, fontSize: 17),
-                ),
-              ),
-              const SizedBox(height: 5),
-              Text(
-                'Lihat rincian',
-                style: Theme.of(context).textTheme.labelMedium,
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
@@ -725,11 +864,46 @@ class _MonthExpense {
   final bool selected;
 }
 
+class _MonthTrendData {
+  const _MonthTrendData({
+    required this.month,
+    required this.income,
+    required this.expense,
+    required this.selected,
+  });
+
+  final DateTime month;
+  final int income;
+  final int expense;
+  final bool selected;
+}
+
+class _BreakdownItem {
+  const _BreakdownItem({
+    required this.label,
+    required this.amount,
+    required this.color,
+    required this.icon,
+    this.onTap,
+  });
+
+  final String label;
+  final int amount;
+  final Color color;
+  final IconData icon;
+  final VoidCallback? onTap;
+}
+
 class _MonthlyTrend extends StatelessWidget {
-  const _MonthlyTrend({required this.months, required this.monthNames});
+  const _MonthlyTrend({
+    required this.months,
+    required this.monthNames,
+    required this.color,
+  });
 
   final List<_MonthExpense> months;
   final List<String> monthNames;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -764,9 +938,7 @@ class _MonthlyTrend extends StatelessWidget {
                         month.amount == 0 ? '—' : _compactAmount(month.amount),
                         style: TextStyle(
                           fontSize: 10,
-                          color: month.selected
-                              ? AppColors.forest
-                              : AppColors.muted,
+                          color: month.selected ? color : AppColors.muted,
                           fontWeight: month.selected
                               ? FontWeight.w700
                               : FontWeight.w500,
@@ -780,7 +952,9 @@ class _MonthlyTrend extends StatelessWidget {
                     width: 24,
                     height: barHeight,
                     decoration: BoxDecoration(
-                      color: month.selected ? AppColors.forest : AppColors.mint,
+                      color: month.selected
+                          ? color
+                          : color.withValues(alpha: 0.18),
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
@@ -789,9 +963,7 @@ class _MonthlyTrend extends StatelessWidget {
                     monthNames[month.month.month - 1].substring(0, 3),
                     style: TextStyle(
                       fontSize: 10,
-                      color: month.selected
-                          ? AppColors.forest
-                          : AppColors.muted,
+                      color: month.selected ? color : AppColors.muted,
                       fontWeight: month.selected
                           ? FontWeight.w700
                           : FontWeight.w500,
@@ -816,35 +988,29 @@ class _MonthlyTrend extends StatelessWidget {
   }
 }
 
-class _CategoryBreakdown extends StatelessWidget {
-  const _CategoryBreakdown({
-    required this.categories,
-    required this.total,
-    required this.onTap,
-  });
+class _BreakdownList extends StatelessWidget {
+  const _BreakdownList({required this.entries, required this.total});
 
-  final List<MapEntry<TransactionCategory, int>> categories;
+  final List<_BreakdownItem> entries;
   final int total;
-  final ValueChanged<TransactionCategory> onTap;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.line),
       ),
       child: Column(
-        children: categories.map((entry) {
-          final categoryColor = CategoryHelper.color(entry.key);
-          final share = total == 0 ? 0.0 : entry.value / total;
+        children: entries.map((entry) {
+          final share = total == 0 ? 0.0 : entry.amount / total;
           return Material(
             color: Colors.transparent,
             child: InkWell(
               borderRadius: BorderRadius.circular(14),
-              onTap: () => onTap(entry.key),
+              onTap: entry.onTap,
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 13),
                 child: Row(
@@ -853,14 +1019,10 @@ class _CategoryBreakdown extends StatelessWidget {
                       width: 38,
                       height: 38,
                       decoration: BoxDecoration(
-                        color: categoryColor.withValues(alpha: 0.12),
+                        color: entry.color.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(
-                        CategoryHelper.icon(entry.key),
-                        color: categoryColor,
-                        size: 19,
-                      ),
+                      child: Icon(entry.icon, color: entry.color, size: 19),
                     ),
                     const SizedBox(width: 11),
                     Expanded(
@@ -871,7 +1033,7 @@ class _CategoryBreakdown extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: Text(
-                                  CategoryHelper.title(entry.key),
+                                  entry.label,
                                   style: Theme.of(context).textTheme.titleMedium
                                       ?.copyWith(fontSize: 14),
                                 ),
@@ -889,7 +1051,7 @@ class _CategoryBreakdown extends StatelessWidget {
                               value: share.clamp(0.0, 1.0),
                               minHeight: 6,
                               backgroundColor: AppColors.canvas,
-                              valueColor: AlwaysStoppedAnimation(categoryColor),
+                              valueColor: AlwaysStoppedAnimation(entry.color),
                             ),
                           ),
                         ],
@@ -897,7 +1059,7 @@ class _CategoryBreakdown extends StatelessWidget {
                     ),
                     const SizedBox(width: 10),
                     Text(
-                      FormatterHelper.formatRupiah(entry.value),
+                      FormatterHelper.formatRupiah(entry.amount),
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w600,
                         fontSize: 12,
@@ -918,6 +1080,136 @@ class _CategoryBreakdown extends StatelessWidget {
       ),
     );
   }
+}
+
+class _DonutChart extends StatelessWidget {
+  const _DonutChart({
+    required this.entries,
+    required this.centerLabel,
+    required this.total,
+  });
+
+  final List<_BreakdownItem> entries;
+  final String centerLabel;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.line),
+      ),
+      child: Column(
+        children: [
+          SizedBox.square(
+            dimension: 220,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                CustomPaint(
+                  size: const Size.square(210),
+                  painter: _DonutPainter(entries),
+                ),
+                SizedBox(
+                  width: 112,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        centerLabel,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 4),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          FormatterHelper.formatRupiah(total),
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DonutPainter extends CustomPainter {
+  _DonutPainter(this.entries);
+
+  final List<_BreakdownItem> entries;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final visible = entries.where((entry) => entry.amount > 0).toList();
+    final total = visible.fold<int>(0, (sum, entry) => sum + entry.amount);
+    if (total <= 0) return;
+
+    final rect = Rect.fromCircle(
+      center: Offset(size.width / 2, size.height / 2),
+      radius: size.shortestSide / 2 - 2,
+    );
+    var startAngle = -math.pi / 2;
+    for (final entry in visible) {
+      final sweepAngle = entry.amount / total * math.pi * 2;
+      canvas.drawArc(
+        rect,
+        startAngle,
+        math.max(0, sweepAngle - 0.012),
+        false,
+        Paint()
+          ..color = entry.color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 46
+          ..strokeCap = StrokeCap.butt,
+      );
+      startAngle += sweepAngle;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DonutPainter oldDelegate) =>
+      oldDelegate.entries != entries;
+}
+
+class _NegativeWalletRow extends StatelessWidget {
+  const _NegativeWalletRow({required this.wallet});
+
+  final Wallet wallet;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    margin: const EdgeInsets.only(bottom: 8),
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: AppColors.line),
+    ),
+    child: Row(
+      children: [
+        const Icon(Icons.warning_amber_rounded, color: AppColors.expense),
+        const SizedBox(width: 10),
+        Expanded(child: Text('${wallet.name} · ${wallet.bank}')),
+        Text(
+          FormatterHelper.formatRupiah(wallet.balance),
+          style: const TextStyle(
+            color: AppColors.expense,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class _EmptyCard extends StatelessWidget {
@@ -943,36 +1235,6 @@ class _EmptyCard extends StatelessWidget {
           message,
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodyMedium,
-        ),
-      ],
-    ),
-  );
-}
-
-class _TransferNote extends StatelessWidget {
-  const _TransferNote();
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(
-      color: AppColors.mint.withValues(alpha: 0.55),
-      borderRadius: BorderRadius.circular(16),
-    ),
-    child: const Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(Icons.info_outline_rounded, color: AppColors.forest, size: 19),
-        SizedBox(width: 9),
-        Expanded(
-          child: Text(
-            'Transaksi transfer tidak dihitung sebagai pemasukan atau pengeluaran agar statistik arus uang tetap akurat.',
-            style: TextStyle(
-              color: AppColors.forestDark,
-              height: 1.4,
-              fontSize: 12,
-            ),
-          ),
         ),
       ],
     ),

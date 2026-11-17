@@ -9,4 +9,9 @@ class WalletResolverUseCase {
   Future<WalletTableData?> resolve(String bank) async {
     return dao.findByBank(bank);
   }
+
+  Future<WalletTableData?> resolveById(String id) async {
+    final wallet = await dao.getById(id);
+    return wallet?.active == true ? wallet : null;
+  }
 }

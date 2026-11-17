@@ -499,6 +499,55 @@ class TransactionDao {
     });
   }
 
+  /// Removes a notification transaction, reverses its wallet effect, and
+  /// remembers each exact notification line so it is not recorded again.
+  Future<bool> markNotTransaction(String id) async {
+    return db.transaction(() async {
+      final row = await (db.select(
+        db.transactionsTable,
+      )..where((table) => table.id.equals(id))).getSingleOrNull();
+      if (row == null) return false;
+
+      final notificationLines = row.rawText
+          .split(RegExp(r'\r?\n'))
+          .map((line) => _normalize(line).toLowerCase())
+          .where((line) => line.isNotEmpty)
+          .toSet();
+      for (final normalizedText in notificationLines) {
+        final existing =
+            await (db.select(db.ignoredNotificationRulesTable)..where(
+                  (table) => table.normalizedText.equals(normalizedText),
+                ))
+                .getSingleOrNull();
+        if (existing != null) continue;
+        await db
+            .into(db.ignoredNotificationRulesTable)
+            .insert(
+              IgnoredNotificationRulesTableCompanion.insert(
+                normalizedText: normalizedText,
+                createdAt: DateTime.now(),
+              ),
+            );
+      }
+
+      await _applyBalanceEffect(_toTransaction(row), -1);
+      await (db.delete(
+        db.transactionsTable,
+      )..where((table) => table.id.equals(id))).go();
+      return true;
+    });
+  }
+
+  Future<bool> isIgnoredNotification(String rawText) async {
+    final normalizedText = _normalize(rawText).toLowerCase();
+    if (normalizedText.isEmpty) return false;
+    final rule =
+        await (db.select(db.ignoredNotificationRulesTable)
+              ..where((table) => table.normalizedText.equals(normalizedText)))
+            .getSingleOrNull();
+    return rule != null;
+  }
+
   Future<int> removeJagoPromotionalTransactions() async {
     return db.transaction(() async {
       final rows = await (db.select(

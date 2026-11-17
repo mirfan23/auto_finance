@@ -5,6 +5,7 @@ import 'package:auto_finance/data/local/tables/wallet_table.dart';
 import 'package:auto_finance/data/local/tables/wallet_balance_adjustment_table.dart';
 import 'package:auto_finance/data/local/tables/monthly_budgets_table.dart';
 import 'package:auto_finance/data/local/tables/merchant_category_rules_table.dart';
+import 'package:auto_finance/data/local/tables/ignored_notification_rules_table.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
@@ -22,12 +23,13 @@ part 'app_database.g.dart';
     WalletBalanceAdjustmentTable,
     MonthlyBudgetsTable,
     MerchantCategoryRulesTable,
+    IgnoredNotificationRulesTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
   @override
-  int get schemaVersion => 24;
+  int get schemaVersion => 25;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -80,6 +82,9 @@ class AppDatabase extends _$AppDatabase {
           SET include_in_weekly_budget = 1
           WHERE category = 'food'
         ''');
+      }
+      if (from >= 19 && from < 25) {
+        await m.createTable(ignoredNotificationRulesTable);
       }
     },
   );

@@ -9,8 +9,11 @@ import 'package:auto_finance/features/notification/domain/entities/received_noti
 import 'package:auto_finance/features/transaction/domain/entities/transaction.dart';
 import 'package:auto_finance/features/transaction/domain/entities/transaction_type.dart';
 import 'package:auto_finance/features/notification/application/providers/notification_history_provider.dart';
+import 'package:auto_finance/features/notification/application/providers/notification_attention_provider.dart';
+import 'package:auto_finance/features/notification/application/providers/notification_sync_provider.dart';
 import 'package:auto_finance/features/notification/application/providers/notification_stream_provider.dart';
 import 'package:auto_finance/features/transaction/application/providers/transaction_provider.dart';
+import 'package:auto_finance/features/local_ai/data/services/local_ai_service.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,10 +21,19 @@ import 'package:fx_helper/formatter_helper.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-enum _HistoryFilter { all, recorded, noTransaction }
+enum _HistoryFilter {
+  all,
+  recorded,
+  noTransaction,
+  actionable,
+  processing,
+  needsConfirmation,
+}
 
 class NotificationHistoryPage extends ConsumerStatefulWidget {
-  const NotificationHistoryPage({super.key});
+  const NotificationHistoryPage({super.key, this.attentionOnly = false});
+
+  final bool attentionOnly;
 
   @override
   ConsumerState<NotificationHistoryPage> createState() =>
@@ -32,6 +44,23 @@ class _NotificationHistoryPageState
     extends ConsumerState<NotificationHistoryPage> {
   _HistoryFilter _filter = _HistoryFilter.all;
   DateFilterSelection _dateFilter = const DateFilterSelection.all();
+  bool _processingQueue = false;
+  Set<String> _aiSourcePackages = const {};
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.attentionOnly) {
+      _filter = _HistoryFilter.actionable;
+      _loadAiSourcePackages();
+    }
+  }
+
+  Future<void> _loadAiSourcePackages() async {
+    final sources = await LocalAiService.selectedSourceWallets();
+    if (!mounted) return;
+    setState(() => _aiSourcePackages = sources.keys.toSet());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,14 +71,33 @@ class _NotificationHistoryPageState
     final notifications = ref.watch(notificationHistoryProvider);
     final transactions = ref.watch(transactionStreamProvider);
     final appLogs = ref.watch(notificationLogStreamProvider);
+    final attentionCounts = widget.attentionOnly
+        ? ref.watch(notificationAttentionCountsProvider).valueOrNull
+        : null;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Riwayat notifikasi'),
+        title: Text(
+          widget.attentionOnly
+              ? 'Notifikasi perlu ditinjau'
+              : 'Riwayat notifikasi',
+        ),
         actions: [
           IconButton(
+            tooltip: 'Proses antrean tertunda',
+            onPressed: _processingQueue ? null : _processPendingQueue,
+            icon: _processingQueue
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.play_arrow_rounded),
+          ),
+          IconButton(
             tooltip: 'Muat ulang',
-            onPressed: () => ref.invalidate(notificationHistoryProvider),
+            onPressed: () =>
+                ref.read(notificationHistoryProvider.notifier).refresh(),
             icon: const Icon(Icons.refresh_rounded),
           ),
         ],
@@ -62,7 +110,7 @@ class _NotificationHistoryPageState
           error: error,
           onRetry: () => ref.invalidate(notificationHistoryProvider),
         ),
-        data: (items) => transactions.when(
+        data: (historyState) => transactions.when(
           loading: () => const Center(
             child: CircularProgressIndicator(color: AppColors.forest),
           ),
@@ -78,7 +126,12 @@ class _NotificationHistoryPageState
               error: error,
               onRetry: () => ref.invalidate(notificationHistoryProvider),
             ),
-            data: (logs) => _buildHistory(items, savedTransactions, logs),
+            data: (logs) => _buildHistory(
+              historyState,
+              savedTransactions,
+              logs,
+              attentionCounts,
+            ),
           ),
         ),
       ),
@@ -86,12 +139,16 @@ class _NotificationHistoryPageState
   }
 
   Widget _buildHistory(
-    List<ReceivedNotification> items,
+    NotificationHistoryState historyState,
     List<Transaction> transactions,
     List<NotificationLogsTableData> logs,
+    NotificationAttentionCounts? attentionCounts,
   ) {
+    final items = historyState.notifications;
     final logFingerprints = logs.map((log) => log.fingerprint).toSet();
-    final relevantItems = items.where(_isRelevantNotification).toList();
+    final relevantItems = items
+        .where((notification) => _isRelevantNotification(notification))
+        .toList();
     final entries = relevantItems.map((notification) {
       return _HistoryEntry(
         notification: notification,
@@ -106,6 +163,27 @@ class _NotificationHistoryPageState
     final recordedCount = dateFilteredEntries
         .where((entry) => entry.transaction != null)
         .length;
+    final processingEntries = dateFilteredEntries
+        .where(
+          (entry) => entry.transaction == null && !entry.notification.processed,
+        )
+        .toList();
+    final confirmationEntries = dateFilteredEntries
+        .where(
+          (entry) => entry.transaction == null && entry.notification.processed,
+        )
+        .toList();
+    final useGlobalCounts =
+        widget.attentionOnly &&
+        _dateFilter.kind == DateFilterKind.all &&
+        attentionCounts != null;
+    final processingCount = useGlobalCounts
+        ? attentionCounts.processing
+        : processingEntries.length;
+    final confirmationCount = useGlobalCounts
+        ? attentionCounts.needsConfirmation
+        : confirmationEntries.length;
+    final actionableCount = processingCount + confirmationCount;
     final visibleEntries = switch (_filter) {
       _HistoryFilter.all => dateFilteredEntries,
       _HistoryFilter.recorded =>
@@ -116,6 +194,12 @@ class _NotificationHistoryPageState
         dateFilteredEntries
             .where((entry) => entry.transaction == null)
             .toList(),
+      _HistoryFilter.actionable =>
+        dateFilteredEntries
+            .where((entry) => entry.transaction == null)
+            .toList(),
+      _HistoryFilter.processing => processingEntries,
+      _HistoryFilter.needsConfirmation => confirmationEntries,
     };
 
     return Column(
@@ -126,12 +210,16 @@ class _NotificationHistoryPageState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Notifikasi bank & e-wallet',
+                widget.attentionOnly
+                    ? 'Periksa notifikasi yang belum masuk transaksi'
+                    : 'Notifikasi bank & e-wallet',
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 5),
               Text(
-                'Hanya menampilkan Jago, BCA, Gojek/GoPay, dan Shopee/ShopeePay.',
+                widget.attentionOnly
+                    ? 'Tinjau antrean yang tertunda atau pesan yang belum tercatat sebagai transaksi.'
+                    : 'Hanya menampilkan Jago, BCA, Gojek/GoPay, dan Shopee/ShopeePay.',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 14),
@@ -144,51 +232,122 @@ class _NotificationHistoryPageState
               Wrap(
                 spacing: 8,
                 children: [
-                  _FilterChip(
-                    label: 'Semua (${dateFilteredEntries.length})',
-                    selected: _filter == _HistoryFilter.all,
-                    onTap: () => setState(() => _filter = _HistoryFilter.all),
-                  ),
-                  _FilterChip(
-                    label: 'Tercatat ($recordedCount)',
-                    selected: _filter == _HistoryFilter.recorded,
-                    onTap: () =>
-                        setState(() => _filter = _HistoryFilter.recorded),
-                  ),
-                  _FilterChip(
-                    label:
-                        'Belum ada transaksi (${dateFilteredEntries.length - recordedCount})',
-                    selected: _filter == _HistoryFilter.noTransaction,
-                    onTap: () =>
-                        setState(() => _filter = _HistoryFilter.noTransaction),
-                  ),
+                  if (widget.attentionOnly) ...[
+                    _FilterChip(
+                      label: 'Semua perlu ditinjau ($actionableCount)',
+                      selected: _filter == _HistoryFilter.actionable,
+                      onTap: () =>
+                          setState(() => _filter = _HistoryFilter.actionable),
+                    ),
+                    _FilterChip(
+                      label: 'Menunggu pemrosesan ($processingCount)',
+                      selected: _filter == _HistoryFilter.processing,
+                      onTap: () =>
+                          setState(() => _filter = _HistoryFilter.processing),
+                    ),
+                    _FilterChip(
+                      label: 'Perlu konfirmasi ($confirmationCount)',
+                      selected: _filter == _HistoryFilter.needsConfirmation,
+                      onTap: () => setState(
+                        () => _filter = _HistoryFilter.needsConfirmation,
+                      ),
+                    ),
+                  ] else ...[
+                    _FilterChip(
+                      label: 'Semua (${dateFilteredEntries.length})',
+                      selected: _filter == _HistoryFilter.all,
+                      onTap: () => setState(() => _filter = _HistoryFilter.all),
+                    ),
+                    _FilterChip(
+                      label: 'Tercatat ($recordedCount)',
+                      selected: _filter == _HistoryFilter.recorded,
+                      onTap: () =>
+                          setState(() => _filter = _HistoryFilter.recorded),
+                    ),
+                    _FilterChip(
+                      label:
+                          'Belum ada transaksi (${dateFilteredEntries.length - recordedCount})',
+                      selected: _filter == _HistoryFilter.noTransaction,
+                      onTap: () => setState(
+                        () => _filter = _HistoryFilter.noTransaction,
+                      ),
+                    ),
+                  ],
                 ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Memuat riwayat bertahap • ${items.length} notifikasi dimuat',
+                style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
           ),
         ),
         Expanded(
-          child: visibleEntries.isEmpty
-              ? _HistoryEmpty(
-                  message: entries.isEmpty
-                      ? 'Belum ada notifikasi dari Jago, BCA, Gojek/GoPay, atau Shopee/ShopeePay.'
+          child: RefreshIndicator(
+            onRefresh: () =>
+                ref.read(notificationHistoryProvider.notifier).refresh(),
+            child: ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+              itemCount:
+                  (visibleEntries.isEmpty ? 1 : visibleEntries.length) +
+                  (historyState.hasMore || historyState.loadMoreError != null
+                      ? 1
+                      : 0),
+              itemBuilder: (context, index) {
+                if (visibleEntries.isEmpty && index == 0) {
+                  final message = entries.isEmpty
+                      ? widget.attentionOnly
+                            ? 'Belum ada notifikasi yang perlu ditinjau.'
+                            : 'Belum ada notifikasi dari Jago, BCA, Gojek/GoPay, atau Shopee/ShopeePay.'
                       : dateFilteredEntries.isEmpty
                       ? 'Tidak ada notifikasi pada rentang tanggal ini.'
-                      : 'Tidak ada notifikasi pada pilihan ini.',
-                )
-              : RefreshIndicator(
-                  onRefresh: () async {
-                    ref.invalidate(notificationHistoryProvider);
-                    await ref.read(notificationHistoryProvider.future);
-                  },
-                  child: ListView.builder(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                    itemCount: visibleEntries.length,
-                    itemBuilder: (context, index) =>
-                        _NotificationCard(entry: visibleEntries[index]),
-                  ),
-                ),
+                      : 'Tidak ada notifikasi pada pilihan ini.';
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 36),
+                    child: Column(
+                      children: [
+                        const Icon(
+                          Icons.notifications_none_rounded,
+                          size: 44,
+                          color: AppColors.muted,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(message, textAlign: TextAlign.center),
+                      ],
+                    ),
+                  );
+                }
+
+                if (index < visibleEntries.length) {
+                  return _NotificationCard(entry: visibleEntries[index]);
+                }
+
+                if (historyState.isLoadingMore) {
+                  return const Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+                if (historyState.loadMoreError != null) {
+                  return TextButton.icon(
+                    onPressed: () => ref
+                        .read(notificationHistoryProvider.notifier)
+                        .retryLoadMore(),
+                    icon: const Icon(Icons.refresh_rounded),
+                    label: const Text('Gagal memuat. Coba lagi'),
+                  );
+                }
+                return TextButton.icon(
+                  onPressed: () =>
+                      ref.read(notificationHistoryProvider.notifier).loadMore(),
+                  icon: const Icon(Icons.expand_more_rounded),
+                  label: const Text('Muat notifikasi lebih lama'),
+                );
+              },
+            ),
+          ),
         ),
       ],
     );
@@ -197,7 +356,35 @@ class _NotificationHistoryPageState
   bool _isRelevantNotification(ReceivedNotification notification) {
     final packageName = notification.packageName.toLowerCase();
     const packageHints = ['jago', 'bca', 'gojek', 'gopay', 'shopee'];
-    return packageHints.any(packageName.contains);
+    return packageHints.any(packageName.contains) ||
+        (widget.attentionOnly &&
+            _aiSourcePackages.contains(notification.packageName));
+  }
+
+  Future<void> _processPendingQueue() async {
+    setState(() => _processingQueue = true);
+    try {
+      final summary = await ref.read(notificationSyncProvider).sync();
+      await ref.read(notificationHistoryProvider.notifier).refresh();
+      ref.invalidate(notificationAttentionCountsProvider);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '${summary.attempted} notifikasi diperiksa: '
+            '${summary.completed} selesai, '
+            '${summary.stillWaiting} masih tertunda.',
+          ),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Antrean belum bisa diproses: $error')),
+      );
+    } finally {
+      if (mounted) setState(() => _processingQueue = false);
+    }
   }
 
   String _fingerprint(ReceivedNotification notification) => md5
@@ -521,28 +708,6 @@ class _ExplanationNote extends StatelessWidget {
         height: 1.4,
       ),
     ),
-  );
-}
-
-class _HistoryEmpty extends StatelessWidget {
-  const _HistoryEmpty({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) => ListView(
-    physics: const AlwaysScrollableScrollPhysics(),
-    children: [
-      const SizedBox(height: 100),
-      Icon(Icons.notifications_none_rounded, size: 44, color: AppColors.muted),
-      const SizedBox(height: 12),
-      Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 30),
-          child: Text(message, textAlign: TextAlign.center),
-        ),
-      ),
-    ],
   );
 }
 

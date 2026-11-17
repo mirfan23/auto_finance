@@ -17,6 +17,11 @@ class ParserDispatcher {
   final _gopayParser = GopayParser();
   final _shopeepayParser = ShopeePayParser();
 
+  bool recognizesPackage(String packageName) {
+    final normalized = packageName.toLowerCase();
+    return supportedPackageHints.any(normalized.contains);
+  }
+
   ParserResult? parse(Map data) {
     final packageName = (data["packageName"] ?? "").toString().toLowerCase();
 

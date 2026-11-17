@@ -8,6 +8,7 @@ import 'package:auto_finance/features/transaction/presentation/pages/transaction
 import 'package:auto_finance/features/wallet/presentation/pages/wallet_page.dart';
 import 'package:auto_finance/features/wallet/presentation/pages/wallet_detail_page.dart';
 import 'package:auto_finance/features/notification/presentation/pages/notification_history_page.dart';
+import 'package:auto_finance/features/local_ai/presentation/pages/local_ai_settings_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:auto_finance/app/navigation/app_shell.dart';
 
@@ -30,6 +31,14 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/notifications/history',
       builder: (_, _) => const NotificationHistoryPage(),
+    ),
+    GoRoute(
+      path: '/notifications/action-required',
+      builder: (_, _) => const NotificationHistoryPage(attentionOnly: true),
+    ),
+    GoRoute(
+      path: '/settings/local-ai',
+      builder: (_, _) => const LocalAiSettingsPage(),
     ),
     GoRoute(
       path: "/transaction/:id",

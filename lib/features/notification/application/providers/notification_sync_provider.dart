@@ -2,6 +2,8 @@ import 'package:auto_finance/core/services/notification_db_service.dart';
 import 'package:auto_finance/features/transaction/domain/usecases/parser/parser_dispatcher.dart';
 import 'package:auto_finance/features/transaction/domain/usecases/transaction_action_result.dart';
 import 'package:auto_finance/features/transaction/application/providers/transaction_provider.dart';
+import 'package:auto_finance/features/local_ai/data/services/local_ai_service.dart';
+import 'package:auto_finance/features/wallet/application/providers/wallet_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,19 +13,31 @@ final notificationSyncProvider = Provider<NotificationSyncProvider>(
   (ref) => NotificationSyncProvider(ref),
 );
 
+class NotificationSyncSummary {
+  const NotificationSyncSummary({
+    required this.attempted,
+    required this.completed,
+    required this.stillWaiting,
+  });
+
+  final int attempted;
+  final int completed;
+  final int stillWaiting;
+}
+
 class NotificationSyncProvider {
   final Ref ref;
-  Future<void>? _activeSync;
+  Future<NotificationSyncSummary>? _activeSync;
 
   NotificationSyncProvider(this.ref);
 
-  Future<void> sync() {
+  Future<NotificationSyncSummary> sync() {
     final activeSync = _activeSync;
     if (activeSync != null) {
       return activeSync;
     }
 
-    late final Future<void> task;
+    late final Future<NotificationSyncSummary> task;
     task = _syncPendingNotifications().whenComplete(() {
       if (identical(_activeSync, task)) _activeSync = null;
     });
@@ -31,8 +45,17 @@ class NotificationSyncProvider {
     return task;
   }
 
-  Future<void> _syncPendingNotifications() async {
+  Future<NotificationSyncSummary> _syncPendingNotifications() async {
     debugPrint("===== START SYNC =====");
+
+    final sourceWalletIds = await LocalAiService.selectedSourceWallets();
+    final walletRows = await ref.read(walletDaoProvider).getAll();
+    final walletsById = {for (final wallet in walletRows) wallet.id: wallet};
+    final availableSources = await LocalAiService.getAvailableSources();
+    final sourceLabels = {
+      for (final source in availableSources)
+        source['packageName'].toString(): source['label'].toString(),
+    };
 
     final requeuedJago =
         await NotificationDbService.reprocessKnownJagoNotificationsOnce();
@@ -45,6 +68,7 @@ class NotificationSyncProvider {
     // get re-walked on every sync. Dismiss them in bulk before fetching.
     final cleaned = await NotificationDbService.markUnknownPackagesProcessed(
       ParserDispatcher.supportedPackageHints,
+      selectedPackages: sourceWalletIds.keys.toList(growable: false),
     );
 
     debugPrint("🧹 CLEANED UNKNOWN PACKAGES => $cleaned");
@@ -53,68 +77,83 @@ class NotificationSyncProvider {
 
     final action = ref.read(transactionActionProvider);
 
-    final notifications = await NotificationDbService.getPendingNotifications();
+    const batchSize = 50;
+    var cursor = 0;
+    var attempted = 0;
+    var completed = 0;
+    var stillWaiting = 0;
 
-    debugPrint(
-      "TOTAL PENDING NOTIFICATIONS = "
-      "${notifications.length}",
-    );
+    while (true) {
+      final batch = await NotificationDbService.getPendingNotifications(
+        afterId: cursor,
+        limit: batchSize,
+      );
+      if (batch.isEmpty) break;
 
-    for (final item in notifications) {
-      final id = item["id"];
+      debugPrint('PENDING BATCH => ${batch.length}');
+      for (final item in batch) {
+        final id = (item['id'] as num).toInt();
+        if (id > cursor) cursor = id;
+        attempted++;
 
-      try {
-        debugPrint(
-          "SYNC => "
-          "id=$id | "
-          "${item["packageName"]} | "
-          "${item["title"]} | "
-          "${item["text"]}",
-        );
+        try {
+          debugPrint(
+            'SYNC => id=$id | ${item["packageName"]} | '
+            '${item["title"]} | ${item["text"]}',
+          );
 
-        // Opsional jika memang ingin menyimpan log ke Drift
-        await notificationDao.insert(item);
+          await notificationDao.insert(item);
+          final packageName = (item['packageName'] ?? '').toString();
+          final selectedWalletId = sourceWalletIds[packageName];
+          final selectedWallet = selectedWalletId == null
+              ? null
+              : walletsById[selectedWalletId];
+          if (selectedWalletId != null && selectedWallet == null) {
+            stillWaiting++;
+            debugPrint('⏳ AI SOURCE WALLET MISSING => $packageName');
+            continue;
+          }
+          final actionData = selectedWallet == null
+              ? item
+              : <String, dynamic>{
+                  ...item,
+                  'walletBank': selectedWallet.bank,
+                  'walletId': selectedWallet.id,
+                  'sourceAppLabel': sourceLabels[packageName] ?? packageName,
+                };
+          final result = await action.handle(actionData);
 
-        // Proses transaksi
-        // await action.handle(item);
+          switch (result) {
+            case TransactionActionResult.processed:
+            case TransactionActionResult.duplicate:
+            case TransactionActionResult.notTransaction:
+              await NotificationDbService.markProcessed(id);
+              completed++;
+              debugPrint('✅ NOTIFICATION PROCESSED => $id');
+              break;
 
-        // // Hanya tandai processed setelah proses berhasil
-        // await service.markProcessed(id);
-        final result = await action.handle(item);
-
-        switch (result) {
-          case TransactionActionResult.processed:
-          case TransactionActionResult.duplicate:
-            await NotificationDbService.markProcessed(id);
-
-            debugPrint("✅ NOTIFICATION PROCESSED => $id");
-            break;
-
-          case TransactionActionResult.notTransaction:
-            await NotificationDbService.markProcessed(id);
-
-            debugPrint("➖ NOT A TRANSACTION, DISMISSED => $id");
-            break;
-
-          case TransactionActionResult.waitingPair:
-          case TransactionActionResult.waitingWallet:
-          case TransactionActionResult.failed:
-            debugPrint("⏳ NOTIFICATION REMAINS PENDING => $id");
-            break;
+            case TransactionActionResult.waitingPair:
+            case TransactionActionResult.waitingWallet:
+            case TransactionActionResult.failed:
+              stillWaiting++;
+              debugPrint('⏳ NOTIFICATION REMAINS PENDING => $id');
+              break;
+          }
+        } catch (error, stackTrace) {
+          stillWaiting++;
+          debugPrint('❌ SYNC FAILED => $id');
+          debugPrint('$error');
+          debugPrint('$stackTrace');
+          // Keep failed notifications pending for a later retry.
         }
-
-        debugPrint("✅ SYNC SUCCESS => $id");
-      } catch (e, stackTrace) {
-        debugPrint("❌ SYNC FAILED => $id");
-
-        debugPrint("$e");
-        debugPrint("$stackTrace");
-
-        // Jangan mark processed.
-        // Akan dicoba lagi pada startup berikutnya.
       }
     }
 
     debugPrint("===== END SYNC =====");
+    return NotificationSyncSummary(
+      attempted: attempted,
+      completed: completed,
+      stillWaiting: stillWaiting,
+    );
   }
 }

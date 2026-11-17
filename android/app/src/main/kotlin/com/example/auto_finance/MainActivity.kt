@@ -14,6 +14,16 @@ class MainActivity : FlutterActivity() {
 
     private val CHANNEL = "auto_finance/notification"
     private val notificationPermissionRequestCode = 9002
+    private var localAiEventSink: EventChannel.EventSink? = null
+    private val localAiModelManager by lazy {
+        LocalAiModelManager(applicationContext) { downloaded, total ->
+            runOnUiThread {
+                localAiEventSink?.success(
+                    mapOf("downloadedBytes" to downloaded, "totalBytes" to total),
+                )
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,6 +41,58 @@ class MainActivity : FlutterActivity() {
         // Safety net alongside BootReceiver's scheduling — enqueueUniquePeriodicWork
         // with KEEP is a no-op if the periodic check is already scheduled.
         NotificationAccessCheckWorker.schedule(applicationContext)
+
+        EventChannel(flutterEngine.dartExecutor.binaryMessenger, "auto_finance/local_ai_events")
+            .setStreamHandler(object : EventChannel.StreamHandler {
+                override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                    localAiEventSink = events
+                }
+
+                override fun onCancel(arguments: Any?) {
+                    localAiEventSink = null
+                }
+            })
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "auto_finance/local_ai")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "modelStatus" -> result.success(localAiModelManager.modelStatus())
+                    "downloadModel" -> Thread {
+                        try {
+                            val size = localAiModelManager.downloadModel()
+                            runOnUiThread { result.success(size) }
+                        } catch (error: Exception) {
+                            Log.e("LOCAL_AI", "MODEL DOWNLOAD FAILED", error)
+                            runOnUiThread { result.error("MODEL_DOWNLOAD_FAILED", error.message, null) }
+                        }
+                    }.start()
+                    "deleteModel" -> Thread {
+                        try {
+                            localAiModelManager.deleteModel()
+                            runOnUiThread { result.success(true) }
+                        } catch (error: Exception) {
+                            runOnUiThread { result.error("MODEL_DELETE_FAILED", error.message, null) }
+                        }
+                    }.start()
+                    "parseNotification" -> {
+                        val prompt = call.argument<String>("prompt")
+                        if (prompt.isNullOrBlank()) {
+                            result.error("INVALID_PROMPT", "Isi notifikasi kosong.", null)
+                        } else {
+                            Thread {
+                                try {
+                                    val output = localAiModelManager.parse(prompt)
+                                    runOnUiThread { result.success(output) }
+                                } catch (error: Exception) {
+                                    Log.e("LOCAL_AI", "NOTIFICATION PARSE FAILED", error)
+                                    runOnUiThread { result.error("MODEL_PARSE_FAILED", error.message, null) }
+                                }
+                            }.start()
+                        }
+                    }
+                    else -> result.notImplemented()
+                }
+            }
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler {
                 call,
@@ -200,8 +262,10 @@ class MainActivity : FlutterActivity() {
                         "getAllNotifications" -> {
                             Thread {
                                 try {
+                                    val limit = (call.argument<Number>("limit")?.toInt() ?: 100).coerceIn(1, 200)
+                                    val offset = (call.argument<Number>("offset")?.toInt() ?: 0).coerceAtLeast(0)
                                     val db = DbProvider.get(applicationContext)
-                                    val output = db.notificationDao().getAll().map {
+                                    val output = db.notificationDao().getAll(limit, offset).map {
                                         hashMapOf(
                                             "id" to it.id,
                                             "packageName" to it.packageName,
@@ -219,6 +283,48 @@ class MainActivity : FlutterActivity() {
                                     }
                                 }
                             }.start()
+                        }
+                        "getNotificationSources" -> {
+                            Thread {
+                                try {
+                                    val dao = DbProvider.get(applicationContext).notificationDao()
+                                    val sources = dao.getNotificationSourceCounts().map { source ->
+                                        val label = try {
+                                            val appInfo = packageManager.getApplicationInfo(source.packageName, 0)
+                                            packageManager.getApplicationLabel(appInfo).toString()
+                                        } catch (_: Exception) {
+                                            source.packageName
+                                        }
+                                        hashMapOf(
+                                            "packageName" to source.packageName,
+                                            "label" to label,
+                                            "notificationCount" to source.notificationCount,
+                                        )
+                                    }
+                                    runOnUiThread { result.success(sources) }
+                                } catch (error: Exception) {
+                                    Log.e("DB_TEST", "GET NOTIFICATION SOURCES ERROR", error)
+                                    runOnUiThread { result.error("DB_ERROR", error.message, null) }
+                                }
+                            }.start()
+                        }
+                        "requeueAiSourceNotifications" -> {
+                            val packageNames = call.argument<List<*>>("packageNames")
+                                .orEmpty().filterIsInstance<String>().distinct()
+                            if (packageNames.isEmpty()) {
+                                result.success(0)
+                            } else {
+                                Thread {
+                                    try {
+                                        val since = System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000
+                                        val count = DbProvider.get(applicationContext)
+                                            .notificationDao().requeuePackages(packageNames, since)
+                                        runOnUiThread { result.success(count) }
+                                    } catch (error: Exception) {
+                                        runOnUiThread { result.error("DB_ERROR", error.message, null) }
+                                    }
+                                }.start()
+                            }
                         }
                         "reprocessKnownJagoNotificationsOnce" -> {
                             Thread {
@@ -278,9 +384,12 @@ class MainActivity : FlutterActivity() {
 
                                             val db = DbProvider.get(applicationContext)
 
+                                            val afterId = call.argument<Number>("afterId")?.toLong() ?: 0L
+                                            val limit = (call.argument<Number>("limit")?.toInt() ?: 50).coerceIn(1, 100)
+
                                             Log.d("DB_TEST", "GET PENDING NOTIFICATIONS")
 
-                                            val list = db.notificationDao().getPending()
+                                            val list = db.notificationDao().getPending(afterId, limit)
 
                                             Log.d("DB_TEST", "PENDING COUNT = ${list.size}")
 
@@ -347,6 +456,12 @@ class MainActivity : FlutterActivity() {
                                 .map { it.trim() }
                                 .filter { it.isNotEmpty() }
 
+                            val selectedPackages = call.argument<List<*>>("selectedPackages")
+                                .orEmpty()
+                                .filterIsInstance<String>()
+                                .map { it.trim() }
+                                .filter { it.isNotEmpty() }
+
                             if (knownPackageHints.isEmpty()) {
                                 result.error("INVALID_HINTS", "At least one supported package hint is required", null)
                                 return@setMethodCallHandler
@@ -359,10 +474,15 @@ class MainActivity : FlutterActivity() {
                                             val clauses = knownPackageHints.joinToString(" OR ") {
                                                 "packageName LIKE ? COLLATE NOCASE"
                                             }
-                                            val args = knownPackageHints.map { "%$it%" }.toTypedArray()
+                                            val selectedClause = if (selectedPackages.isEmpty()) {
+                                                ""
+                                            } else {
+                                                " AND packageName NOT IN (${selectedPackages.joinToString(",") { "?" }})"
+                                            }
+                                            val args = (knownPackageHints.map { "%$it%" } + selectedPackages).toTypedArray()
                                             val query = androidx.sqlite.db.SimpleSQLiteQuery(
                                                 "UPDATE notification_logs SET processed = 1 " +
-                                                    "WHERE processed = 0 AND NOT ($clauses)",
+                                                    "WHERE processed = 0 AND NOT ($clauses)$selectedClause",
                                                 args,
                                             )
                                             val updated = db.notificationDao().markUnknownProcessed(query)

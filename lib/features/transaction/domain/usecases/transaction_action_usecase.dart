@@ -161,7 +161,7 @@ class TransactionAction {
   Future<TransactionActionResult> handle(Map data) async {
     print("🟢 TRANSACTION ACTION START");
 
-    final parsed = pipeline(data);
+    final parsed = await pipeline(data);
 
     final learnedCategory =
         parsed != null && parsed.type == TransactionType.expense
@@ -180,7 +180,19 @@ class TransactionAction {
       return TransactionActionResult.notTransaction;
     }
 
-    final wallet = await walletResolver.resolve(incoming.bank);
+    if (await transactionDao.isIgnoredNotification(incoming.rawText)) {
+      print('➖ USER-MARKED NON-TRANSACTION IGNORED');
+      return TransactionActionResult.notTransaction;
+    }
+
+    final selectedWalletId = data['walletId']?.toString();
+    final wallet = selectedWalletId == null || selectedWalletId.isEmpty
+        ? await walletResolver.resolve(incoming.bank)
+        : await walletResolver.resolveById(selectedWalletId);
+    if (wallet == null && incoming.type != TransactionType.transfer) {
+      print('⏳ WAITING WALLET RESOLUTION => ${incoming.bank}');
+      return TransactionActionResult.waitingWallet;
+    }
     final resolved = incoming.copyWith(
       fromWallet: incoming.type == TransactionType.expense ? wallet?.id : null,
       toWallet: incoming.type == TransactionType.income ? wallet?.id : null,

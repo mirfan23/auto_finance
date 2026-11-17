@@ -1,5 +1,6 @@
 import 'package:auto_finance/data/local/database/app_database.dart';
-import 'package:auto_finance/features/wallet/domain/entities/wallet.dart' as entity;
+import 'package:auto_finance/features/wallet/domain/entities/wallet.dart'
+    as entity;
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
@@ -14,6 +15,12 @@ class WalletDao {
 
   Future<List<WalletTableData>> getAll() {
     return db.select(db.walletTable).get();
+  }
+
+  Future<WalletTableData?> getById(String id) {
+    return (db.select(
+      db.walletTable,
+    )..where((table) => table.id.equals(id))).getSingleOrNull();
   }
 
   Future<void> insert({
@@ -76,11 +83,24 @@ class WalletDao {
   static String _key(String value) => value.trim().toLowerCase();
 
   Future<WalletTableData?> findByBank(String bank) async {
-    final result = await (db.select(
-      db.walletTable,
-    )..where((t) => t.bank.equals(bank))).getSingleOrNull();
+    final wallets =
+        await (db.select(db.walletTable)..where(
+              (table) => table.bank.equals(bank) & table.active.equals(true),
+            ))
+            .get();
+    if (wallets.isEmpty) return null;
 
-    return result;
+    // A bank can have several wallets (for example, Jago's main wallet and
+    // a separately tracked pocket). Notifications identify the bank, not the
+    // pocket, so prefer the wallet whose name matches the bank label.
+    final bankKey = _key(bank);
+    final primary = wallets.where((wallet) => _key(wallet.name) == bankKey);
+    if (primary.isNotEmpty) return primary.first;
+
+    // Use an only available wallet. If several custom wallets match, do not
+    // guess where a financial notification belongs.
+    if (wallets.length == 1) return wallets.single;
+    return null;
   }
 
   Future<void> updateBalance(String id, int balance) async {

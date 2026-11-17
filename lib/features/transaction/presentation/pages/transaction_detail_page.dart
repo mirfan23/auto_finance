@@ -26,6 +26,9 @@ class TransactionDetailPage extends ConsumerWidget {
           if (transaction == null) {
             return const Center(child: Text("Transaksi tidak ditemukan"));
           }
+          final isNotificationTransaction =
+              transaction.id.startsWith('notification_') ||
+              transaction.id.startsWith('transfer_notification_');
 
           return ListView(
             padding: const EdgeInsets.all(20),
@@ -72,6 +75,19 @@ class TransactionDetailPage extends ConsumerWidget {
                       _deleteManualTransaction(context, ref, transaction),
                   icon: const Icon(Icons.delete_outline_rounded),
                   label: const Text('Hapus transaksi manual'),
+                ),
+              ],
+
+              if (isNotificationTransaction) ...[
+                const SizedBox(height: 10),
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Theme.of(context).colorScheme.error,
+                  ),
+                  onPressed: () =>
+                      _markNotTransaction(context, ref, transaction),
+                  icon: const Icon(Icons.not_interested_outlined),
+                  label: const Text('Bukan transaksi'),
                 ),
               ],
 
@@ -190,6 +206,49 @@ class TransactionDetailPage extends ConsumerWidget {
     try {
       await ref.read(transactionDaoProvider).delete(transaction.id);
       if (context.mounted) Navigator.of(context).pop();
+    } catch (error) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Transaksi belum bisa dihapus: $error')),
+        );
+      }
+    }
+  }
+
+  Future<void> _markNotTransaction(
+    BuildContext context,
+    WidgetRef ref,
+    Transaction transaction,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Tandai bukan transaksi?'),
+        content: const Text(
+          'Catatan ini akan dihapus dan saldo dompet disesuaikan. Notifikasi dengan pesan yang sama akan diabaikan jika diterima lagi.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(dialogContext).colorScheme.error,
+            ),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Tandai bukan transaksi'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      final removed = await ref
+          .read(transactionDaoProvider)
+          .markNotTransaction(transaction.id);
+      if (removed && context.mounted) Navigator.of(context).pop();
     } catch (error) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

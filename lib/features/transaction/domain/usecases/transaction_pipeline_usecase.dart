@@ -3,15 +3,23 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:auto_finance/features/transaction/domain/entities/transaction.dart';
 import 'package:auto_finance/features/transaction/domain/usecases/parser/parser_dispatcher.dart';
+import 'package:auto_finance/features/local_ai/data/services/local_ai_transaction_parser.dart';
 
 class TransactionPipelineUseCase {
   final ParserDispatcher _dispatcher = ParserDispatcher();
+  final LocalAiTransactionParser _localAiParser = LocalAiTransactionParser();
 
-  Transaction? call(Map data) {
+  Future<Transaction?> call(Map data) async {
     print("🔵 PIPELINE START");
     print("🔵 DATA => $data");
 
-    final result = _dispatcher.parse(data);
+    var result = _dispatcher.parse(data);
+    final packageName = (data['packageName'] ?? '').toString();
+    if (result == null &&
+        !_dispatcher.recognizesPackage(packageName) &&
+        (data['walletBank'] ?? '').toString().isNotEmpty) {
+      result = await _localAiParser.parse(data);
+    }
 
     if (result == null) {
       print("❌ PIPELINE RESULT NULL");

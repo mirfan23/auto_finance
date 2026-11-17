@@ -1,4 +1,6 @@
 import 'package:auto_finance/features/notification/application/providers/notification_sync_provider.dart';
+import 'package:auto_finance/features/notification/application/providers/notification_attention_provider.dart';
+import 'package:auto_finance/features/notification/presentation/widgets/notification_attention_shortcut.dart';
 import 'package:auto_finance/features/transaction/application/providers/transaction_filter_provider.dart';
 import 'package:auto_finance/features/transaction/application/providers/transaction_filter_state_provider.dart';
 import 'package:auto_finance/features/transaction/presentation/widgets/empty_transaction.dart';
@@ -37,10 +39,16 @@ class TransactionPage extends ConsumerWidget {
 
         data: (list) {
           return RefreshIndicator(
-            onRefresh: () => ref.read(notificationSyncProvider).sync(),
+            onRefresh: () async {
+              await ref.read(notificationSyncProvider).sync();
+              ref.invalidate(notificationAttentionCountsProvider);
+            },
             child: CustomScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
+                const SliverToBoxAdapter(
+                  child: NotificationAttentionShortcut(),
+                ),
                 const SliverToBoxAdapter(child: WeeklyBudgetSection()),
                 const SliverToBoxAdapter(child: TransactionWeekSelector()),
                 const SliverToBoxAdapter(child: TransactionSearchBar()),

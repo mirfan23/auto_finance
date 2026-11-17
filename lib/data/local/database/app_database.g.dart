@@ -3115,6 +3115,245 @@ class MerchantCategoryRulesTableCompanion
   }
 }
 
+class $IgnoredNotificationRulesTableTable extends IgnoredNotificationRulesTable
+    with
+        TableInfo<
+          $IgnoredNotificationRulesTableTable,
+          IgnoredNotificationRulesTableData
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $IgnoredNotificationRulesTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _normalizedTextMeta = const VerificationMeta(
+    'normalizedText',
+  );
+  @override
+  late final GeneratedColumn<String> normalizedText = GeneratedColumn<String>(
+    'normalized_text',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [normalizedText, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'ignored_notification_rules_table';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<IgnoredNotificationRulesTableData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('normalized_text')) {
+      context.handle(
+        _normalizedTextMeta,
+        normalizedText.isAcceptableOrUnknown(
+          data['normalized_text']!,
+          _normalizedTextMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_normalizedTextMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {normalizedText};
+  @override
+  IgnoredNotificationRulesTableData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return IgnoredNotificationRulesTableData(
+      normalizedText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}normalized_text'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $IgnoredNotificationRulesTableTable createAlias(String alias) {
+    return $IgnoredNotificationRulesTableTable(attachedDatabase, alias);
+  }
+}
+
+class IgnoredNotificationRulesTableData extends DataClass
+    implements Insertable<IgnoredNotificationRulesTableData> {
+  final String normalizedText;
+  final DateTime createdAt;
+  const IgnoredNotificationRulesTableData({
+    required this.normalizedText,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['normalized_text'] = Variable<String>(normalizedText);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  IgnoredNotificationRulesTableCompanion toCompanion(bool nullToAbsent) {
+    return IgnoredNotificationRulesTableCompanion(
+      normalizedText: Value(normalizedText),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory IgnoredNotificationRulesTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return IgnoredNotificationRulesTableData(
+      normalizedText: serializer.fromJson<String>(json['normalizedText']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'normalizedText': serializer.toJson<String>(normalizedText),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  IgnoredNotificationRulesTableData copyWith({
+    String? normalizedText,
+    DateTime? createdAt,
+  }) => IgnoredNotificationRulesTableData(
+    normalizedText: normalizedText ?? this.normalizedText,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  IgnoredNotificationRulesTableData copyWithCompanion(
+    IgnoredNotificationRulesTableCompanion data,
+  ) {
+    return IgnoredNotificationRulesTableData(
+      normalizedText: data.normalizedText.present
+          ? data.normalizedText.value
+          : this.normalizedText,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('IgnoredNotificationRulesTableData(')
+          ..write('normalizedText: $normalizedText, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(normalizedText, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is IgnoredNotificationRulesTableData &&
+          other.normalizedText == this.normalizedText &&
+          other.createdAt == this.createdAt);
+}
+
+class IgnoredNotificationRulesTableCompanion
+    extends UpdateCompanion<IgnoredNotificationRulesTableData> {
+  final Value<String> normalizedText;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const IgnoredNotificationRulesTableCompanion({
+    this.normalizedText = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  IgnoredNotificationRulesTableCompanion.insert({
+    required String normalizedText,
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : normalizedText = Value(normalizedText),
+       createdAt = Value(createdAt);
+  static Insertable<IgnoredNotificationRulesTableData> custom({
+    Expression<String>? normalizedText,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (normalizedText != null) 'normalized_text': normalizedText,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  IgnoredNotificationRulesTableCompanion copyWith({
+    Value<String>? normalizedText,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return IgnoredNotificationRulesTableCompanion(
+      normalizedText: normalizedText ?? this.normalizedText,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (normalizedText.present) {
+      map['normalized_text'] = Variable<String>(normalizedText.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('IgnoredNotificationRulesTableCompanion(')
+          ..write('normalizedText: $normalizedText, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3131,6 +3370,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $MonthlyBudgetsTableTable(this);
   late final $MerchantCategoryRulesTableTable merchantCategoryRulesTable =
       $MerchantCategoryRulesTableTable(this);
+  late final $IgnoredNotificationRulesTableTable ignoredNotificationRulesTable =
+      $IgnoredNotificationRulesTableTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3143,6 +3384,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     walletBalanceAdjustmentTable,
     monthlyBudgetsTable,
     merchantCategoryRulesTable,
+    ignoredNotificationRulesTable,
   ];
 }
 
@@ -4857,6 +5099,170 @@ typedef $$MerchantCategoryRulesTableTableProcessedTableManager =
       MerchantCategoryRulesTableData,
       PrefetchHooks Function()
     >;
+typedef $$IgnoredNotificationRulesTableTableCreateCompanionBuilder =
+    IgnoredNotificationRulesTableCompanion Function({
+      required String normalizedText,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$IgnoredNotificationRulesTableTableUpdateCompanionBuilder =
+    IgnoredNotificationRulesTableCompanion Function({
+      Value<String> normalizedText,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+class $$IgnoredNotificationRulesTableTableFilterComposer
+    extends Composer<_$AppDatabase, $IgnoredNotificationRulesTableTable> {
+  $$IgnoredNotificationRulesTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get normalizedText => $composableBuilder(
+    column: $table.normalizedText,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$IgnoredNotificationRulesTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $IgnoredNotificationRulesTableTable> {
+  $$IgnoredNotificationRulesTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get normalizedText => $composableBuilder(
+    column: $table.normalizedText,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$IgnoredNotificationRulesTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $IgnoredNotificationRulesTableTable> {
+  $$IgnoredNotificationRulesTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get normalizedText => $composableBuilder(
+    column: $table.normalizedText,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$IgnoredNotificationRulesTableTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $IgnoredNotificationRulesTableTable,
+          IgnoredNotificationRulesTableData,
+          $$IgnoredNotificationRulesTableTableFilterComposer,
+          $$IgnoredNotificationRulesTableTableOrderingComposer,
+          $$IgnoredNotificationRulesTableTableAnnotationComposer,
+          $$IgnoredNotificationRulesTableTableCreateCompanionBuilder,
+          $$IgnoredNotificationRulesTableTableUpdateCompanionBuilder,
+          (
+            IgnoredNotificationRulesTableData,
+            BaseReferences<
+              _$AppDatabase,
+              $IgnoredNotificationRulesTableTable,
+              IgnoredNotificationRulesTableData
+            >,
+          ),
+          IgnoredNotificationRulesTableData,
+          PrefetchHooks Function()
+        > {
+  $$IgnoredNotificationRulesTableTableTableManager(
+    _$AppDatabase db,
+    $IgnoredNotificationRulesTableTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$IgnoredNotificationRulesTableTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$IgnoredNotificationRulesTableTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$IgnoredNotificationRulesTableTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> normalizedText = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => IgnoredNotificationRulesTableCompanion(
+                normalizedText: normalizedText,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String normalizedText,
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => IgnoredNotificationRulesTableCompanion.insert(
+                normalizedText: normalizedText,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$IgnoredNotificationRulesTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $IgnoredNotificationRulesTableTable,
+      IgnoredNotificationRulesTableData,
+      $$IgnoredNotificationRulesTableTableFilterComposer,
+      $$IgnoredNotificationRulesTableTableOrderingComposer,
+      $$IgnoredNotificationRulesTableTableAnnotationComposer,
+      $$IgnoredNotificationRulesTableTableCreateCompanionBuilder,
+      $$IgnoredNotificationRulesTableTableUpdateCompanionBuilder,
+      (
+        IgnoredNotificationRulesTableData,
+        BaseReferences<
+          _$AppDatabase,
+          $IgnoredNotificationRulesTableTable,
+          IgnoredNotificationRulesTableData
+        >,
+      ),
+      IgnoredNotificationRulesTableData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4885,5 +5291,11 @@ class $AppDatabaseManager {
       $$MerchantCategoryRulesTableTableTableManager(
         _db,
         _db.merchantCategoryRulesTable,
+      );
+  $$IgnoredNotificationRulesTableTableTableManager
+  get ignoredNotificationRulesTable =>
+      $$IgnoredNotificationRulesTableTableTableManager(
+        _db,
+        _db.ignoredNotificationRulesTable,
       );
 }

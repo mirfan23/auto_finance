@@ -333,6 +333,24 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
             ),
           ),
           const SizedBox(height: 24),
+          Text('PENCATATAN OTOMATIS', style: Theme.of(context).textTheme.labelMedium),
+          const SizedBox(height: 10),
+          Material(
+            color: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+              side: BorderSide(color: AppColors.line),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: ListTile(
+              leading: const Icon(Icons.auto_awesome_rounded, color: AppColors.forest),
+              title: const Text('AI lokal & sumber transaksi'),
+              subtitle: const Text('Unduh model dan pilih aplikasi bank/e-wallet'),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () => context.push('/settings/local-ai'),
+            ),
+          ),
+          const SizedBox(height: 24),
           Text('DIAGNOSIS', style: Theme.of(context).textTheme.labelMedium),
           const SizedBox(height: 10),
           Material(

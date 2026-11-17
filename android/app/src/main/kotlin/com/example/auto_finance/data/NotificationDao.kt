@@ -128,12 +128,13 @@ interface NotificationDao {
     fun requeueProcessedShopeePayBiFastIncoming(): Int
 
     @Query("""
-        SELECT * 
+        SELECT *
         FROM notification_logs
-        WHERE processed = 0
-        ORDER BY timestamp ASC
+        WHERE processed = 0 AND id > :afterId
+        ORDER BY id ASC
+        LIMIT :limit
     """)
-    fun getPending(): List<NotificationEntity>
+    fun getPending(afterId: Long, limit: Int): List<NotificationEntity>
 
     @Query("""
         UPDATE notification_logs
@@ -146,9 +147,37 @@ interface NotificationDao {
     fun markUnknownProcessed(query: SupportSQLiteQuery): Int
 
     @Query("""
-        SELECT * 
+        SELECT packageName, COUNT(*) AS notificationCount
+        FROM notification_logs
+        WHERE packageName != 'com.example.auto_finance'
+        GROUP BY packageName
+        ORDER BY MAX(timestamp) DESC
+        LIMIT 100
+    """)
+    fun getNotificationSourceCounts(): List<NotificationSourceCount>
+
+    @Query("""
+        UPDATE notification_logs
+        SET processed = 0
+        WHERE id IN (
+            SELECT id FROM notification_logs
+            WHERE packageName IN (:packageNames) AND timestamp >= :sinceTimestamp
+            ORDER BY timestamp DESC
+            LIMIT 50
+        )
+    """)
+    fun requeuePackages(packageNames: List<String>, sinceTimestamp: Long): Int
+
+    @Query("""
+        SELECT *
         FROM notification_logs
         ORDER BY timestamp DESC
+        LIMIT :limit OFFSET :offset
     """)
-    fun getAll(): List<NotificationEntity>
+    fun getAll(limit: Int, offset: Int): List<NotificationEntity>
 }
+
+data class NotificationSourceCount(
+    @androidx.room.ColumnInfo(name = "packageName") val packageName: String,
+    @androidx.room.ColumnInfo(name = "notificationCount") val notificationCount: Int,
+)
